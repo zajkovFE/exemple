@@ -25,7 +25,12 @@ async function sentinelHealthCheck() {
     try {
         const response = await fetch(`https://generativelanguage.googleapis.com/${SENTINEL_CONFIG.apiVersion}/models?key=${KEY}`);
         const data = await response.json();
-
+// 🔍 Проверка на ошибку от API (например, 429, 400, 403, 404)
+if (data.error) {
+  const { code, message } = data.error;
+  console.warn(`❌ Gemini API Error ${code}: ${message}`);
+  throw new Error(`Gemini API: ${message} (${code})`);
+}
         if (data.models) {
             for (let target of SENTINEL_CONFIG.priorityModels) {
                 const found = data.models.find(m => m.name.includes(target));
