@@ -469,7 +469,7 @@ async function structureAIResponse() {
         2. Используй w=2 для основных тем, w=1 для подразделов
         3. Заголовки должны быть краткими и информативными
         4. Никакого дополнительного текста, только JSON`;
-        
+
         const structureData = await askSentinel(structurePrompt, 'architect');
         
         if (structureData && Array.isArray(structureData)) {
