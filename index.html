@@ -846,14 +846,17 @@ function updateToolbar() {
 
     
     function loadFromDB(index) {
-  // Используем надежную загрузку из storage.js
-  if (loadProtocol(index)) {
+    const db = JSON.parse(localStorage.getItem('pharmaDB') || '[]');
+    if (index < 0 || index >= db.length) {
+        alert("❌ Запись не найдена");
+        return;
+    }
+    
+    document.getElementById('form-canvas').innerHTML = db[index].html;
     currentEditingIndex = index;
-    updateToolbar();
+    updateToolbar(); 
     window.scrollTo(0,0);
-  } else {
-    alert("❌ Ошибка при загрузке записи");
-  }
+    console.log(`✅ Загружена запись: ${db[index].name}`);
 }
    function deleteFromDB(index) {
   if(confirm("Удалить запись?")) {
