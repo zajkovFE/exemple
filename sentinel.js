@@ -1,12 +1,13 @@
-// SENTINEL AI ENGINE (v2.6) - Qwen OpenRouter Edition (FIXED JSON OUTPUT)
+// SENTINEL AI ENGINE (v3.0) - UNIVERSAL EDITION
 
 const SENTINEL_CONFIG = {
     model: "qwen/qwen-2.5-72b-instruct", 
     apiEndpoint: "https://openrouter.ai/api/v1/chat/completions"
 };
 
-async function askSentinel(promptText, role) {
-    console.log("🚀 Запуск ИИ-запроса:", { role, promptText });
+// УНИВЕРСАЛЬНЫЙ ЗАПРОС К ИИ
+async function askUniversalAI(promptText, role = 'general', context = '') {
+    console.log("🚀 Универсальный запрос к ИИ:", { role, promptText });
     
     const KEY = localStorage.getItem('openrouter_api_key')?.trim();
     if (!KEY) {
@@ -14,28 +15,28 @@ async function askSentinel(promptText, role) {
         throw new Error("Missing OpenRouter API Key");
     }
 
-    // УЛУЧШЕННЫЕ СИСТЕМНЫЕ ИНСТРУКЦИИ С ГАРАНТИРОВАННЫМ JSON
-    const systemInstructions = {
-        architect: `Ты — медицинский архитектор. СТРОГО СЛЕДУЙ ПРАВИЛАМ:
-1. ВЕРНИ ТОЛЬКО ЧИСТЫЙ JSON-МАССИВ БЕЗ КАКИХ-ЛИБО ДОПОЛНИТЕЛЬНЫХ СИМВОЛОВ
-2. Формат: [{"t":"Заголовок 1","w":1},{"t":"Заголовок 2","w":2}]
-3. w может быть только 1 или 2
-4. НИКАКИХ ПОЯСНЕНИЙ, КОММЕНТАРИЕВ, MARKDOWN, ТЕКСТА ДО И ПОСЛЕ JSON
-5. Если не можешь создать структуру — верни пустой массив []
-
-Пример правильного ответа:
-[{"t":"Анамнез","w":2},{"t":"Диагноз","w":1}]`,
-
-        editor: `Ты — врач-клиницист. СТРОГО СЛЕДУЙ ПРАВИЛАМ:
-1. ВЕРНИ ТОЛЬКО ЧИСТЫЙ JSON-ОБЪЕКТ БЕЗ КАКИХ-ЛИБО ДОПОЛНИТЕЛЬНЫХ СИМВОЛОВ
-2. Формат: {"Заголовок 1":"Текст 1","Заголовок 2":"Текст 2"}
-3. Ключи должны точно совпадать с названиями разделов
-4. НИКАКИХ ПОЯСНЕНИЙ, КОММЕНТАРИЕВ, MARKDOWN, ТЕКСТА ДО И ПОСЛЕ JSON
-5. Если не можешь заполнить — верни пустой объект {}
-
-Пример правильного ответа:
-{"Анамнез":"Пациент 45 лет, жалобы на головную боль...", "Диагноз":"Артериальная гипертензия"}`
+    // ГИБКИЕ СИСТЕМНЫЕ ИНСТРУКЦИИ ДЛЯ РАЗНЫХ РОЛЕЙ
+    const roleInstructions = {
+        general: `Вы — эрудированный эксперт с глубокими знаниями во многих областях. Отвечайте точно, по делу, с академической строгостью. Поддерживайте научный стиль, но будьте понятны.`,
+        
+        historian: `Вы — историк мирового уровня, специализирующийся на [КОНТЕКСТ]. Отвечайте как учёный: с фактами, датами, источниками. Избегайте спекуляций.`,
+        
+        scientist: `Вы — учёный с PhD в области [КОНТЕКСТ]. Объясняйте сложные концепции ясно, но без упрощений. Используйте научную терминологию корректно.`,
+        
+        philosopher: `Вы — философ, анализирующий [КОНТЕКСТ]. Рассматривайте разные точки зрения, приводите аргументы, избегайте догматизма.`,
+        
+        safety_engineer: `Вы — инженер по техносферной безопасности. Оценивайте риски объективно, предлагайте конкретные меры защиты, ссылайтесь на стандарты.`,
+        
+        architect: `Ты — медицинский архитектор. Верни ТОЛЬКО валидный JSON-массив: [{\"t\":\"Заголовок\",\"w\":1}]. Никаких пояснений.`, 
+        
+        editor: `Ты — врач. Верни ТОЛЬКО валидный JSON-объект: {\"Заголовок\":\"Текст\"}. Никаких пояснений.`
     };
+
+    // Определяем инструкцию для роли
+    let systemInstruction = roleInstructions[role] || roleInstructions.general;
+    if (context) {
+        systemInstruction = systemInstruction.replace('[КОНТЕКСТ]', context);
+    }
 
     try {
         const response = await fetch(SENTINEL_CONFIG.apiEndpoint, {
@@ -53,108 +54,89 @@ async function askSentinel(promptText, role) {
                 messages: [
                     { 
                         role: "system", 
-                        content: systemInstructions[role] 
+                        content: systemInstruction
                     },
                     { 
                         role: "user", 
-                        content: `ЗАПРОС: ${promptText}\n\nВЕРНИ ТОЛЬКО JSON БЕЗ КАКОГО-ЛИБО ДОПОЛНИТЕЛЬНОГО ТЕКСТА` 
+                        content: promptText
                     }
                 ],
-                temperature: 0.1,
-                max_tokens: 1000
+                temperature: 0.3, // Чуть выше для творческих задач
+                max_tokens: 2000
             })
         });
 
-        // ДЕТАЛЬНАЯ ОТЛАДКА ОТВЕТА
         const responseText = await response.text();
-        console.log("🔍 Сырой ответ от ИИ:", responseText);
-        
         if (!response.ok) {
-            try {
-                const errorData = JSON.parse(responseText);
-                throw new Error(errorData.error?.message || `HTTP ${response.status}`);
-            } catch (e) {
-                throw new Error(`Сервер вернул ошибку: ${responseText.substring(0, 200)}`);
-            }
+            const errorData = JSON.parse(responseText);
+            throw new Error(errorData.error?.message || `HTTP ${response.status}`);
         }
 
         const data = JSON.parse(responseText);
-        
         if (!data?.choices?.[0]?.message?.content) {
-            throw new Error("Ответ ИИ не содержит данных для обработки");
+            throw new Error("Ответ ИИ не содержит данных");
         }
 
-        let content = data.choices[0].message.content.trim();
-        console.log("📦 Сырой контент ИИ:", content);
-
-        // УЛУЧШЕННАЯ ОЧИСТКА И ПАРСИНГ JSON
-        let cleanJson = content;
+        return data.choices[0].message.content;
         
-        // Шаг 1: Удаляем markdown-блоки кода
-        cleanJson = cleanJson.replace(/```(?:json)?\n?([\s\S]*?)\n?```/gi, '$1');
-        
-        // Шаг 2: Ищем первый валидный JSON-объект или массив
-        const jsonMatch = cleanJson.match(/(\{[\s\S]*?\}|\[[\s\S]*?\])/);
-        if (jsonMatch) {
-            cleanJson = jsonMatch[1];
-        } else {
-            // Если не нашли JSON - пытаемся очистить от текста
-            cleanJson = cleanJson
-                .replace(/^[^\[\{]+/, '')  // Удаляем текст до [
-                .replace(/[^\]\}]+$/, '');  // Удаляем текст после ]
-        }
-        
-        cleanJson = cleanJson.trim();
-        console.log("🧹 Очищенный JSON:", cleanJson);
-
-        // Шаг 3: Проверяем валидность перед парсингом
-        if (!cleanJson || (cleanJson[0] !== '[' && cleanJson[0] !== '{')) {
-            throw new Error(`Некорректный формат JSON. Ответ ИИ: ${content.substring(0, 200)}`);
-        }
-
-        try {
-            const result = JSON.parse(cleanJson);
-            console.log("✅ Успешно распарсен JSON:", result);
-            
-            // ДОПОЛНИТЕЛЬНАЯ ПРОВЕРКА ДЛЯ АРХИТЕКТОРА
-            if (role === 'architect') {
-                if (!Array.isArray(result)) {
-                    throw new Error("ИИ вернул не массив для архитектора");
-                }
-                result.forEach((item, index) => {
-                    if (!item.t || typeof item.t !== 'string') {
-                        console.warn(`⚠️ Исправлен некорректный заголовок в элементе ${index}`);
-                        item.t = `Раздел ${index + 1}`;
-                    }
-                    item.w = item.w === 2 ? 2 : 1; // w может быть только 1 или 2
-                });
-            }
-            
-            return result;
-        } catch (parseError) {
-            console.error("❌ Ошибка парсинга JSON:", parseError);
-            console.error("❌ Проблемный контент:", cleanJson);
-            throw new Error(`ИИ вернул некорректный JSON: ${parseError.message}. Попробуйте уточнить запрос.`);
-        }
-
     } catch (e) {
-        console.error("❌ SENTINEL CRITICAL ERROR:", e);
-        console.error("🛠️ Для отладки сохраните этот лог и отправьте разработчику");
-        alert(`❌ Ошибка ИИ: ${e.message || "Произошла неизвестная ошибка"}`);
-        
-        // Возвращаем тестовые данные для отладки
-        if (role === 'architect') {
-            return [
-                {"t": "Тестовая структура", "w": 2},
-                {"t": "Диагноз", "w": 1},
-                {"t": "Лечение", "w": 1}
-            ];
-        }
+        console.error("❌ UNIVERSAL AI ERROR:", e);
+        alert(`Ошибка ИИ: ${e.message || "Неизвестная ошибка. Проверьте ключ и интернет."}`);
         return null;
     }
 }
 
-// Экспортируем функцию
-window.askSentinel = askSentinel;
+// СОВМЕСТИМОСТЬ СО СТАРЫМ ИНТЕРФЕЙСОМ
+async function askSentinel(promptText, role) {
+    if (role === 'architect' || role === 'editor') {
+        // Старая функциональность для медицинских задач
+        return _askMedicalAI(promptText, role);
+    }
+    // Новая универсальная функциональность
+    return askUniversalAI(promptText, role);
+}
 
-console.log("✅ SENTINEL AI ENGINE загружен. Версия: v2.6 (FIXED JSON)");
+// ВНУТРЕННЯЯ ФУНКЦИЯ ДЛЯ МЕДИЦИНСКИХ ЗАДАЧ
+async function _askMedicalAI(promptText, role) {
+    const KEY = localStorage.getItem('openrouter_api_key')?.trim();
+    if (!KEY) throw new Error("Missing API Key");
+
+    const systemInstructions = {
+        architect: `Ты — медицинский архитектор. Верни ТОЛЬКО валидный JSON-массив: [{\"t\":\"Заголовок\",\"w\":1}]. Никаких пояснений.`,
+        editor: `Ты — врач. Верни ТОЛЬКО валидный JSON-объект: {\"Заголовок\":\"Текст\"}. Никаких пояснений.`
+    };
+
+    const response = await fetch(SENTINEL_CONFIG.apiEndpoint, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${KEY}`,
+            'Content-Type': 'application/json',
+            'HTTP-Referer': window.location.protocol === 'file:' ? 'http://localhost' : window.location.href,
+            'X-Title': 'Pharma-Architect'
+        },
+        body: JSON.stringify({
+            model: SENTINEL_CONFIG.model,
+            messages: [
+                { role: "system", content: systemInstructions[role] },
+                { role: "user", content: promptText }
+            ],
+            temperature: 0.1,
+            max_tokens: 500
+        })
+    });
+
+    const data = await response.json();
+    const content = data.choices[0].message.content;
+    
+    // Очистка и парсинг JSON
+    const cleanJson = content
+        .replace(/```json|```/g, "")
+        .replace(/[\s\S]*?(\{.*\}|\[.*\])[\s\S]*/s, "$1")
+        .trim();
+    
+    return JSON.parse(cleanJson);
+}
+
+// ЭКСПОРТИРУЕМ ФУНКЦИИ
+window.askUniversalAI = askUniversalAI;
+window.askSentinel = askSentinel;
