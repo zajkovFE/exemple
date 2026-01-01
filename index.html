@@ -509,6 +509,8 @@ function updateToolbar() {
 
         renderOpts(groups, (val) => { selectedGroup = val; askSub(); });
         openModal('save-modal');
+        // Перед сохранением — убедимся, что f-name на месте
+ensureFNameID();
         confirmBtn.onclick = () => { selectedGroup = input.value.trim(); if(selectedGroup) askSub(); };
     }
 
@@ -562,6 +564,22 @@ function updateToolbar() {
             groupContent.style.display = 'none';
         }
     });
+}
+    // Гарантирует наличие id="f-name" на первом блоке с заголовком
+function ensureFNameID() {
+  const canvas = document.getElementById('form-canvas');
+  const firstTitle = canvas.querySelector('.box-title');
+  if (!firstTitle) return;
+
+  // Удаляем старый id, если есть
+  const oldEl = document.getElementById('f-name');
+  if (oldEl) oldEl.removeAttribute('id');
+
+  // Присваиваем id на контентный блок первого заголовка
+  const contentEl = firstTitle.nextElementSibling;
+  if (contentEl) {
+    contentEl.id = 'f-name';
+  }
 }
     function addBoxWithTitle() {
         const title = prompt("Заголовок:"); if (!title) return;
