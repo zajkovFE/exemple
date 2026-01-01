@@ -141,39 +141,22 @@ function saveAsNewCopy() {
   renderDB();
   alert(`✅ Копия "${newName}" создана!`);
 }
+
+// ЗАГРУЗКА ИЗ БАЗЫ - ВЕРНУЛИ ОРИГИНАЛЬНЫЙ ВАРИАНТ
 function loadFromDB(index) {
-  const db = JSON.parse(localStorage.getItem('pharmaDB'));
+  const db = JSON.parse(localStorage.getItem('pharmaDB') || '[]');
+  if (index < 0 || index >= db.length) {
+    alert("❌ Запись не найдена");
+    return;
+  }
+  
   document.getElementById('form-canvas').innerHTML = db[index].html;
   currentEditingIndex = index;
   updateToolbar(); 
   window.scrollTo(0,0);
-}
-// Загружает протокол по индексу
-// Загружает протокол по индексу
-function loadProtocol(index) {
-  try {
-    const db = JSON.parse(localStorage.getItem('pharmaDB') || '[]');
-    if (index < 0 || index >= db.length) {
-      throw new Error(`Запись с индексом ${index} не найдена`);
-    }
-    
-    const canvas = document.getElementById('form-canvas');
-    if (!canvas) {
-      throw new Error('Элемент #form-canvas не найден');
-    }
-    
-    canvas.innerHTML = db[index].html;
-    return true;
-  } catch (e) {
-    console.error("❌ Ошибка загрузки записи:", e);
-    return false;
-  }
+  console.log(`✅ Загружена запись: ${db[index].name}`);
 }
 
-// Экспортируем в глобальную область видимости
-if (typeof window !== 'undefined') {
-  window.loadProtocol = loadProtocol;
-}
 // Экспорт в HTML (для кнопки "💾 Скачать .html")
 function downloadProject() {
   ensureFNameID();
@@ -216,3 +199,12 @@ ${document.getElementById('form-canvas').innerHTML}
   URL.revokeObjectURL(url);
   alert("✅ HTML-файл сохранен!");
 }
+
+// Экспортируем все функции в глобальную область видимости
+window.ensureFNameID = ensureFNameID;
+window.getProtocolName = getProtocolName;
+window.startSaveSequence = startSaveSequence;
+window.updateExistingRecord = updateExistingRecord;
+window.saveAsNewCopy = saveAsNewCopy;
+window.loadFromDB = loadFromDB;
+window.downloadProject = downloadProject;
