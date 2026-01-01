@@ -3,7 +3,7 @@
 
 const SENTINEL_CONFIG = {
     // Используем мощную Qwen 2.5 (или "alibaba/qwen-2-7b-instruct:free" для полной халявы)...халявы нет, есть только сила, силы нет, есть только спокойствие, спокойствия...Йода, достал уже...
-    model: "alibaba/qwen-2.5-72b-instruct",
+   model: "qwen/qwen-2.5-72b-instruct", 
     apiVersion: "https://openrouter.ai/api/v1/chat/completions"
 };
 
