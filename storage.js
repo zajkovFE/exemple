@@ -141,7 +141,13 @@ function saveAsNewCopy() {
   renderDB();
   alert(`✅ Копия "${newName}" создана!`);
 }
-
+function loadFromDB(index) {
+  const db = JSON.parse(localStorage.getItem('pharmaDB'));
+  document.getElementById('form-canvas').innerHTML = db[index].html;
+  currentEditingIndex = index;
+  updateToolbar(); 
+  window.scrollTo(0,0);
+}
 // Экспорт в HTML (для кнопки "💾 Скачать .html")
 function downloadProject() {
   ensureFNameID();
