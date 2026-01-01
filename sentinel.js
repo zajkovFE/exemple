@@ -1,3 +1,10 @@
+// SENTINEL AI ENGINE (v2.8) - Qwen OpenRouter Edition (ПОЛНОСТЬЮ ИСПРАВЛЕНО)
+
+const SENTINEL_CONFIG = {
+    model: "qwen/qwen-2.5-72b-instruct", 
+    apiEndpoint: "https://openrouter.ai/api/v1/chat/completions" // ИСПРАВЛЕНО: убраны пробелы!
+};
+
 // УНИВЕРСАЛЬНЫЙ ЗАПРОС К ИИ
 async function askSentinel(promptText, role = 'general', context = '') {
     console.log("🚀 Запуск ИИ-запроса:", { role, promptText, context });
@@ -11,7 +18,7 @@ async function askSentinel(promptText, role = 'general', context = '') {
     // СИСТЕМНЫЕ ИНСТРУКЦИИ ДЛЯ ВСЕХ РОЛЕЙ
     const systemInstructions = {
         architect: `Ты — медицинский архитектор. Верни ТОЛЬКО валидный JSON-массив объектов: [{"t":"Заголовок","w":1}]. Никакого дополнительного текста. w может быть только 1 или 2.`,
-        editor: `Ты — врач-клиницист. Верни ТОЛЬКО валидный JSON-объект: {"Заголовок":"Текст"}. Никакого дополнительного текста. Не сокращай текст, пиши подробно и грамотно.`,
+        editor: `Ты — врач. Верни ТОЛЬКО валидный JSON-объект: {"Заголовок":"Текст"}. Никакого дополнительного текста.`,
         general: `Вы — эрудированный эксперт. Отвечайте точно, по делу, с академической строгостью. Поддерживайте научный стиль, но будьте понятны.`,
         historian: `Вы — историк мирового уровня, специализирующийся на ${context || 'различных эпохах'}. Отвечайте как учёный: с фактами, датами, источниками.`,
         scientist: `Вы — учёный с PhD в области ${context || 'различных дисциплин'}. Объясняйте сложные концепции ясно, но без упрощений.`,
@@ -46,8 +53,7 @@ async function askSentinel(promptText, role = 'general', context = '') {
                     }
                 ],
                 temperature: role === 'architect' || role === 'editor' ? 0.1 : 0.3,
-                // 🔥 КРИТИЧЕСКОЕ ИЗМЕНЕНИЕ: увеличиваем лимит для редактора
-                max_tokens: role === 'architect' ? 500 : (role === 'editor' ? 3000 : 4000)
+                max_tokens: role === 'architect' || role === 'editor' ? 500 : 4000
             })
         });
 
@@ -111,17 +117,6 @@ async function askSentinel(promptText, role = 'general', context = '') {
         
     } catch (e) {
         console.error("❌ SENTINEL CRITICAL ERROR:", e);
-        
-        // 🔥 ДОПОЛНИТЕЛЬНАЯ ОБРАБОТКА: если ошибка парсинга JSON, пробуем восстановить
-        if (e.message.includes('Некорректный формат JSON') && role === 'editor') {
-            console.warn("⚠️ Попытка восстановить обрезанный JSON...");
-            const recoveredContent = tryRecoverJSON(e.message);
-            if (recoveredContent) {
-                alert("✅ ИИ вернул длинный ответ! JSON восстановлен автоматически.");
-                return recoveredContent;
-            }
-        }
-        
         alert(`❌ Ошибка ИИ: ${e.message || "Неизвестная ошибка. Проверьте ключ и интернет."}`);
         
         // Возвращаем тестовые данные для медицинских ролей
@@ -136,33 +131,54 @@ async function askSentinel(promptText, role = 'general', context = '') {
     }
 }
 
-// 🔥 НОВАЯ ФУНКЦИЯ: Восстановление обрезанного JSON
-function tryRecoverJSON(errorMessage) {
-    try {
-        // Извлекаем обрезанный JSON из сообщения об ошибке
-        const jsonMatch = errorMessage.match(/\{[\s\S]*$/);
-        if (!jsonMatch || !jsonMatch[0]) return null;
-        
-        let partialJSON = jsonMatch[0].trim();
-        console.log("🔧 Обрезанный JSON для восстановления:", partialJSON.substring(0, 200) + '...');
-        
-        // Если не закрыты кавычки в последнем значении
-        if (partialJSON.endsWith('"') && !partialJSON.endsWith('\\"')) {
-            partialJSON = partialJSON.slice(0, -1) + '..."';
-        }
-        
-        // Если не закрыты скобки
-        let openBraces = (partialJSON.match(/{/g) || []).length;
-        let closeBraces = (partialJSON.match(/}/g) || []).length;
-        
-        if (openBraces > closeBraces) {
-            partialJSON += '}'.repeat(openBraces - closeBraces);
-        }
-        
-        console.log("🔧 Восстановленный JSON:", partialJSON);
-        return JSON.parse(partialJSON);
-    } catch (e) {
-        console.error("❌ Ошибка восстановления JSON:", e);
-        return null;
+// ВСПОМОГАТЕЛЬНАЯ ФУНКЦИЯ: СТРОГИЙ ПАРСИНГ JSON
+function parseStrictJSON(content) {
+    let cleanJson = content;
+    
+    // Удаляем markdown-блоки кода
+    cleanJson = cleanJson.replace(/```(?:json)?\n?([\s\S]*?)\n?```/gi, '$1');
+    
+    // Ищем первый валидный JSON-объект или массив
+    const jsonMatch = cleanJson.match(/(\{[\s\S]*?\}|\[[\s\S]*?\])/);
+    if (jsonMatch) {
+        cleanJson = jsonMatch[1];
+    } else {
+        // Если не нашли JSON - пытаемся очистить от текста
+        cleanJson = cleanJson
+            .replace(/^[^\[\{]+/, '')
+            .replace(/[^\]\}]+$/, '');
     }
+    
+    cleanJson = cleanJson.trim();
+    console.log("🧹 Очищенный JSON:", cleanJson);
+
+    if (!cleanJson || (cleanJson[0] !== '[' && cleanJson[0] !== '{')) {
+        throw new Error(`Некорректный формат JSON. Ответ: ${content.substring(0, 300)}`);
+    }
+
+    return JSON.parse(cleanJson);
 }
+
+// СОВМЕСТИМОСТЬ СО СТАРОЙ ВЕРСИЕЙ (КРИТИЧЕСКИ ВАЖНО!)
+async function _askMedicalAI(promptText, role) {
+    console.warn("⚠️ Используется устаревшая функция _askMedicalAI. Обновите вызовы на askSentinel.");
+    return await askSentinel(promptText, role);
+}
+
+// ЭКСПОРТИРУЕМ ФУНКЦИИ
+if (typeof window !== 'undefined') {
+    window.askSentinel = askSentinel;
+    window._askMedicalAI = _askMedicalAI;
+}
+
+console.log("✅ SENTINEL AI ENGINE загружен. Версия: v2.8 (ПОЛНОСТЬЮ ИСПРАВЛЕНО)"); 
+console.log("💡 Доступные роли:", Object.keys({
+    architect: '',
+    editor: '',
+    general: '',
+    historian: '',
+    scientist: '',
+    philosopher: '',
+    safety_engineer: ''
+}).join(', '));
+console.log("🔧 Для отладки: проверьте консоль на наличие ошибок при запросах к ИИ");
