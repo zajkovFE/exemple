@@ -471,6 +471,7 @@ function updateToolbar() {
     }
 
     function startSaveSequence() {
+        ensureFNameID();
         const db = JSON.parse(localStorage.getItem('pharmaDB') || '[]');
         let selectedGroup = "";
         const title = document.getElementById('save-step-title');
