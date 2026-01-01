@@ -489,26 +489,16 @@ function updateToolbar() {
             });
         };
 
-        const finalize = (sub) => {
-  // 🔍 Получаем название из первого блока с заголовком (надёжно!)
-  const firstTitleEl = document.querySelector('#form-canvas .box-title');
-  const title = firstTitleEl 
-    ? firstTitleEl.innerText.trim() || 'Без названия'
-    : 'Протокол ' + new Date().toLocaleDateString();
-
-  db.push({
-    name: title,
-    group: selectedGroup,
-    subgroup: sub,
-    html: document.getElementById('form-canvas').innerHTML
-  });
-
-  localStorage.setItem('pharmaDB', JSON.stringify(db));
-  currentEditingIndex = db.length - 1;
-  updateToolbar();
-  renderDB();
-  closeModal('save-modal');
-};
+       const finalize = (sub) => {
+            db.push({
+                name: document.getElementById('f-name').innerText.trim() || 'Без названия',
+                group: selectedGroup, subgroup: sub,
+                html: document.getElementById('form-canvas').innerHTML
+            });
+            localStorage.setItem('pharmaDB', JSON.stringify(db));
+            currentEditingIndex = db.length - 1;
+            updateToolbar(); renderDB(); closeModal('save-modal');
+        };
 
         const askSub = () => {
             title.innerText = "Выберите Подгруппу"; input.value = "";
