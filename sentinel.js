@@ -5,11 +5,11 @@
 
 const SENTINEL_CONFIG = {
     priorityModels: [
-        "gemini-flash-latest",   // Самый стабильный короткий адрес
-        "gemini-1.5-flash",     // Запасной вариант с явным указанием версии
-        "gemini-1.0-pro"        // Резерв
+        "gemini-1.5-flash",
+        "gemini-1.5-pro",
+        "gemini-1.0-pro"
     ],
-    currentModel: "gemini-flash-latest", // Сразу ставим правильный
+    currentModel: "gemini-1.5-flash",
     apiVersion: "v1beta",
     isChecking: false
 };
@@ -25,12 +25,7 @@ async function sentinelHealthCheck() {
     try {
         const response = await fetch(`https://generativelanguage.googleapis.com/${SENTINEL_CONFIG.apiVersion}/models?key=${KEY}`);
         const data = await response.json();
-// 🔍 Проверка на ошибку от API (например, 429, 400, 403, 404)
-if (data.error) {
-  const { code, message } = data.error;
-  console.warn(`❌ Gemini API Error ${code}: ${message}`);
-  throw new Error(`Gemini API: ${message} (${code})`);
-}
+
         if (data.models) {
             for (let target of SENTINEL_CONFIG.priorityModels) {
                 const found = data.models.find(m => m.name.includes(target));
@@ -73,33 +68,18 @@ async function askSentinel(promptText, role) {
             })
         });
 
-        // 🛡 УЛУЧШЕННОЕ САМОЛЕЧЕНИЕ
-        if (response.status === 404 || response.status === 429) {
-            console.warn(`🚨 Ошибка ${response.status} на модели ${SENTINEL_CONFIG.currentModel}. Откат на стабильную версию...`);
-            
-            // Если 2.0 подвела, временно удаляем её из списка и ищем замену
-            SENTINEL_CONFIG.priorityModels = SENTINEL_CONFIG.priorityModels.filter(m => m !== SENTINEL_CONFIG.currentModel);
-            await sentinelHealthCheck(); 
-            
+        // САМОЛЕЧЕНИЕ: Если 404 (модель удалена), запускаем диагностику и пробуем снова
+        if (response.status === 404) {
+            console.error("🚨 Модель не найдена! Запуск экстренной регенерации...");
+            await sentinelHealthCheck();
             return askSentinel(promptText, role); // Рекурсивный перезапуск
         }
 
         const data = await response.json();
-        
-        // ПРОВЕРКА: Если ИИ вернул пустой ответ или ошибку в JSON
-        if (!data.candidates || !data.candidates[0]) {
-            throw new Error("Пустой ответ от API");
-        }
-
         const content = data.candidates[0].content.parts[0].text;
         return JSON.parse(content.replace(/```json|```/g, "").trim());
     } catch (e) {
         console.error("❌ SENTINEL CRITICAL ERROR:", e);
-        // Последний шанс: если всё упало, пробуем принудительно flash-latest
-        if (SENTINEL_CONFIG.currentModel !== "gemini-flash-latest") {
-             SENTINEL_CONFIG.currentModel = "gemini-flash-latest";
-             return askSentinel(promptText, role);
-        }
         return null;
     }
 }
