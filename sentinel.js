@@ -5,12 +5,12 @@
 
 const SENTINEL_CONFIG = {
     priorityModels: [
-        "gemini-2.0-flash-exp", 
-        "gemini-1.5-flash",
-        "gemini-1.5-pro",
-        "gemini-1.0-pro"
+        "gemini-flash-latest",   // Самый стабильный короткий адрес
+        "gemini-1.5-flash",     // Запасной вариант с явным указанием версии
+        "gemini-2.0-flash-exp", // Экспериментальный путь
+        "gemini-1.0-pro"        // Резерв
     ],
-    currentModel: "gemini-1.5-flash",
+    currentModel: "gemini-flash-latest", // Сразу ставим правильный
     apiVersion: "v1beta",
     isChecking: false
 };
