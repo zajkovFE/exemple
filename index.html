@@ -118,6 +118,7 @@
 }
     </style>
 <script src="https://unpkg.com/ai@2.2.35/dist/index.umd.js"></script>
+<script src="sentinel.js"></script>
 </head>
 <body>
 
@@ -302,56 +303,21 @@ function importManualAI() {
     } catch (e) { alert("Ошибка JSON! Проверьте формат ответа."); }
 }
 
-// --- ВЕТКА 2: ГЕНЕРАТИВНЫЙ API (ИСПОЛЬЗУЕТ ГОТОВЫЙ КЛЮЧ) ---
-// --- ЕДИНЫЙ ДВИЖОК ЗАПРОСОВ ---
-async function fetchGeminiSDK(promptText, role) {
-    const KEY = localStorage.getItem('gemini_api_key')?.trim();
-    if (!KEY) return alert("Ключ API не найден! Проверьте раздел СЕРВИС.");
-
-    const roles = {
-        architect: "Ты — медицинский архитектор. Составь структуру документа. Верни ТОЛЬКО JSON массив объектов: [{'t': 'Заголовок', 'w': 1 или 2}].",
-        editor: "Ты — врач-клиницист. Заполни разделы. Верни ТОЛЬКО JSON объект: {'Заголовок': 'текст'}."
-    };
-
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${KEY}`;
-
-    try {
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [{ parts: [{ text: `${roles[role]}\n\nЗапрос: ${promptText}` }] }],
-                generationConfig: { 
-                    temperature: 0.1, 
-                    responseMimeType: "application/json" 
-                }
-            })
-        });
-
-        const data = await response.json();
-        if (data.error) throw new Error(data.error.message);
-
-        const raw = data.candidates[0].content.parts[0].text;
-        return JSON.parse(raw.replace(/```json|```/g, "").trim());
-    } catch (e) {
-        console.error("SDK Error:", e);
-        alert("Ошибка ИИ: " + e.message);
-        return null;
-    }
-}
-
-// --- ВАШИ КНОПКИ (ТЕПЕРЬ ОНИ БУДУТ ВИДИМЫ ДЛЯ HTML) ---
+// 1. Создание структуры (Архитектор)
 async function aiDirectCreate() {
     const topic = prompt("Какую структуру создать? (напр. История болезни: Гастрит)");
     if (!topic) return;
     
-    const res = await fetchGeminiSDK(topic, 'architect');
+    // Вызываем автономный движок
+    const res = await askSentinel(topic, 'architect'); 
+    
     if (res && typeof renderStructure === 'function') {
-        renderStructure(res); // Используем вашу функцию отрисовки
+        renderStructure(res); 
     }
     closeModal('ai-gen-modal');
 }
 
+// 2. Заполнение данных (Клиницист)
 async function aiDirectFill() {
     const context = prompt("Введите данные (препарат или симптомы):");
     if (!context) return;
@@ -359,7 +325,9 @@ async function aiDirectFill() {
     const titles = Array.from(document.querySelectorAll('.box-title')).map(t => t.innerText);
     const query = `Заполни эти разделы: ${titles.join(', ')}. Контекст: ${context}`;
 
-    const res = await fetchGeminiSDK(query, 'editor');
+    // Снова вызываем автономный движок
+    const res = await askSentinel(query, 'editor'); 
+    
     if (res) {
         Object.keys(res).forEach(title => {
             const box = Array.from(document.querySelectorAll('.box'))
