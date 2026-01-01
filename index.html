@@ -122,11 +122,70 @@
     <script src="render-structure.js"></script>
     <script src="storage.js"></script>
 </head>
+    <div class="modal" id="universal-ai-modal">
+    <h3>🧠 Универсальный Интеллектуальный Ассистент</h3>
+    <p style="font-size: 11px; color: #666; margin-bottom: 15px;">
+        Задайте любой вопрос: от истории Шумера до техносферной безопасности. Выберите роль эксперта для более точного ответа.
+    </p>
+    
+    <div style="margin-bottom: 15px;">
+        <label style="display: block; margin-bottom: 5px; font-weight: bold;">Выберите роль эксперта:</label>
+        <select id="ai-role-select" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
+            <option value="general">Общий эксперт</option>
+            <option value="historian">Историк</option>
+            <option value="scientist">Учёный</option>
+            <option value="philosopher">Философ</option>
+            <option value="safety_engineer">Инженер безопасности</option>
+        </select>
+    </div>
+    
+    <div style="margin-bottom: 15px;">
+        <label style="display: block; margin-bottom: 5px; font-weight: bold;">Контекст (для историков/учёных):</label>
+        <input type="text" id="ai-context-input" placeholder="напр. 'Древний Шумер', 'квантовая физика'" 
+               style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
+    </div>
+    
+    <div style="margin-bottom: 15px;">
+        <label style="display: block; margin-bottom: 5px; font-weight: bold;">Ваш вопрос:</label>
+        <textarea id="ai-question-textarea" 
+                  style="width: 100%; height: 120px; padding: 10px; border-radius: 4px; border: 1px solid #ddd; 
+                         font-family: Arial, sans-serif; font-size: 14px;"
+                  placeholder="Например: 'Вы — историк, специализирующийся на изучении Древнего Шумера. Дайте понятие об основной письменной культуре и идеомаграфических элементах'"></textarea>
+    </div>
+    
+    <div style="margin-bottom: 15px;">
+        <label style="display: block; margin-bottom: 5px; font-weight: bold;">Ответ ИИ:</label>
+        <div id="ai-response-container" 
+             style="width: 100%; min-height: 200px; padding: 15px; border: 1px solid #ddd; border-radius: 4px; 
+                    background: #f9f9f9; overflow-y: auto; line-height: 1.6; font-family: Georgia, serif;">
+            <span style="color: #999;">Здесь появится ответ ИИ...</span>
+        </div>
+    </div>
+    
+    <div style="display: flex; gap: 10px;">
+        <button class="btn-ai" style="flex: 3;" onclick="askUniversalAssistant()">Отправить запрос</button>
+        <button onclick="clearAIResponse()" style="background:#ccc; color:black; flex: 1;">Очистить</button>
+    </div>
+    
+    <button onclick="closeModal('universal-ai-modal')" 
+            style="background:#e74c3c; color:white; width:100%; margin-top:15px;">
+        Закрыть окно
+    </button>
+    
+    <div style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 4px; font-size: 12px;">
+        <strong>💡 Советы по использованию:</strong><br>
+        • Для исторических вопросов укажите период и регион в "Контексте"<br>
+        • Для научных тем — конкретную дисциплину<br>
+        • Чем точнее вопрос — тем качественнее ответ<br>
+        • Максимальная длина ответа: ~1500 слов
+    </div>
+</div>
 <body>
 
 <div class="toolbar">
    <div class="tool-group">
-    <h4>🤖 ИИ-АССИСТЕНТ</h4>
+    <h4>🤖 ИИ-Ассистен</h4>
+    <button onclick="openUniversalAI()" style="background:#2c3e50; width:100%">🧠 Интеллектуальный ассистент</button>
     <button onclick="openModal('ai-manual-modal')" style="background:#34495e">✍️ РУЧНОЙ JSON</button>
     <button onclick="openModal('ai-gen-modal')" style="background:#9b59b6">✨ ГЕНЕРАТОР (API)</button>
 </div>
@@ -282,7 +341,63 @@
 
     function openModal(id) { document.getElementById(id).style.display = 'block'; }
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+// УНИВЕРСАЛЬНЫЙ ИИ-АССИСТЕНТ
+function openUniversalAI() {
+    document.getElementById('ai-response-container').innerHTML = '<span style="color: #999;">Здесь появится ответ ИИ...</span>';
+    document.getElementById('ai-question-textarea').value = '';
+    document.getElementById('ai-context-input').value = '';
+    openModal('universal-ai-modal');
+}
 
+function clearAIResponse() {
+    document.getElementById('ai-response-container').innerHTML = '<span style="color: #999;">Здесь появится ответ ИИ...</span>';
+    document.getElementById('ai-question-textarea').value = '';
+}
+
+async function askUniversalAssistant() {
+    const question = document.getElementById('ai-question-textarea').value.trim();
+    const role = document.getElementById('ai-role-select').value;
+    const context = document.getElementById('ai-context-input').value.trim();
+    
+    if (!question) {
+        alert("Пожалуйста, задайте вопрос");
+        return;
+    }
+    
+    const responseContainer = document.getElementById('ai-response-container');
+    responseContainer.innerHTML = '<div style="text-align: center; padding: 20px;"><div style="display: inline-block; width: 20px; height: 20px; border: 3px solid #3498db; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite;"></div></div>';
+    
+    try {
+        const response = await askUniversalAI(question, role, context);
+        
+        if (response) {
+            // Форматируем ответ для лучшей читаемости
+            let formattedResponse = response
+                .replace(/\n{3,}/g, '\n\n') // Убираем лишние переносы
+                .replace(/^(#+) (.*)$/gm, '<strong>$2</strong>') // Заголовки
+                .replace(/(\d+)\. /g, '<strong>$1.</strong> ') // Нумерованные списки
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Жирный текст
+                .replace(/\*(.*?)\*/g, '<em>$1</em>'); // Курсив
+            
+            // Добавляем источник для исторических/научных ответов
+            if (role === 'historian' || role === 'scientist') {
+                formattedResponse += `<div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee; font-size: 12px; color: #666;">
+                    <strong>📝 Примечание:</strong> Этот ответ сгенерирован ИИ на основе общедоступных знаний. Для научной работы проверяйте информацию по авторитетным источникам.
+                </div>`;
+            }
+            
+            responseContainer.innerHTML = `<div style="line-height: 1.7; font-family: Georgia, serif;">${formattedResponse}</div>`;
+            
+            // Автопрокрутка вниз
+            responseContainer.scrollTop = responseContainer.scrollHeight;
+        } else {
+            responseContainer.innerHTML = '<span style="color: #e74c3c;">❌ Не удалось получить ответ от ИИ. Попробуйте переформулировать вопрос.</span>';
+        }
+    } catch (e) {
+        console.error("Ошибка универсального ИИ:", e);
+        responseContainer.innerHTML = `<span style="color: #e74c3c;">❌ Ошибка: ${e.message}</span>`;
+    }
+}
    // --- ЛОГИКА ИИ ...у меня нет сил...ай эм тайред..а унего есть логика...
     // --- ВЕТКА 1: РУЧНОЙ JSON (БЕЗ ИЗМЕНЕНИЙ ЛОГИКИ)...мы приручили дракона, вперед и с канделябром
 function genManualPrompt() {
