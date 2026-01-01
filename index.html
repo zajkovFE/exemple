@@ -304,43 +304,6 @@ function importManualAI() {
     } catch (e) { alert("Ошибка JSON! Проверьте формат ответа."); }
 }
 
-// --- ВЕТКА 2: ГЕНЕРАТИВНЫЙ API (ИСПОЛЬЗУЕТ ГОТОВЫЙ КЛЮЧ) ---
-// --- ЕДИНЫЙ ДВИЖОК ЗАПРОСОВ ---
-async function fetchGeminiSDK(promptText, role) {
-    const KEY = localStorage.getItem('gemini_api_key')?.trim();
-    if (!KEY) return alert("Ключ API не найден! Проверьте раздел СЕРВИС.");
-
-    const roles = {
-        architect: "Ты — медицинский архитектор. Составь структуру документа. Верни ТОЛЬКО JSON массив объектов: [{'t': 'Заголовок', 'w': 1 или 2}].",
-        editor: "Ты — врач-клиницист. Заполни разделы. Верни ТОЛЬКО JSON объект: {'Заголовок': 'текст'}."
-    };
-
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${KEY}`;
-
-    try {
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [{ parts: [{ text: `${roles[role]}\n\nЗапрос: ${promptText}` }] }],
-                generationConfig: { 
-                    temperature: 0.1, 
-                    responseMimeType: "application/json" 
-                }
-            })
-        });
-
-        const data = await response.json();
-        if (data.error) throw new Error(data.error.message);
-
-        const raw = data.candidates[0].content.parts[0].text;
-        return JSON.parse(raw.replace(/```json|```/g, "").trim());
-    } catch (e) {
-        console.error("SDK Error:", e);
-        alert("Ошибка ИИ: " + e.message);
-        return null;
-    }
-}
 
 // --- ВАШИ КНОПКИ (ТЕПЕРЬ ОНИ БУДУТ ВИДИМЫ ДЛЯ HTML) ---
 async function aiDirectCreate() {
