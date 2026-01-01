@@ -55,7 +55,11 @@ async function sentinelHealthCheck() {
 }
 
 // 2. ЯДРО ЗАПРОСОВ (РИМСКИЙ БЕТОН)
-async function askSentinel(promptText, role) {
+async function askSentinel(promptText, role, attempt = 1){
+    const MAX_ATTEMPTS = 2;
+if (attempt > MAX_ATTEMPTS) {
+  throw new Error("❌ SENTINEL: Превышено число попыток (модели исчерпаны)");
+}
     const KEY = localStorage.getItem('gemini_api_key')?.trim();
     if (!KEY) throw new Error("API Key missing");
 
@@ -91,7 +95,7 @@ async function askSentinel(promptText, role) {
             SENTINEL_CONFIG.priorityModels = SENTINEL_CONFIG.priorityModels.filter(m => m !== SENTINEL_CONFIG.currentModel);
             await sentinelHealthCheck(); 
             
-            return askSentinel(promptText, role); // Рекурсивный перезапуск
+            return askSentinel(promptText, role, attempt + 1); // Рекурсивный перезапуск
         }
 
         const data = await response.json();
@@ -118,7 +122,7 @@ async function askSentinel(promptText, role) {
         if (SENTINEL_CONFIG.currentModel !== "gemini-flash-latest") {
             console.log("🔁 Принудительный fallback на gemini-flash-latest");
             SENTINEL_CONFIG.currentModel = "gemini-flash-latest";
-            return askSentinel(promptText, role);
+        return askSentinel(promptText, role);
         }
 
         return null;
