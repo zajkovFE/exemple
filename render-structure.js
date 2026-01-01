@@ -1,5 +1,5 @@
 // render-structure.js
-// === ОТРИСОВКА СТРУКТУРЫ ОТ ИИ-АРХИТЕКТОРА ===
+
 function renderStructure(data) {
   if (!Array.isArray(data) || data.length === 0) {
     alert("ИИ вернул пустую структуру. Попробуйте уточнить запрос.");
@@ -12,25 +12,35 @@ function renderStructure(data) {
     canvas.innerHTML = '';
   }
 
-  data.forEach(item => {
-    const row = document.querySelector('.form-row:last-child') || addNewRow();
-    
-    const box = document.createElement('div');
-    box.className = 'box';
-    box.style.flex = item.w || 1;
+ let currentRow = null;
+let currentRowWidth = 0;
 
-    box.innerHTML = `
-      <div class="box-ctrl">
-        <button class="ctrl-btn" onclick="resizeBox(this, 0.3)">↔️</button>
-        <input type="color" class="color-pick" onchange="this.parentElement.parentElement.style.background=this.value">
-        <button class="ctrl-btn" style="background:red" onclick="this.closest('.box').remove()">❌</button>
-      </div>
-      <div class="box-title" contenteditable="true">${item.t || 'Без заголовка'}</div>
-      <div class="box-content" contenteditable="true"></div>
-    `;
+data.forEach(item => {
+  const width = item.w || 1; // по умолчанию 1
 
-    row.appendChild(box);
-  });
+  // Если нет строки или добавление блока превысит лимит (2)
+  if (!currentRow || currentRowWidth + width > 2) {
+    currentRow = addNewRow();
+    currentRowWidth = 0; // сброс счётчика ширины
+  }
 
-  console.log("✅ Структура из ИИ отрисована:", data.length, "блоков");
+  // --- создание блока (всё как было) ---
+  const box = document.createElement('div');
+  box.className = 'box';
+  box.style.flex = width; // используем width, а не item.w
+
+  box.innerHTML = `
+    <div class="box-ctrl">
+      <button class="ctrl-btn" onclick="resizeBox(this, 0.3)">↔️</button>
+      <input type="color" class="color-pick" onchange="this.parentElement.parentElement.style.background=this.value">
+      <button class="ctrl-btn" style="background:red" onclick="this.closest('.box').remove()">❌</button>
+    </div>
+    <div class="box-title" contenteditable="true">${item.t || 'Без заголовка'}</div>
+    <div class="box-content" contenteditable="true"></div>
+  `;
+
+  currentRow.appendChild(box);
+  currentRowWidth += width; // накапливаем ширину строки
+});
+  console.log(`✅ Структура из ИИ отрисована: ${data.length} блоков, распределённых по ${canvas.querySelectorAll('.form-row').length} строкам`);
 }
