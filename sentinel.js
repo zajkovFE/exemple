@@ -1,5 +1,7 @@
-// SENTINEL AI ENGINE (v2.0) - "Roman Concrete" Edition
- 
+/**
+ * SENTINEL AI ENGINE (v2.0) - "Roman Concrete" Edition
+ * Автономный модуль управления ИИ для Pharma-Architect
+ */
 
 const SENTINEL_CONFIG = {
     priorityModels: [
