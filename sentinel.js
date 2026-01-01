@@ -76,8 +76,12 @@ async function askSentinel(promptText, role) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 contents: [{ parts: [{ text: `${systemInstructions[role]}\n\nКонтекст: ${promptText}` }] }],
-                generationConfig: { temperature: 0.1, responseMimeType: "application/json" }
-            })
+                generationConfig: {
+  temperature: 0.1,
+  maxOutputTokens: 1000,
+  topP: 0.95,
+  topK: 40
+})
         });
 
         // 🛡 УЛУЧШЕННОЕ САМОЛЕЧЕНИЕ
