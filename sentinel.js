@@ -8,6 +8,7 @@ async function askOpenAI(prompt, role) {
     editor: "Ты — врач. Верни ТОЛЬКО валидный JSON-объект: {\"Заголовок\":\"Текст\"}. Никаких пояснений."
   };
 
+  // обращение к богу..шутка, только к опен сурс...помоли...надеемся на чудо, работай
   const response = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: {
@@ -20,7 +21,7 @@ async function askOpenAI(prompt, role) {
         { role: "system", content: systemPrompt[role] },
         { role: "user", content: prompt }
       ],
-      response_format: { type: "json_object" }, // ← ГЛАВНОЕ: гарантирует JSON
+      response_format: { type: "json_object" },
       temperature: 0.1,
       max_tokens: 500
     })
