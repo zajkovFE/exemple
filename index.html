@@ -141,14 +141,14 @@
         <button class="btn-add" style="background:#2980b9" onclick="addBoxWithTitle()">📦 Блок</button>
     </div>
    
-    <div class="tool-group">
-        <h4>💾 Хранение</h4>
-        <button id="btn-save-new" class="btn-save" onclick="startSaveSequence()">📁 В базу браузера</button>
-        <button id="btn-update" onclick="updateExistingRecord()">💾 СОХРАНИТЬ ПРАВКИ</button>
-        <button id="btn-save-as" onclick="startSaveSequence()">📝 КАК НОВЫЙ (КОПИЯ)</button>
-        <button style="background:#95a5a6" onclick="resetToNew()">🆕 Очистить</button>
-        <button style="background:#34495e" onclick="downloadProject()">💾 Скачать .html</button>
-    </div>
+   <div class="tool-group">
+    <h4>💾 Хранение</h4>
+    <button id="btn-save-new" class="btn-save" onclick="startSaveSequence()">📁 В базу браузера</button>
+    <button id="btn-update" onclick="updateExistingRecord()">💾 СОХРАНИТЬ ПРАВКИ</button>
+    <button id="btn-save-as" onclick="saveAsNewCopy()">📝 КАК НОВЫЙ (КОПИЯ)</button>
+    <button style="background:#95a5a6" onclick="resetToNew()">🆕 Очистить</button>
+    <button style="background:#34495e" onclick="downloadProject()">💾 Скачать .html</button>
+</div>
 <div class="tool-group">
     <h4>📂 Файл</h4>
     <button style="background:#34495e" onclick="document.getElementById('import-file').click()">📥 Импорт HTML</button>
