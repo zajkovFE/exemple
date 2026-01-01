@@ -148,6 +148,30 @@ function loadFromDB(index) {
   updateToolbar(); 
   window.scrollTo(0,0);
 }
+// Загружает протокол по индексу
+function loadProtocol(index) {
+  const db = JSON.parse(localStorage.getItem('pharmaDB') || '[]');
+  if (index < 0 || index >= db.length) {
+    console.error(`❌ Запись с индексом ${index} не найдена`); 
+    return false;
+  }
+  
+  // Гарантируем, что холст существует
+  const canvas = document.getElementById('form-canvas');
+  if (!canvas) {
+    console.error('❌ Элемент #form-canvas не найден в DOM');
+    return false;
+  }
+  
+  canvas.innerHTML = db[index].html;
+  console.log(`✅ Загружена запись №${index}: ${db[index].name}`);
+  return true;
+}
+
+// Экспортируем в глобальную область видимости
+if (typeof window !== 'undefined') {
+  window.loadProtocol = loadProtocol;
+}
 // Экспорт в HTML (для кнопки "💾 Скачать .html")
 function downloadProject() {
   ensureFNameID();
