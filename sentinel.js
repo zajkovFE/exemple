@@ -17,7 +17,7 @@ async function askSentinel(promptText, role, attempt = 1) {
     editor: "Ты — врач. Верни ТОЛЬКО JSON объект: {'Заголовок': 'Текст наполнения'}."
   };
 
-  const url = `https://generativelanguage.googleapis.com/${SENTINEL_CONFIG.apiVersion}/models/${SENTINEL_CONFIG.currentModel}:generateContent?key=${KEY}`;
+ const url = `https://generativelanguage.googleapis.com/${SENTINEL_CONFIG.apiVersion}/models/${SENTINEL_CONFIG.currentModel}:generateContent?key=${KEY}`;
 
   try {
     const response = await fetch(url, {
