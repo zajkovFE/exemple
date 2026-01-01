@@ -464,74 +464,50 @@ function updateToolbar() {
     }
 
     function updateExistingRecord() {
-        const db = JSON.parse(localStorage.getItem('pharmaDB') || '[]');
-        if (confirm(`Обновить текущую запись?`)) {
-            db[currentEditingIndex].html = document.getElementById('form-canvas').innerHTML;
-            db[currentEditingIndex].name = document.getElementById('f-name').innerText.trim() || 'Без названия';
-            localStorage.setItem('pharmaDB', JSON.stringify(db));
-            renderDB();
-            alert("Обновлено!");
-        }
+  if (currentEditingIndex === null) {
+    alert("❌ Нет записи для обновления");
+    return;
+  }
+  
+  if (confirm(`Обновить текущую запись?`)) {
+    // Используем надежное обновление из storage.js
+    if (updateProtocol(currentEditingIndex)) {
+      renderDB();
+      alert("✅ Запись успешно обновлена!");
+    } else {
+      alert("❌ Ошибка при обновлении записи");
     }
+  }
+}
 
-    function startSaveSequence() {
-        const db = JSON.parse(localStorage.getItem('pharmaDB') || '[]');
-        let selectedGroup = "";
-        const title = document.getElementById('save-step-title');
-        const options = document.getElementById('save-options');
-        const input = document.getElementById('save-custom-input');
-        const confirmBtn = document.getElementById('save-confirm-btn');
-
-        title.innerText = "Выберите Группу";
-        const groups = [...new Set(db.map(item => item.group))];
-        const renderOpts = (list, callback) => {
-            options.innerHTML = "";
-            list.forEach(opt => {
-                const b = document.createElement('button'); b.className = "opt-btn"; b.innerText = opt;
-                b.onclick = () => { input.value = opt; callback(opt); };
-                options.appendChild(b);
-            });
-        };
-
-        const finalize = (sub) => {
-            db.push({
-                name: document.getElementById('f-name').innerText.trim() || 'Без названия',
-                group: selectedGroup, subgroup: sub,
-                html: document.getElementById('form-canvas').innerHTML
-            });
-            localStorage.setItem('pharmaDB', JSON.stringify(db));
-            currentEditingIndex = db.length - 1;
-            updateToolbar(); renderDB(); closeModal('save-modal');
-        };
-
-        const askSub = () => {
-            title.innerText = "Выберите Подгруппу"; input.value = "";
-            const subs = [...new Set(db.filter(i => i.group === selectedGroup).map(i => i.subgroup))];
-            renderOpts(subs, (val) => finalize(val));
-            confirmBtn.onclick = () => finalize(input.value.trim());
-        };
-
-        renderOpts(groups, (val) => { selectedGroup = val; askSub(); });
-        openModal('save-modal');
-        confirmBtn.onclick = () => { selectedGroup = input.value.trim(); if(selectedGroup) askSub(); };
-    }
-
-
+    
     function loadFromDB(index) {
-        const db = JSON.parse(localStorage.getItem('pharmaDB'));
-        document.getElementById('form-canvas').innerHTML = db[index].html;
-        currentEditingIndex = index;
-        updateToolbar(); window.scrollTo(0,0);
+  // Используем надежную загрузку из storage.js
+  if (loadProtocol(index)) {
+    currentEditingIndex = index;
+    updateToolbar();
+    window.scrollTo(0,0);
+  } else {
+    alert("❌ Ошибка при загрузке записи");
+  }
+}
+   function deleteFromDB(index) {
+  if(confirm("Удалить запись?")) {
+    // Используем надежное удаление из storage.js
+    if (deleteProtocol(index)) {
+      renderDB();
+      // Если удалили текущую запись — сбрасываем индекс
+      if (currentEditingIndex === index) {
+        currentEditingIndex = null;
+        updateToolbar();
+      } else if (currentEditingIndex > index) {
+        currentEditingIndex--;
+      }
+    } else {
+      alert("❌ Ошибка при удалении записи");
     }
-
-    function deleteFromDB(index) {
-        if(confirm("Удалить?")) {
-            let db = JSON.parse(localStorage.getItem('pharmaDB'));
-            db.splice(index, 1);
-            localStorage.setItem('pharmaDB', JSON.stringify(db));
-            renderDB();
-        }
-    }
+  }
+}
 
     function filterDB() {
     const q = document.getElementById('db-search').value.toLowerCase();
