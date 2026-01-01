@@ -1,18 +1,18 @@
-// SENTINEL AI ENGINE (v2.7) - Qwen OpenRouter Edition (FIXED)
+// SENTINEL AI ENGINE (v2.8) - Qwen OpenRouter Edition (ПОЛНОСТЬЮ ИСПРАВЛЕНО)
 
 const SENTINEL_CONFIG = {
     model: "qwen/qwen-2.5-72b-instruct", 
-    apiEndpoint: "https://openrouter.ai/api/v1/chat/completions" // ИСПРАВЛЕНО: убраны лишние пробелы
+    apiEndpoint: "https://openrouter.ai/api/v1/chat/completions" // ИСПРАВЛЕНО: убраны пробелы!
 };
 
-// УНИВЕРСАЛЬНЫЙ ЗАПРОС К ИИ (ЗАМЕНЯЕТ СТАРЫЕ ФУНКЦИИ)
+// УНИВЕРСАЛЬНЫЙ ЗАПРОС К ИИ
 async function askSentinel(promptText, role = 'general', context = '') {
     console.log("🚀 Запуск ИИ-запроса:", { role, promptText, context });
     
     const KEY = localStorage.getItem('openrouter_api_key')?.trim();
-    if (!KEY) {
-        alert("🔑 API ключ OpenRouter не найден! Нажмите 'СЕРВИС' → 'Ключ API'");
-        throw new Error("Missing OpenRouter API Key");
+    if (!KEY || KEY.length < 5) {
+        alert("🔑 API ключ OpenRouter не найден или невалиден! Нажмите 'СЕРВИС' → 'Ключ API'");
+        throw new Error("Missing or invalid OpenRouter API Key");
     }
 
     // СИСТЕМНЫЕ ИНСТРУКЦИИ ДЛЯ ВСЕХ РОЛЕЙ
@@ -58,25 +58,54 @@ async function askSentinel(promptText, role = 'general', context = '') {
         });
 
         const responseText = await response.text();
-        console.log("🔍 Сырой ответ от ИИ:", responseText.substring(0, 300) + '...');
+        console.log("🔍 Сырой ответ от ИИ (первые 500 символов):", responseText.substring(0, 500) + '...');
         
         if (!response.ok) {
+            console.error(`❌ Ошибка API ${response.status}:`, responseText);
             try {
                 const errorData = JSON.parse(responseText);
                 throw new Error(errorData.error?.message || `HTTP ${response.status}`);
             } catch (e) {
-                throw new Error(`Сервер вернул ошибку: ${responseText.substring(0, 200)}`);
+                throw new Error(`Сервер вернул ошибку ${response.status}: ${responseText.substring(0, 300)}`);
             }
         }
 
         const data = JSON.parse(responseText);
+        console.log("📊 Полная структура ответа:", data);
         
-        if (!data?.choices?.[0]?.message?.content) {
-            throw new Error("Ответ ИИ не содержит данных");
+        // Попытка найти содержимое в разных форматах ответа
+        let content = null;
+        
+        // Формат OpenAI (стандартный)
+        if (data.choices?.[0]?.message?.content) {
+            content = data.choices[0].message.content.trim();
+        } 
+        // Формат OpenRouter
+        else if (data.data?.choices?.[0]?.message?.content) {
+            content = data.data.choices[0].message.content.trim();
+        }
+        // Формат некоторых других API
+        else if (data.message?.content) {
+            content = data.message.content.trim();
+        }
+        // Еще один возможный формат
+        else if (data.result) {
+            content = data.result.trim();
+        }
+        // Если ничего не сработало, пытаемся найти любой текст
+        else {
+            const stringData = JSON.stringify(data);
+            const textMatch = stringData.match(/"content":"([^"]+)"/);
+            if (textMatch && textMatch[1]) {
+                content = textMatch[1].replace(/\\n/g, '\n').trim();
+            }
+        }
+        
+        if (!content) {
+            throw new Error("Ответ ИИ не содержит данных или имеет неподдерживаемый формат");
         }
 
-        const content = data.choices[0].message.content.trim();
-        console.log("📦 Сырой контент ИИ:", content.substring(0, 200) + '...');
+        console.log("📦 Сырой контент ИИ (первые 300 символов):", content.substring(0, 300) + '...');
 
         // Для медицинских ролей - строгий JSON
         if (role === 'architect' || role === 'editor') {
@@ -124,7 +153,7 @@ function parseStrictJSON(content) {
     console.log("🧹 Очищенный JSON:", cleanJson);
 
     if (!cleanJson || (cleanJson[0] !== '[' && cleanJson[0] !== '{')) {
-        throw new Error(`Некорректный формат JSON. Ответ: ${content.substring(0, 200)}`);
+        throw new Error(`Некорректный формат JSON. Ответ: ${content.substring(0, 300)}`);
     }
 
     return JSON.parse(cleanJson);
@@ -137,10 +166,12 @@ async function _askMedicalAI(promptText, role) {
 }
 
 // ЭКСПОРТИРУЕМ ФУНКЦИИ
-window.askSentinel = askSentinel;
-window._askMedicalAI = _askMedicalAI;
+if (typeof window !== 'undefined') {
+    window.askSentinel = askSentinel;
+    window._askMedicalAI = _askMedicalAI;
+}
 
-console.log("✅ SENTINEL AI ENGINE загружен. Версия: v2.7 (СОВМЕСТИМОСТЬ)"); 
+console.log("✅ SENTINEL AI ENGINE загружен. Версия: v2.8 (ПОЛНОСТЬЮ ИСПРАВЛЕНО)"); 
 console.log("💡 Доступные роли:", Object.keys({
     architect: '',
     editor: '',
@@ -150,3 +181,4 @@ console.log("💡 Доступные роли:", Object.keys({
     philosopher: '',
     safety_engineer: ''
 }).join(', '));
+console.log("🔧 Для отладки: проверьте консоль на наличие ошибок при запросах к ИИ");
