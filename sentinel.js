@@ -1,944 +1,108 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <title>Фарма-Архитектор v13.2 (Original + Count)</title>
-<link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIkZhcmltYS1BcmNoaXRlY3QiLAogICJzaG9ydF9uYW1lIjogIkZhcmltYSIsCiAgInN0YXJ0X3VybCI6ICIuIiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjZjBmMmY1IiwKICAidGhlbWVfY29sb3IiOiAiIzJjM2U1MCIsCiAgImljb25zIjogWwogICAgewogICAgICAic3JjIjogImh0dHBzOi8vY2RuLWljb25zLXBuZy5mbGF0aWNvbi5jb20vNTEyLzI4NjQvMjg2NDcwMC5wbmciLAogICAgICAic2l6ZXMiOiAiNTEyeDUxMiIsCiAgICAgICJ0eXBlIjogImltYWdlL3BuZyIKICAgIH0KICBdCn0=">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
-    <style>
-        :root { 
-            --main-bg: #f0f2f5; --border-color: #000; --accent: #3498db; 
-            --danger: #e74c3c; --success: #27ae60; --ai-color: #9b59b6; --panel-bg: #ffffff;
-            --update-bg: #d35400; --copy-bg: #8e44ad;
-        }
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--main-bg); padding: 15px; margin-bottom: 50px; }
-
-        .toolbar { 
-            max-width: 1200px; margin: 0 auto 20px; background: var(--panel-bg); padding: 15px; 
-            border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            display: flex; flex-wrap: wrap; gap: 15px; position: sticky; top: 10px; z-index: 1000;
-        }
-        .tool-group { border-right: 1px solid #eee; padding-right: 15px; display: flex; flex-direction: column; gap: 5px; }
-        .tool-group:last-child { border: none; }
-        .tool-group h4 { margin: 0 0 5px 0; font-size: 10px; text-transform: uppercase; color: #95a5a6; }
-        
-        button { cursor: pointer; border: none; border-radius: 4px; padding: 7px 12px; font-size: 11px; font-weight: bold; color: white; transition: 0.2s; }
-        .btn-mode { background: #2c3e50; }
-        .btn-ai { background: var(--ai-color); }
-        .btn-add { background: var(--accent); }
-        .btn-save { background: var(--success); }
-        
-        #btn-update { background: var(--update-bg); display: none; }
-        #btn-save-as { background: var(--copy-bg); display: none; }
-
-        .workspace { background: white; max-width: 1050px; margin: 0 auto; padding: 40px; border: 2px solid #000; min-height: 1100px; position: relative; box-shadow: 0 0 30px rgba(0,0,0,0.05); }
-        .form-row { display: flex; gap: 10px; margin-bottom: 10px; min-height: 60px; }
-        .design-mode .form-row { border: 1px dashed #ccc; padding: 5px; }
-
-        .box { border: 1px solid var(--border-color); padding: 10px; position: relative; background: white; display: flex; flex-direction: column; flex: 1; min-width: 50px; }
-        .box-title { font-weight: bold; font-size: 10px; text-transform: uppercase; margin-bottom: 5px; border-bottom: 1px solid #eee; }
-        .box-content { flex-grow: 1; min-height: 25px; outline: none; font-size: 13px; line-height: 1.5; }
-
-        .box-ctrl { display: none; position: absolute; top: -25px; right: 0; background: #333; padding: 3px; border-radius: 4px; z-index: 100; gap: 3px; }
-        .design-mode .box-ctrl { display: flex; }
-        .ctrl-btn { background: #555; font-size: 9px; padding: 2px 5px; color: #fff; border: none; cursor: pointer; }
-        .color-pick { width: 24px; height: 18px; border: 1px solid #fff; cursor: pointer; padding: 0; background: none; vertical-align: middle; }
-
-        .db-container { max-width: 1050px; margin: 30px auto; background: white; padding: 20px; border-radius: 10px; border: 1px solid #ddd; }
-        .db-group-title { background: #ecf0f1; padding: 8px; margin: 10px 0; font-weight: bold; border-radius: 4px; cursor: pointer; display: flex; justify-content: space-between; font-size: 14px; align-items: center; }
-        
-        /* Стиль счетчика */
-        .db-counter { background: var(--accent); color: white; padding: 1px 7px; border-radius: 10px; font-size: 10px; margin-left: auto; margin-right: 10px; }
-
-        .db-item { display: flex; justify-content: space-between; padding: 5px 20px; border-bottom: 1px solid #f9f9f9; align-items: center; font-size: 13px; }
-
-        .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 25px; border-radius: 15px; box-shadow: 0 0 50px rgba(0,0,0,0.5); z-index: 2000; width: 450px; }
-        .modal input, .modal textarea { width: 100%; margin: 10px 0; padding: 10px; box-sizing: border-box; border: 1px solid #ddd; border-radius: 5px; }
-        .opt-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; max-height: 150px; overflow-y: auto; padding: 5px; border: 1px inset #f9f9f9; }
-        .opt-btn { background:#f8f9fa; color:#2c3e50; border:1px solid #dee2e6; padding:6px 12px; cursor:pointer; font-size:12px; border-radius:4px; }
-
-      @media print { 
-            .toolbar, .box-ctrl, .ai-modal, .db-container { display: none !important; } 
-            body { background: white; padding: 0; } 
-            .workspace { border: 1px solid #000; width: 100%; max-width: none; box-shadow: none; margin: 0; padding: 10px; } 
-        }
-/* Адаптация под мобильные устройства (исправленная) */
-@media screen and (max-width: 768px) {
-    .toolbar { 
-        display: grid; /* Используем сетку вместо простого flex */
-        grid-template-columns: 1fr 1fr; /* Ровно две колонки */
-        gap: 8px;
-        padding: 10px;
-    }
-    
-    .tool-group { 
-        border-right: none !important; 
-        border-bottom: 1px solid #f0f2f5; 
-        padding: 5px !important;
-        margin: 0 !important;
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-    }
-
-    /* Первая группа (Протоколы) займет всю ширину, чтобы селектор был удобным */
-    .tool-group:first-child {
-        grid-column: span 2;
-    }
-
-    .tool-group h4 {
-        font-size: 10px;
-        margin-bottom: 4px;
-        text-align: center;
-    }
-
-    /* Кнопки теперь не огромные, а аккуратные */
-    button { 
-        padding: 12px 5px !important; 
-        font-size: 13px !important; 
-        margin: 2px 0 !important;
-        width: 100% !important;
-    }
-
-    #protocol-select {
-        height: 40px;
-        font-size: 15px !important;
-        width: 100%;
-    }
-
-    .workspace { 
-        padding: 5px !important; 
-        width: 100% !important;
-        margin: 0 !important;
-    }
-}
-    </style>
-<script src="https://unpkg.com/ai@2.2.35/dist/index.umd.js"></script>
-<script src="sentinel.js"></script>
-</head>
-<body>
-
-<div class="toolbar">
-   <div class="tool-group">
-    <h4>🤖 ИИ-АССИСТЕНТ</h4>
-    <button onclick="openModal('ai-manual-modal')" style="background:#34495e">✍️ РУЧНОЙ JSON</button>
-    <button onclick="openModal('ai-gen-modal')" style="background:#9b59b6">✨ ГЕНЕРАТОР (API)</button>
-</div>
-    
-    <div class="tool-group">
-        <h4>🎨 Режим</h4>
-        <button id="mode-toggle" class="btn-mode" onclick="toggleDesignMode()">🛠️ КОНСТРУКТОР: ВЫКЛ</button>
-    </div>
-    <div class="tool-group">
-        <h4>🧱 Блоки</h4>
-        <button class="btn-add" onclick="addNewRow()">➕ Строка</button>
-        <button class="btn-add" style="background:#2980b9" onclick="addBoxWithTitle()">📦 Блок</button>
-    </div>
-   
-    <div class="tool-group">
-        <h4>💾 Хранение</h4>
-        <button id="btn-save-new" class="btn-save" onclick="startSaveSequence()">📁 В базу браузера</button>
-        <button id="btn-update" onclick="updateExistingRecord()">💾 СОХРАНИТЬ ПРАВКИ</button>
-        <button id="btn-save-as" onclick="startSaveSequence()">📝 КАК НОВЫЙ (КОПИЯ)</button>
-        <button style="background:#95a5a6" onclick="resetToNew()">🆕 Очистить</button>
-        <button style="background:#34495e" onclick="downloadProject()">💾 Скачать .html</button>
-    </div>
-<div class="tool-group">
-    <h4>📂 Файл</h4>
-    <button style="background:#34495e" onclick="document.getElementById('import-file').click()">📥 Импорт HTML</button>
-    <input type="file" id="import-file" style="display:none" accept=".html" onchange="importHTML(this)">
-</div>
-        
-<div class="tool-group">
-    <h4>📦 База (JSON)</h4>
-    <button style="background:#27ae60" onclick="exportFullDB()">📤 Экспорт базы</button>
-    <button style="background:#2980b9" onclick="document.getElementById('import-db-file').click()">📥 Импорт базы</button>
-    <input type="file" id="import-db-file" style="display:none" accept=".json,application/json,text/plain" onchange="importFullDB(this)">
-</div>
-    
-    <div class="tool-group">
-        <h4>🖨️ Вывод</h4>
-        <button style="background:#e67e22" onclick="window.print()">📄 Печать в PDF</button>
-    </div>
-         <div class="tool-group">
-    <h4>📋 ШАБЛОНЫ</h4>
-    <select id="protocol-select" onchange="applyProtocol(this.value); this.value='';" 
-            style="padding: 10px; border-radius: 8px; border: 1px solid #3498db;">
-        <option value="">-- Выбрать --</option>
-        <option value="standart">💊 Стандарт</option>
-        <option value="emergency">🚨 Экстренный</option>
-        <option value="brief">📝 Краткий</option>
-    </select>
-</div>
-<div class="tool-group">
-    <h4>⚙️ СЕРВИС</h4>
-    <button onclick="manageApiKey()" style="background:#7f8c8d">🔑 Ключ ИИ</button>
-</div>
-    
-</div>
-
-<div class="workspace" id="form-canvas">
-    <div class="form-row">
-        <div class="box" style="flex: 2;">
-            <div class="box-ctrl">
-                <button class="ctrl-btn" onclick="resizeBox(this, 0.3)">↔️</button>
-                <input type="color" class="color-pick" onchange="this.parentElement.parentElement.style.background=this.value">
-                <button class="ctrl-btn" style="background:red" onclick="this.closest('.box').remove()">❌</button>
-            </div>
-            <div class="box-title" contenteditable="true">Название (RUS/LAT/Торг)</div>
-            <div class="box-content" contenteditable="true" id="f-name"></div>
-        </div>
-        <div class="box">
-            <div class="box-title" contenteditable="true">Синонимы / Группы</div>
-            <div class="box-content" contenteditable="true" id="f-syn"></div>
-        </div>
-    </div>
-</div>
-<div id="save-modal" class="modal">
-    <h3 id="save-step-title">Сохранение</h3>
-    <div id="save-options" class="opt-grid"></div>
-    <input type="text" id="save-custom-input" placeholder="Введите название...">
-    <div style="display: flex; gap: 10px; margin-top: 15px;">
-        <button class="btn-save" id="save-confirm-btn" style="flex: 1;">Далее</button>
-        <button onclick="closeModal('save-modal')" style="background:#ccc; color:black; flex: 1;">Отмена</button>
-    </div>
-</div>
-</div>
-<div class="db-container">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-        <h3 style="margin:0">📂 Ваша Фарма-База</h3>
-        <button id="btn-bulk-delete" style="background: var(--danger); display: none;" onclick="deleteSelected()">🗑️ Удалить выбранные</button>
-    </div>
-
-    <div style="margin-bottom: 15px; display: flex; gap: 10px; align-items: center;">
-        <span style="font-size: 12px; color: #666;">Сортировка групп:</span>
-        <select id="db-sort-mode" onchange="renderDB()" style="padding: 5px; border-radius: 5px; border: 1px solid #ddd; font-size: 12px; flex: 1;">
-            <option value="date-desc">🕒 По дате (новые сверху)</option>
-            <option value="date-asc">🕓 По дате (старые сверху)</option>
-            <option value="alpha">🔤 По алфавиту (А-Я)</option>
-            <option value="custom">✍️ Произвольно (Drag & Drop)</option>
-        </select>
-    </div>
-
-    <input type="text" id="db-search" placeholder="🔍 Быстрый поиск..." onkeyup="filterDB()" ...>
-    <div id="db-list"></div>
-</div>
-<div class="modal" id="ai-manual-modal">
-    <h3>✍️ Ручной ИИ (JSON)</h3>
-    <input type="text" id="ai-drug-manual" placeholder="Название препарата...">
-    <button class="btn-ai" style="width:100%; background:#34495e" onclick="genManualPrompt()">1. Копировать Промпт</button>
-    <textarea id="ai-import-manual" placeholder="Вставьте JSON ответ от ИИ сюда..."></textarea>
-    <button class="btn-save" style="width:100%" onclick="importManualAI()">2. Заполнить таблицу</button>
-    <button onclick="closeModal('ai-manual-modal')" style="background:#ccc; color:black; width:100%; margin-top:10px;">Закрыть</button>
-</div>
-
-<div class="modal" id="ai-gen-modal">
-    <h3>✨ Генеративный ИИ (API)</h3>
-    <p style="font-size: 11px; color: #666;">Использует ключ из раздела СЕРВИС</p>
-    
-    <button class="btn-ai" style="width:100%; margin-bottom:10px;" onclick="aiDirectCreate()">
-        📋 Создать структуру (Архитектор)
-    </button>
-    
-    <button class="btn-ai" style="width:100%; background:#8e44ad;" onclick="aiDirectFill()">
-        ✍️ Заполнить текущую (Клинический редактор)
-    </button>
-    
-    <button onclick="closeModal('ai-gen-modal')" style="background:#ccc; color:black; width:100%; margin-top:10px;">Закрыть</button>
-</div>
-
-<script>
-    let isDesign = false;
-    let currentEditingIndex = null;
-    let draggedItem = null;
-    let touchStartY = 0;
-
-    // --- УПРАВЛЕНИЕ РЕЖИМАМИ ---
-    function toggleDesignMode() {
-        isDesign = !isDesign;
-        document.body.classList.toggle('design-mode');
-        document.getElementById('mode-toggle').innerText = isDesign ? "👁️ КОНСТРУКТОР: ВКЛ" : "🛠️ КОНСТРУКТОР: ВЫКЛ";
-    }
-
-    function addNewRow() {
-        const row = document.createElement('div');
-        row.className = 'form-row';
-        row.style.position = 'relative';
-        row.innerHTML = `
-            <div class="row-ctrl">
-                <button class="row-btn" onclick="moveRow(this, 'up')" title="Вверх">▲</button>
-                <button class="row-btn" onclick="moveRow(this, 'down')" title="Вниз">▼</button>
-            </div>
-        `;
-        document.getElementById('form-canvas').appendChild(row);
-        return row;
-    }
-
-    function openModal(id) { document.getElementById(id).style.display = 'block'; }
-    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-
-   // --- ЛОГИКА ИИ ---
-    // --- ВЕТКА 1: РУЧНОЙ JSON (БЕЗ ИЗМЕНЕНИЙ ЛОГИКИ) ---
-function genManualPrompt() {
-    const drug = document.getElementById('ai-drug-manual').value || "Препарат";
-    const titles = Array.from(document.querySelectorAll('.box-title')).map(t => t.innerText);
-    const promptText = `Действуй как фармаколог. Заполни данные для "${drug}" по разделам: ${titles.join(', ')}. Верни ТОЛЬКО чистый JSON объект: {"Заголовок": "текст"}.`;
-    navigator.clipboard.writeText(promptText);
-    alert("Промпт для JSON режима скопирован!");
-}
-
-function importManualAI() {
-    try {
-        const val = document.getElementById('ai-import-manual').value.replace(/```json|```/g, "").trim();
-        const data = JSON.parse(val);
-        Object.keys(data).forEach(title => {
-            const box = Array.from(document.querySelectorAll('.box')).find(b => b.querySelector('.box-title').innerText === title);
-            if (box) box.querySelector('.box-content').innerText = data[title];
-        });
-        closeModal('ai-manual-modal');
-    } catch (e) { alert("Ошибка JSON! Проверьте формат ответа."); }
-}
-
-// 1. Создание структуры (Архитектор)
-async function aiDirectCreate() {
-    const topic = prompt("Какую структуру создать? (напр. История болезни: Гастрит)");
-    if (!topic) return;
-    
-    // Вызываем автономный движок
-    const res = await askSentinel(topic, 'architect'); 
-    
-    if (res && typeof renderStructure === 'function') {
-        renderStructure(res); 
-    }
-    closeModal('ai-gen-modal');
-}
-
-// 2. Заполнение данных (Клиницист)
-async function aiDirectFill() {
-    const context = prompt("Введите данные (препарат или симптомы):");
-    if (!context) return;
-
-    const titles = Array.from(document.querySelectorAll('.box-title')).map(t => t.innerText);
-    const query = `Заполни эти разделы: ${titles.join(', ')}. Контекст: ${context}`;
-
-    // Снова вызываем автономный движок
-    const res = await askSentinel(query, 'editor'); 
-    
-    if (res) {
-        Object.keys(res).forEach(title => {
-            const box = Array.from(document.querySelectorAll('.box'))
-                .find(b => b.querySelector('.box-title').innerText === title);
-            if (box) box.querySelector('.box-content').innerText = res[title];
-        });
-    }
-    closeModal('ai-gen-modal');
-}
-
-    // --- ОТРИСОВКА БАЗЫ И СОРТИРОВКА ---
-    function renderDB() {
-        const list = document.getElementById('db-list');
-        const sortMode = document.getElementById('db-sort-mode') ? document.getElementById('db-sort-mode').value : 'date-desc';
-        const db = JSON.parse(localStorage.getItem('pharmaDB') || '[]');
-        list.innerHTML = "";
-        
-        const grouped = db.reduce((acc, item, index) => {
-            if (!acc[item.group]) acc[item.group] = { items: [], lastUpdate: 0 };
-            acc[item.group].items.push({...item, index});
-            acc[item.group].lastUpdate = Math.max(acc[item.group].lastUpdate, item.updatedAt || 0);
-            return acc;
-        }, {});
-
-        let groupsArray = Object.keys(grouped).map(name => ({ name: name, data: grouped[name] }));
-
-        if (sortMode === 'alpha') groupsArray.sort((a, b) => a.name.localeCompare(b.name));
-        else if (sortMode === 'date-desc') groupsArray.sort((a, b) => b.data.lastUpdate - a.data.lastUpdate);
-        else if (sortMode === 'date-asc') groupsArray.sort((a, b) => a.data.lastUpdate - b.data.lastUpdate);
-
-        groupsArray.forEach(groupObj => {
-            let gDiv = document.createElement('div');
-            gDiv.className = 'db-group-wrapper';
-            const isCustom = sortMode === 'custom';
-            
-            gDiv.innerHTML = `
-                <div class="db-group-title" 
-                     draggable="${isCustom}" 
-                     onclick="toggleGroup(this)" 
-                     ondragstart="drag(event)" ondragover="allowDrop(event)" ondrop="drop(event)"
-                     ontouchstart="touchStart(event)" ontouchmove="touchMove(event)" ontouchend="touchEnd(event)">
-                    <span>📁 ${groupObj.name}</span>
-                    <span class="db-counter">${groupObj.data.items.length} шт.</span>
-                </div>
-                <div class="db-group-content" style="display:none"></div>`;
-            
-            groupObj.data.items.forEach(item => {
-                const iEl = document.createElement('div');
-                iEl.className = 'db-item';
-                iEl.innerHTML = `
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <input type="checkbox" class="db-check" data-index="${item.index}" onclick="event.stopPropagation(); toggleBulkDeleteBtn()">
-                        <span><b>${item.subgroup}:</b> ${item.name}</span>
-                    </div>
-                    <div>
-                        <button style="background:var(--accent)" onclick="loadFromDB(${item.index})">📂</button>
-                        <button style="background:var(--danger)" onclick="deleteFromDB(${item.index})">🗑️</button>
-                    </div>`;
-                gDiv.querySelector('.db-group-content').appendChild(iEl);
-            });
-            list.appendChild(gDiv);
-        });
-        toggleBulkDeleteBtn();
-    }
-
-    function toggleGroup(el) {
-        const content = el.nextElementSibling;
-        content.style.display = content.style.display === 'none' ? 'block' : 'none';
-    }
-
-    // --- DRAG & DROP (ПК + ТАЧ) ---
-    function allowDrop(ev) { ev.preventDefault(); }
-    function drag(ev) { draggedItem = ev.target.closest('.db-group-wrapper'); }
-    function drop(ev) { 
-        ev.preventDefault();
-        const target = ev.target.closest('.db-group-wrapper');
-        if (target && draggedItem && target !== draggedItem) handleReorder(target);
-    }
-
-    function touchStart(ev) {
-        if (document.getElementById('db-sort-mode').value !== 'custom') return;
-        draggedItem = ev.target.closest('.db-group-wrapper');
-        draggedItem.classList.add('touch-active');
-    }
-    function touchMove(ev) {
-        if (!draggedItem) return;
-        ev.preventDefault();
-        const touch = ev.touches[0];
-        const target = document.elementFromPoint(touch.clientX, touch.clientY);
-        const targetGroup = target ? target.closest('.db-group-wrapper') : null;
-        if (targetGroup && targetGroup !== draggedItem) handleReorder(targetGroup);
-    }
-    function touchEnd() {
-        if (draggedItem) {
-            draggedItem.classList.remove('touch-active');
-            draggedItem = null;
-            saveCustomOrder();
-        }
-    }
-
-    function handleReorder(target) {
-        const list = document.getElementById('db-list');
-        const allNodes = Array.from(list.children);
-        if (allNodes.indexOf(draggedItem) < allNodes.indexOf(target)) target.after(draggedItem);
-        else target.before(draggedItem);
-    }
-
-    function saveCustomOrder() {
-        const db = JSON.parse(localStorage.getItem('pharmaDB') || '[]');
-        const newOrder = [];
-        document.querySelectorAll('.db-group-title span:first-child').forEach(span => {
-            const gName = span.innerText.replace('📁 ', '');
-            newOrder.push(...db.filter(item => item.group === gName));
-        });
-        localStorage.setItem('pharmaDB', JSON.stringify(newOrder));
-    }
-
-    // Логика ХРАНЕНИя И СОХРАНЕНИя ---
-
-function updateToolbar() {
-        const btnNew = document.getElementById('btn-save-new');
-        const btnUpd = document.getElementById('btn-update');
-        const btnAs = document.getElementById('btn-save-as');
-        if (currentEditingIndex !== null) {
-            btnNew.style.display = 'none'; btnUpd.style.display = 'inline-block'; btnAs.style.display = 'inline-block';
-        } else {
-            btnNew.style.display = 'inline-block'; btnUpd.style.display = 'none'; btnAs.style.display = 'none';
-        }
-    }
-
-    function updateExistingRecord() {
-        const db = JSON.parse(localStorage.getItem('pharmaDB') || '[]');
-        if (confirm(`Обновить текущую запись?`)) {
-            db[currentEditingIndex].html = document.getElementById('form-canvas').innerHTML;
-            db[currentEditingIndex].name = document.getElementById('f-name').innerText.trim() || 'Без названия';
-            localStorage.setItem('pharmaDB', JSON.stringify(db));
-            renderDB();
-            alert("Обновлено!");
-        }
-    }
-
-    function startSaveSequence() {
-        const db = JSON.parse(localStorage.getItem('pharmaDB') || '[]');
-        let selectedGroup = "";
-        const title = document.getElementById('save-step-title');
-        const options = document.getElementById('save-options');
-        const input = document.getElementById('save-custom-input');
-        const confirmBtn = document.getElementById('save-confirm-btn');
-
-        title.innerText = "Выберите Группу";
-        const groups = [...new Set(db.map(item => item.group))];
-        const renderOpts = (list, callback) => {
-            options.innerHTML = "";
-            list.forEach(opt => {
-                const b = document.createElement('button'); b.className = "opt-btn"; b.innerText = opt;
-                b.onclick = () => { input.value = opt; callback(opt); };
-                options.appendChild(b);
-            });
-        };
-
-        const finalize = (sub) => {
-            db.push({
-                name: document.getElementById('f-name').innerText.trim() || 'Без названия',
-                group: selectedGroup, subgroup: sub,
-                html: document.getElementById('form-canvas').innerHTML
-            });
-            localStorage.setItem('pharmaDB', JSON.stringify(db));
-            currentEditingIndex = db.length - 1;
-            updateToolbar(); renderDB(); closeModal('save-modal');
-        };
-
-        const askSub = () => {
-            title.innerText = "Выберите Подгруппу"; input.value = "";
-            const subs = [...new Set(db.filter(i => i.group === selectedGroup).map(i => i.subgroup))];
-            renderOpts(subs, (val) => finalize(val));
-            confirmBtn.onclick = () => finalize(input.value.trim());
-        };
-
-        renderOpts(groups, (val) => { selectedGroup = val; askSub(); });
-        openModal('save-modal');
-        confirmBtn.onclick = () => { selectedGroup = input.value.trim(); if(selectedGroup) askSub(); };
-    }
-
-
-    function loadFromDB(index) {
-        const db = JSON.parse(localStorage.getItem('pharmaDB'));
-        document.getElementById('form-canvas').innerHTML = db[index].html;
-        currentEditingIndex = index;
-        updateToolbar(); window.scrollTo(0,0);
-    }
-
-    function deleteFromDB(index) {
-        if(confirm("Удалить?")) {
-            let db = JSON.parse(localStorage.getItem('pharmaDB'));
-            db.splice(index, 1);
-            localStorage.setItem('pharmaDB', JSON.stringify(db));
-            renderDB();
-        }
-    }
-
-    function filterDB() {
-    const q = document.getElementById('db-search').value.toLowerCase();
-    const groups = document.querySelectorAll('.db-group-wrapper');
-
-    groups.forEach(group => {
-        const items = group.querySelectorAll('.db-item');
-        let hasVisibleItems = false;
-
-        items.forEach(item => {
-            const text = item.innerText.toLowerCase();
-            if (text.includes(q)) {
-                item.style.display = 'flex';
-                hasVisibleItems = true;
-            } else {
-                item.style.display = 'none';
-            }
-        });
-
-        // Логика отображения папок
-        const groupContent = group.querySelector('.db-group-content');
-        if (q.length > 0) {
-            if (hasVisibleItems) {
-                group.style.display = 'block';
-                groupContent.style.display = 'block'; // Авто-раскрытие при поиске
-            } else {
-                group.style.display = 'none';
-            }
-        } else {
-            // Если поиск пуст, возвращаем стандартный вид (папки закрыты)
-            group.style.display = 'block';
-            groupContent.style.display = 'none';
-        }
-    });
-}
-    function addBoxWithTitle() {
-        const title = prompt("Заголовок:"); if (!title) return;
-        const row = document.querySelector('.form-row:last-child') || addNewRow();
-        const box = document.createElement('div'); box.className = 'box';
-        box.innerHTML = `<div class="box-ctrl">
-            <button class="ctrl-btn" onclick="resizeBox(this, 0.3)">↔️</button>
-            <input type="color" class="color-pick" onchange="this.parentElement.parentElement.style.background=this.value">
-            <button class="ctrl-btn" style="background:red" onclick="this.closest('.box').remove()">❌</button>
-            </div><div class="box-title" contenteditable="true">${title}</div>
-            <div class="box-content" contenteditable="true" id="f-${Date.now()}"></div>`;
-        row.appendChild(box);
-    }
-
-    function resizeBox(btn, delta) {
-        const box = btn.closest('.box');
-        let f = parseFloat(getComputedStyle(box).flexGrow) || 1;
-        box.style.flexGrow = Math.max(0.2, f + delta);
-    }
-
-    function moveRow(btn, direction) {
-        const row = btn.closest('.form-row');
-        if (direction === 'up' && row.previousElementSibling) row.parentNode.insertBefore(row, row.previousElementSibling);
-        else if (direction === 'down' && row.nextElementSibling) row.parentNode.insertBefore(row.nextElementSibling, row);
-    }
-
-    function toggleBulkDeleteBtn() {
-        const count = document.querySelectorAll('.db-check:checked').length;
-        document.getElementById('btn-bulk-delete').style.display = count > 0 ? 'block' : 'none';
-    }
-
-    function deleteSelected() {
-        let db = JSON.parse(localStorage.getItem('pharmaDB') || '[]');
-        const idxs = Array.from(document.querySelectorAll('.db-check:checked')).map(c => parseInt(c.dataset.index)).sort((a,b)=>b-a);
-        idxs.forEach(i => db.splice(i, 1));
-        localStorage.setItem('pharmaDB', JSON.stringify(db));
-        renderDB();
-    }
-
-    // Запуск при загрузке
-    renderDB();
-// --- ФУНКЦИИ ЭКСПОРТА И ИМПОРТА ВСЕЙ БАЗЫ (JSON) ---
-function exportFullDB() {
-    const db = localStorage.getItem('pharmaDB');
-    if (!db || db === "[]") {
-        alert("База пуста, нечего экспортировать.");
-        return;
-    }
-    const blob = new Blob([db], {type: "application/json"});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `pharma_db_backup_${new Date().toLocaleDateString()}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-}
-function importFullDB(input) {
-    const file = input.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        try {
-            const importedData = JSON.parse(e.target.result);
-            if (!Array.isArray(importedData)) {
-                alert("Ошибка: Файл имеет неверный формат.");
-                return;
-            }
-
-            let localDB = JSON.parse(localStorage.getItem('pharmaDB') || '[]');
-            let addedCount = 0;
-            let updatedCount = 0;
-
-            importedData.forEach(newItem => {
-                // Ищем, есть ли уже такой препарат (совпадение по имени, группе и подгруппе)
-                const existingIndex = localDB.findIndex(item => 
-                    item.name === newItem.name && 
-                    item.group === newItem.group && 
-                    item.subgroup === newItem.subgroup
-                );
-
-                if (existingIndex !== -1) {
-                    // Если нашли дубликат — обновляем его данные
-                    localDB[existingIndex] = newItem;
-                    updatedCount++;
-                } else {
-                    // Если это новый препарат — добавляем в базу
-                    localDB.push(newItem);
-                    addedCount++;
-                }
-            });
-
-            localStorage.setItem('pharmaDB', JSON.stringify(localDB));
-            renderDB();
-            alert(`Импорт завершен!\nДобавлено новых: ${addedCount}\nОбновлено существующих: ${updatedCount}`);
-            
-        } catch (err) {
-            alert("Ошибка при чтении файла: " + err);
-        }
-    };
-    reader.readAsText(file);
-    input.value = '';
-}
-// --- ФУНКЦИИ ДЛЯ РАБОТЫ С HTML-ФАЙЛАМИ ПРОЕКТОВ ---
-function downloadProject() {
-    const tempIndex = currentEditingIndex;
-    currentEditingIndex = null;
-    updateToolbar();
-
-    const htmlContent = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
-    const blob = new Blob([htmlContent], {type: 'text/html'});
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = (document.getElementById('f-name').innerText.trim() || 'pharma_project') + ".html";
-    a.click();
-
-    currentEditingIndex = tempIndex;
-    updateToolbar();
-}
-
-function importHTML(input) {
-    const file = input.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(e.target.result, 'text/html');
-        const newContent = doc.getElementById('form-canvas');
-        if (newContent) {
-            document.getElementById('form-canvas').innerHTML = newContent.innerHTML;
-            currentEditingIndex = null;
-            updateToolbar();
-            alert("Проект успешно загружен!");
-        } else {
-            alert("Ошибка: В файле не найден контейнер проекта.");
-        }
-    };
-    reader.readAsText(file);
-    input.value = '';
-}
-
-function resetToNew() {
-    if(confirm("Очистить рабочую область?")) {
-        location.reload(); 
-    }
-}
-   // --- ФУНКЦИЯ АВТОЗАПОЛНЕНИЯ (ИСПРАВЛЕННАЯ) ---
-document.getElementById('f-name').addEventListener('input', function(e) {
-    const inputName = e.target.innerText.trim().toLowerCase();
-    
-    // Удаляем старую кнопку, если пользователь стер текст
-    const oldBtn = document.getElementById('autofill-btn');
-    if (inputName.length < 3) {
-        if (oldBtn) oldBtn.remove();
-        return;
-    }
-
-    const db = JSON.parse(localStorage.getItem('pharmaDB') || '[]');
-    // Ищем точное совпадение по названию
-    const found = db.find(item => item.name.toLowerCase().includes(inputName));
-
-    if (found) {
-        showAutoFillSuggestion(found);
-    } else if (oldBtn) {
-        oldBtn.remove();
-    }
-});
-
-function showAutoFillSuggestion(data) {
-    if (document.getElementById('autofill-btn')) return;
-
-    const btn = document.createElement('button');
-    btn.id = 'autofill-btn';
-    btn.innerHTML = `✨ Заполнить: <b>${data.name}</b>`;
-    
-    // Стилизуем кнопку так, чтобы она была заметной и не ломала верстку
-    Object.assign(btn.style, {
-        position: 'absolute',
-        top: '-40px',
-        left: '0',
-        background: '#9b59b6',
-        color: 'white',
-        border: 'none',
-        padding: '5px 12px',
-        borderRadius: '4px',
-        cursor: 'pointer',
-        zIndex: '1000',
-        fontSize: '12px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
-    });
-    
-    btn.onclick = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        // Главная фишка: восстанавливаем HTML конструктора из базы
-        if (data.html) {
-            document.getElementById('form-canvas').innerHTML = data.html;
-            // После вставки обновляем название в поле, чтобы оно не осталось старым
-            document.getElementById('f-name').innerText = data.name;
-            alert("Данные подтянуты из базы!");
-        }
-        btn.remove();
-    };
-
-    // Чтобы position: absolute сработал правильно, родителю нужен relative
-    const parent = document.getElementById('f-name').parentElement;
-    parent.style.position = 'relative';
-    parent.appendChild(btn);
-
-    // Кнопка исчезнет сама через 7 секунд
-    setTimeout(() => { if (btn) btn.remove(); }, 7000);
-}
-    // шаблоны протоколов
-const PROTOCOL_DATA = {
-    'standart': [
-        { t: '💊 Фармакокинетика', w: 1 }, { t: '⚙️ Механизм действия', w: 1 },
-        { t: '📝 Показания', w: 2 },
-        { t: '⚠️ Побочные эффекты', w: 1 }, { t: '🚫 Противопоказания', w: 1 }
+/**
+ * SENTINEL AI ENGINE (v2.0) - "Roman Concrete" Edition
+ * Автономный модуль управления ИИ для Pharma-Architect
+ */
+
+const SENTINEL_CONFIG = {
+    priorityModels: [
+        "gemini-flash-latest",   // Самый стабильный короткий адрес
+        "gemini-1.5-flash",     // Запасной вариант с явным указанием версии
+        "gemini-1.0-pro"        // Резерв
     ],
-    'emergency': [
-        { t: '🚨 ЭКСТРЕННО', w: 2 },
-        { t: '💉 Дозировка', w: 1 }, { t: '⏱️ Время эффекта', w: 1 }
-    ],
-    'brief': [
-        { t: 'Название и Группа', w: 2 },
-        { t: 'Схема приема', w: 2 }
-    ]
+    currentModel: "gemini-flash-latest", // Сразу ставим правильный
+    apiVersion: "v1beta",
+    isChecking: false
 };
 
-function applyProtocol(type) {
-    if (!type || !confirm("Очистить текущий холст и применить шаблон?")) return;
-    
-    const canvas = document.getElementById('form-canvas');
-    canvas.innerHTML = ''; // Полная очистка
+// 1. САМОДИАГНОСТИКА: Поиск лучшей живой модели
+async function sentinelHealthCheck() {
+    const KEY = localStorage.getItem('gemini_api_key')?.trim();
+    if (!KEY || SENTINEL_CONFIG.isChecking) return;
 
-    const items = PROTOCOL_DATA[type];
-    let currentRow = null;
-
-    items.forEach((item, idx) => {
-        // Создаем новую строку, если это первый элемент или элемент с весом 2
-        if (idx === 0 || item.w === 2 || (currentRow && currentRow.children.length >= 2)) {
-            currentRow = addNewRow();
-        }
-
-        const box = document.createElement('div');
-        box.className = 'box';
-        box.style.flex = item.w;
-        
-        // Генерируем ID для совместимости с вашим ИИ
-        const boxId = (idx === 0) ? 'f-name' : 'f-' + Date.now() + idx;
-
-        box.innerHTML = `
-            <div class="box-ctrl">
-                <button class="ctrl-btn" onclick="resizeBox(this, 0.1)">↔️</button>
-                <input type="color" class="color-pick" onchange="this.parentElement.parentElement.style.background=this.value">
-                <button class="ctrl-btn" style="background:red" onclick="this.closest('.box').remove()">❌</button>
-            </div>
-            <div class="box-title" contenteditable="true">${item.t}</div>
-            <div class="box-content" contenteditable="true" id="${boxId}"></div>
-        `;
-        currentRow.appendChild(box);
-    });
-}
-
-// сервис групп настройка
-function manageApiKey() {
-    const currentKey = localStorage.getItem('gemini_api_key') || "";
-    const newKey = prompt("Введите ваш личный API Key от Google AI Studio (сохранится только в этом браузере):", currentKey);
-    
-    if (newKey !== null) {
-        localStorage.setItem('gemini_api_key', newKey.trim());
-        alert("Ключ сохранен! Теперь ИИ готов к работе.");
-    }
-}
-
-// Модифицируем функцию вызова ИИ, чтобы она брала ключ из хранилища
-async function callGemini(text) {
-    const API_KEY = localStorage.getItem('gemini_api_key');
-    
-    if (!API_KEY) {
-        alert("Сначала введите API ключ через кнопку '🔑 Ключ ИИ'");
-        manageApiKey();
-        return null;
-    }
+    SENTINEL_CONFIG.isChecking = true;
+    console.log("🛡 SENTINEL: Проверка здоровья системы...");
 
     try {
-        const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ contents: [{ parts: [{ text: text }] }] })
-        });
-        
-        const data = await resp.json();
-        if (data.error) throw new Error(data.error.message);
-        
-        const raw = data.candidates[0].content.parts[0].text;
-        return JSON.parse(raw.replace(/```json|```/g, "").trim());
+        const response = await fetch(`https://generativelanguage.googleapis.com/${SENTINEL_CONFIG.apiVersion}/models?key=${KEY}`);
+        const data = await response.json();
+// 🔍 Проверка на ошибку от API (например, 429, 400, 403, 404)
+if (data.error) {
+  const { code, message } = data.error;
+  console.warn(`❌ Gemini API Error ${code}: ${message}`);
+  throw new Error(`Gemini API: ${message} (${code})`);
+}
+        if (data.models) {
+            for (let target of SENTINEL_CONFIG.priorityModels) {
+                const found = data.models.find(m => m.name.includes(target));
+                if (found) {
+                    const modelId = found.name.split('/').pop();
+                    if (SENTINEL_CONFIG.currentModel !== modelId) {
+                        console.log(`✅ SENTINEL: Переключено на оптимальную модель: ${modelId}`);
+                        SENTINEL_CONFIG.currentModel = modelId;
+                    }
+                    break;
+                }
+            }
+        }
     } catch (e) {
-        alert("Ошибка ИИ: " + e.message);
+        console.warn("⚠️ SENTINEL: Ошибка связи с реестром моделей. Используем дефолт.");
+    } finally {
+        SENTINEL_CONFIG.isChecking = false;
+    }
+}
+
+// 2. ЯДРО ЗАПРОСОВ (РИМСКИЙ БЕТОН)
+async function askSentinel(promptText, role) {
+    const KEY = localStorage.getItem('gemini_api_key')?.trim();
+    if (!KEY) throw new Error("API Key missing");
+
+    const systemInstructions = {
+        architect: "Ты — медицинский архитектор. Верни ТОЛЬКО JSON массив: [{'t': 'Заголовок', 'w': 1 или 2}].",
+        editor: "Ты — врач. Верни ТОЛЬКО JSON объект: {'Заголовок': 'Текст наполнения'}."
+    };
+
+    const url = `https://generativelanguage.googleapis.com/${SENTINEL_CONFIG.apiVersion}/models/${SENTINEL_CONFIG.currentModel}:generateContent?key=${KEY}`;
+
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: `${systemInstructions[role]}\n\nКонтекст: ${promptText}` }] }],
+                generationConfig: { temperature: 0.1, responseMimeType: "application/json" }
+            })
+        });
+
+        // 🛡 УЛУЧШЕННОЕ САМОЛЕЧЕНИЕ
+        if (response.status === 404 || response.status === 429) {
+            console.warn(`🚨 Ошибка ${response.status} на модели ${SENTINEL_CONFIG.currentModel}. Откат на стабильную версию...`);
+            
+            // Если 2.0 подвела, временно удаляем её из списка и ищем замену
+            SENTINEL_CONFIG.priorityModels = SENTINEL_CONFIG.priorityModels.filter(m => m !== SENTINEL_CONFIG.currentModel);
+            await sentinelHealthCheck(); 
+            
+            return askSentinel(promptText, role); // Рекурсивный перезапуск
+        }
+
+        const data = await response.json();
+        
+        // ПРОВЕРКА: Если ИИ вернул пустой ответ или ошибку в JSON
+        if (!data.candidates || !data.candidates[0]) {
+            throw new Error("Пустой ответ от API");
+        }
+
+        const content = data.candidates[0].content.parts[0].text;
+        return JSON.parse(content.replace(/```json|```/g, "").trim());
+    } catch (e) {
+        console.error("❌ SENTINEL CRITICAL ERROR:", e);
+        // Последний шанс: если всё упало, пробуем принудительно flash-latest
+        if (SENTINEL_CONFIG.currentModel !== "gemini-flash-latest") {
+             SENTINEL_CONFIG.currentModel = "gemini-flash-latest";
+             return askSentinel(promptText, role);
+        }
         return null;
     }
 }
-</script>
-    <!-- Подключаем библиотеку annyang -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/annyang/2.6.1/annyang.min.js"></script>
-<script>
-  window.addEventListener('DOMContentLoaded', () => {
-    const toolbar = document.querySelector('.toolbar');
-    if (!toolbar) return;
 
-    // Добавляем кнопку управления голосом
-    const voiceGroup = document.createElement('div');
-    voiceGroup.className = 'tool-group';
-    voiceGroup.innerHTML = `
-      <h4>🎙️ Голос</h4>
-      <button id="voice-btn-global" class="btn-ai" style="background:#2ecc71;">🎤 ГОЛОС</button>
-    `;
-    toolbar.appendChild(voiceGroup);
-
-    const voiceBtn = document.getElementById('voice-btn-global');
-
-    if (annyang) {
-      // Определяем команды
-      const commands = {
-        'найди *query': function(query) {
-          const searchInput = document.getElementById('db-search');
-          if (searchInput) {
-            searchInput.value = query;
-            if (typeof filterDB === 'function') filterDB();
-            searchInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          }
-        },
-        'поиск *query': function(query) {
-          const searchInput = document.getElementById('db-search');
-          if (searchInput) {
-            searchInput.value = query;
-            if (typeof filterDB === 'function') filterDB();
-          }
-        },
-        'печать': function() { window.print(); },
-        'распечатай': function() { window.print(); },
-        'очистить': function() { resetToNew(); },
-        'сброс': function() { resetToNew(); },
-        'сохранить': function() { startSaveSequence(); },
-        'в базу': function() { startSaveSequence(); },
-        'новая строка': function() { addNewRow(); },
-        'добавь строку': function() { addNewRow(); },
-        'новый блок': function() { addBoxWithTitle(); },
-        'добавь блок': function() { addBoxWithTitle(); },
-        'режим': function() { toggleDesignMode(); },
-        'конструктор': function() { toggleDesignMode(); }
-      };
-
-      // Добавляем команды
-      annyang.addCommands(commands);
-      annyang.setLanguage('ru-RU');
-
-      // Кнопка запуска/остановки
-      let isActive = false;
-      voiceBtn.onclick = () => {
-        if (!isActive) {
-          annyang.start();
-          voiceBtn.style.background = '#e74c3c';
-          voiceBtn.innerHTML = '🔴 СЛУШАЮ';
-          isActive = true;
-        } else {
-          annyang.abort();
-          voiceBtn.style.background = '#2ecc71';
-          voiceBtn.innerHTML = '🎤 ГОЛОС';
-          isActive = false;
-        }
-      };
-    } else {
-      voiceBtn.style.opacity = '0.5';
-      voiceBtn.title = "Браузер не поддерживает annyang";
-    }
-  });
-</script>
-</body>
-</html>
+// Запускаем диагностику при старте
+sentinelHealthCheck();
