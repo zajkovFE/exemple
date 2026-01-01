@@ -69,18 +69,33 @@ async function askSentinel(promptText, role) {
             })
         });
 
-        // САМОЛЕЧЕНИЕ: Если 404 (модель удалена), запускаем диагностику и пробуем снова
-        if (response.status === 404) {
-            console.error("🚨 Модель не найдена! Запуск экстренной регенерации...");
-            await sentinelHealthCheck();
+        // 🛡 УЛУЧШЕННОЕ САМОЛЕЧЕНИЕ
+        if (response.status === 404 || response.status === 429) {
+            console.warn(`🚨 Ошибка ${response.status} на модели ${SENTINEL_CONFIG.currentModel}. Откат на стабильную версию...`);
+            
+            // Если 2.0 подвела, временно удаляем её из списка и ищем замену
+            SENTINEL_CONFIG.priorityModels = SENTINEL_CONFIG.priorityModels.filter(m => m !== SENTINEL_CONFIG.currentModel);
+            await sentinelHealthCheck(); 
+            
             return askSentinel(promptText, role); // Рекурсивный перезапуск
         }
 
         const data = await response.json();
+        
+        // ПРОВЕРКА: Если ИИ вернул пустой ответ или ошибку в JSON
+        if (!data.candidates || !data.candidates[0]) {
+            throw new Error("Пустой ответ от API");
+        }
+
         const content = data.candidates[0].content.parts[0].text;
         return JSON.parse(content.replace(/```json|```/g, "").trim());
     } catch (e) {
         console.error("❌ SENTINEL CRITICAL ERROR:", e);
+        // Последний шанс: если всё упало, пробуем принудительно flash-latest
+        if (SENTINEL_CONFIG.currentModel !== "gemini-flash-latest") {
+             SENTINEL_CONFIG.currentModel = "gemini-flash-latest";
+             return askSentinel(promptText, role);
+        }
         return null;
     }
 }
