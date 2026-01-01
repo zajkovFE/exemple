@@ -101,7 +101,7 @@ async function _askMedicalAI(promptText, role) {
     const KEY = localStorage.getItem('openrouter_api_key')?.trim();
     if (!KEY) throw new Error("Missing API Key");
 
-    const systemInstructions = {
+    const systemInstruction = {
         architect: `Ты — медицинский архитектор. Верни ТОЛЬКО валидный JSON-массив: [{\"t\":\"Заголовок\",\"w\":1}]. Никаких пояснений.`,
         editor: `Ты — врач. Верни ТОЛЬКО валидный JSON-объект: {\"Заголовок\":\"Текст\"}. Никаких пояснений.`
     };
