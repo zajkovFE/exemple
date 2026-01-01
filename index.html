@@ -489,16 +489,26 @@ function updateToolbar() {
             });
         };
 
-       const finalize = (sub) => {
-            db.push({
-                name: document.getElementById('f-name').innerText.trim() || 'Без названия',
-                group: selectedGroup, subgroup: sub,
-                html: document.getElementById('form-canvas').innerHTML
-            });
-            localStorage.setItem('pharmaDB', JSON.stringify(db));
-            currentEditingIndex = db.length - 1;
-            updateToolbar(); renderDB(); closeModal('save-modal');
-        };
+        const finalize = (sub) => {
+  // 🔍 Получаем название из первого блока с заголовком (надёжно!)
+  const firstTitleEl = document.querySelector('#form-canvas .box-title');
+  const title = firstTitleEl 
+    ? firstTitleEl.innerText.trim() || 'Без названия'
+    : 'Протокол ' + new Date().toLocaleDateString();
+
+  db.push({
+    name: title,
+    group: selectedGroup,
+    subgroup: sub,
+    html: document.getElementById('form-canvas').innerHTML
+  });
+
+  localStorage.setItem('pharmaDB', JSON.stringify(db));
+  currentEditingIndex = db.length - 1;
+  updateToolbar();
+  renderDB();
+  closeModal('save-modal');
+};
 
         const askSub = () => {
             title.innerText = "Выберите Подгруппу"; input.value = "";
@@ -509,8 +519,6 @@ function updateToolbar() {
 
         renderOpts(groups, (val) => { selectedGroup = val; askSub(); });
         openModal('save-modal');
-        // Перед сохранением — убедимся, что f-name на месте
-ensureFNameID();
         confirmBtn.onclick = () => { selectedGroup = input.value.trim(); if(selectedGroup) askSub(); };
     }
 
@@ -564,22 +572,6 @@ ensureFNameID();
             groupContent.style.display = 'none';
         }
     });
-}
-    // Гарантирует наличие id="f-name" на первом блоке с заголовком
-function ensureFNameID() {
-  const canvas = document.getElementById('form-canvas');
-  const firstTitle = canvas.querySelector('.box-title');
-  if (!firstTitle) return;
-
-  // Удаляем старый id, если есть
-  const oldEl = document.getElementById('f-name');
-  if (oldEl) oldEl.removeAttribute('id');
-
-  // Присваиваем id на контентный блок первого заголовка
-  const contentEl = firstTitle.nextElementSibling;
-  if (contentEl) {
-    contentEl.id = 'f-name';
-  }
 }
     function addBoxWithTitle() {
         const title = prompt("Заголовок:"); if (!title) return;
