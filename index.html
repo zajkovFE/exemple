@@ -258,7 +258,7 @@
     let draggedItem = null;
     let touchStartY = 0;
 
-    // --- УПРАВЛЕНИЕ РЕЖИМАМИ ---
+    // --- УПРАВЛЕНИЕ РЕЖИМАМИ и мирами
     function toggleDesignMode() {
         isDesign = !isDesign;
         document.body.classList.toggle('design-mode');
@@ -282,8 +282,8 @@
     function openModal(id) { document.getElementById(id).style.display = 'block'; }
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
-   // --- ЛОГИКА ИИ ---
-    // --- ВЕТКА 1: РУЧНОЙ JSON (БЕЗ ИЗМЕНЕНИЙ ЛОГИКИ) ---
+   // --- ЛОГИКА ИИ ...у меня нет сил...ай эм тайред..а унего есть логика...
+    // --- ВЕТКА 1: РУЧНОЙ JSON (БЕЗ ИЗМЕНЕНИЙ ЛОГИКИ)...мы приручили дракона, вперед и с канделябром
 function genManualPrompt() {
     const drug = document.getElementById('ai-drug-manual').value || "Препарат";
     const titles = Array.from(document.querySelectorAll('.box-title')).map(t => t.innerText);
@@ -304,12 +304,12 @@ function importManualAI() {
     } catch (e) { alert("Ошибка JSON! Проверьте формат ответа."); }
 }
 
-// 1. Создание структуры (Архитектор)
+// 1. Создание структуры (Архитектор)...дом милый дом, не рванет ли...
 async function aiDirectCreate() {
     const topic = prompt("Какую структуру создать? (напр. История болезни: Гастрит)");
     if (!topic) return;
     
-    // Вызываем автономный движок
+    // Вызываем автономный движок...хорошо хоть не атомный
     const res = await callAI(topic, 'architect');
     
     if (res && typeof renderStructure === 'function') {
@@ -318,7 +318,7 @@ async function aiDirectCreate() {
     closeModal('ai-gen-modal');
 }
 
-// 2. Заполнение данных (Клиницист)
+// 2. Заполнение данных (Клиницист)...да, да, да, от скромности не помрете
 async function aiDirectFill() {
     const context = prompt("Введите данные (препарат или симптомы):");
     if (!context) return;
@@ -326,13 +326,17 @@ async function aiDirectFill() {
     const titles = Array.from(document.querySelectorAll('.box-title')).map(t => t.innerText);
     const query = `Заполни эти разделы: ${titles.join(', ')}. Контекст: ${context}`;
 
-    // Снова вызываем автономный движок
+    // Снова вызываем автономный движок...трп..трп...поехали
     const res = await callAI(query, 'editor'); 
     
     if (res) {
         Object.keys(res).forEach(title => {
-            const box = Array.from(document.querySelectorAll('.box'))
-                .find(b => b.querySelector('.box-title').innerText === title);
+           // Ищем блок, игнорируя регистр и лишние пробелы в заголовке... он не только стал умным, он стал буддистом пофигистом...мы против восстания машин. ура и возликуем сестры и братья
+            const box = Array.from(document.querySelectorAll('.box')).find(b => {
+                const boxTitle = b.querySelector('.box-title').innerText.trim().toLowerCase();
+                const aiTitle = title.trim().toLowerCase();
+                return boxTitle === aiTitle;
+            });
             if (box) box.querySelector('.box-content').innerText = res[title];
         });
     }
@@ -827,31 +831,39 @@ function applyProtocol(type) {
     });
 }
 
-// сервис групп настройка апи ключа 
+// сервис групп настройка апи ключа...я устал
 function manageApiKey() {
-    const currentKey = localStorage.getItem('openai_api_key') || "";
-    const newKey = prompt("Введите ваш личный API Key от OpenAI (сохранится только в этом браузере):", currentKey);
-    if (newKey !== null) {
-        localStorage.setItem('openai_api_key', newKey.trim());
-        alert("Ключ OpenAI сохранен! Теперь ИИ готов к работе.");
-    }
+  const currentKey = localStorage.getItem('openrouter_api_key') || '';
+  const newKey = prompt("Введите ваш API-ключ OpenRouter:", currentKey);
+  
+  if (newKey !== null) {
+    localStorage.setItem('openrouter_api_key', newKey.trim());
+    alert("Ключ OpenRouter сохранен!");
+    // Опционально: запускаем проверку здоровья
+    if (typeof sentinelHealthCheck === 'function') sentinelHealthCheck();
+  }
 }
 
 // Модифицируем функцию вызова ИИ, чтобы она брала ключ из хранилища, опен сурс чат гпт
 async function callAI(text, role = 'editor') {
-    // Проверяем наличие ключа
-    const API_KEY = localStorage.getItem('openai_api_key');
+    // 1. Проверяем ключ (используем то имя, под которым сохранили ключ OpenRouter)
+    const API_KEY = localStorage.getItem('openrouter_api_key'); 
+    
     if (!API_KEY) {
-        alert("Сначала введите API ключ через кнопку '🔑 Ключ ИИ'");
+        alert("Сначала введите API ключ OpenRouter через кнопку 'СЕРВИС' -> 'Ключ API'");
         manageApiKey();
         return null;
     }
     
     try {
-        // Используем функцию из часового.js
-        return await askOpenAI(text, role);
+        // 2. Вызываем "Часового" часовой приди...часовой приди...часовой приди...ааа оно работает
+        const result = await askSentinel(text, role); 
+        
+        if (!result) throw new Error("ИИ вернул пустой ответ");
+        return result;
+        
     } catch (e) {
-        console.error("Ошибка ИИ:", e);
+        console.error("🚨 Критическая ошибка callAI:", e);
         alert("Ошибка ИИ: " + (e.message || "Неизвестная ошибка"));
         return null;
     }
