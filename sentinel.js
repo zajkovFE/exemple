@@ -6,7 +6,7 @@ const SENTINEL_CONFIG = {
 };
 
 // УНИВЕРСАЛЬНЫЙ ЗАПРОС К ИИ
-async function askUniversalAssistant(promptText, role = 'general', context = '') {
+async function askUniversalAI(promptText, role = 'general', context = '') {
     console.log("🚀 Универсальный запрос к ИИ:", { role, promptText });
     
     const KEY = localStorage.getItem('openrouter_api_key')?.trim();
