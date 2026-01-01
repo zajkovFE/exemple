@@ -8,7 +8,7 @@ const SENTINEL_CONFIG = {
         "gemini-flash-latest",   // Самый стабильный короткий адрес
         "gemini-1.5-flash",     // Запасной вариант с явным указанием версии
         "gemini-1.0-pro"        // Резерв
-        "gemini-2.0-flash-exp", // Экспериментальный путь
+       
     ],
     currentModel: "gemini-flash-latest", // Сразу ставим правильный
     apiVersion: "v1beta",
