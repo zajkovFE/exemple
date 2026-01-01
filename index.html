@@ -509,8 +509,6 @@ function updateToolbar() {
 
         renderOpts(groups, (val) => { selectedGroup = val; askSub(); });
         openModal('save-modal');
-        // Перед сохранением — убедимся, что f-name на месте
-ensureFNameID();
         confirmBtn.onclick = () => { selectedGroup = input.value.trim(); if(selectedGroup) askSub(); };
     }
 
