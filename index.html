@@ -402,6 +402,38 @@ function clearAIResponse() {
 }
 
 // ГЕНЕРАЦИЯ СТРУКТУРЫ ИЗ ТЕКСТА ИИ...обновил
+    async function askUniversalAssistant() {
+    const role = document.getElementById('ai-role-select').value;
+    const context = document.getElementById('ai-context-input').value.trim();
+    const question = document.getElementById('ai-question-textarea').value.trim();
+
+    if (!question) {
+        alert("❌ Введите вопрос для ИИ!");
+        return;
+    }
+
+    // Формируем промпт
+    const promptText = context 
+        ? `Контекст: ${context}. Вопрос: ${question}` 
+        : `Вопрос: ${question}`;
+
+    try {
+        // Вызываем ваш движок
+        const res = await askUniversalAI(promptText, role, context);
+
+        // Выводим результат
+        const container = document.getElementById('ai-response-container');
+        if (typeof res === "object") {
+            container.innerText = JSON.stringify(res, null, 2);
+        } else {
+            container.innerText = res;
+        }
+    } catch (e) {
+        console.error("Ошибка UniversalAssistant:", e);
+        alert("❌ Ошибка при запросе к ИИ: " + e.message);
+    }
+}
+
 async function structureAIResponse() {
     const responseContainer = document.getElementById('ai-response-container');
     const rawText = responseContainer.textContent || responseContainer.innerText;
