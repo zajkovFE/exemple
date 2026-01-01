@@ -1,31 +1,32 @@
 // SENTINEL AI ENGINE (v2.5) - Qwen OpenRouter Edition
 
-
 const SENTINEL_CONFIG = {
-    // Используем мощную Qwen 2.5 (или "alibaba/qwen-2-7b-instruct:free" для полной халявы)...халявы нет, есть только сила, силы нет, есть только спокойствие, спокойствия...Йода, достал уже...
-   model: "qwen/qwen-2.5-72b-instruct", 
-    apiVersion: "https://openrouter.ai/api/v1/chat/completions"
+    // Правильное имя модели для OpenRouter
+    model: "qwen/qwen-2.5-72b-instruct", 
+    // ⚠️ ИСПРАВЛЕНО: УБРАНЫ ЛИШНИЕ ПРОБЕЛЫ
+    apiEndpoint: "https://openrouter.ai/api/v1/chat/completions"
 };
 
 async function askSentinel(promptText, role) {
     const KEY = localStorage.getItem('openrouter_api_key')?.trim();
     if (!KEY) {
-        alert("API ключ OpenRouter не найден в Сервис -> Ключ API");
-        throw new Error("Missing API Key");
+        alert("API ключ OpenRouter не найден! Нажмите 'СЕРВИС' → 'Ключ API'");
+        throw new Error("Missing OpenRouter API Key");
     }
 
     const systemInstructions = {
-        architect: "Ты — медицинский архитектор. Верни ТОЛЬКО валидный JSON массив объектов: [{\"t\":\"Заголовок\",\"w\":1}]. Без лишнего текста.",
-        editor: "Ты — врач. Верни ТОЛЬКО валидный JSON объект: {\"Заголовок\":\"Текст\"}. Без лишних слов."
+        architect: "Ты — медицинский архитектор. Верни ТОЛЬКО валидный JSON массив объектов: [{\"t\":\"Заголовок\",\"w\":1}]. Никаких пояснений, только чистый JSON.",
+        editor: "Ты — врач. Верни ТОЛЬКО валидный JSON объект: {\"Заголовок\":\"Текст\"}. Никаких пояснений, только чистый JSON."
     };
 
     try {
-        const response = await fetch(SENTINEL_CONFIG.apiVersion, {
+        const response = await fetch(SENTINEL_CONFIG.apiEndpoint, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${KEY}`,
                 'Content-Type': 'application/json',
-                'HTTP-Referer': 'https://pharma-architect.local', // Требование OpenRouter
+                // ⚠️ ИСПРАВЛЕНО: Правильный формат Referer (без пробелов, реальный URL)
+                'HTTP-Referer': window.location.href,
                 'X-Title': 'Pharma-Architect'
             },
             body: JSON.stringify({
@@ -34,25 +35,45 @@ async function askSentinel(promptText, role) {
                     { role: "system", content: systemInstructions[role] },
                     { role: "user", content: promptText }
                 ],
-                temperature: 0.1
+                temperature: 0.1,
+                max_tokens: 500
             })
         });
 
         if (!response.ok) {
-            const errData = await response.json();
-            throw new Error(errData.error?.message || "Ошибка OpenRouter");
+            const errorData = await response.json().catch(() => null);
+            const errorMessage = errorData?.error?.message || `HTTP error! status: ${response.status}`;
+            throw new Error(errorMessage);
         }
 
         const data = await response.json();
+        
+        // ⚠️ ИСПРАВЛЕНО: Надежная проверка структуры ответа
+        if (!data?.choices?.[0]?.message?.content) {
+            throw new Error("Некорректный ответ от ИИ: отсутствует содержимое");
+        }
+
         const content = data.choices[0].message.content;
         
-        // Очистка от возможных markdown-тегов и парсинг
-        const cleanJson = content.replace(/```json|```/g, "").trim();
-        return JSON.parse(cleanJson);
+        // ⚠️ ИСПРАВЛЕНО: Надежная очистка и парсинг JSON
+        const cleanJson = content
+            .replace(/```json|```/g, "")
+            .replace(/[\s\S]*?(\{.*\}|\[.*\])[\s\S]*/s, "$1")
+            .trim();
+        
+        try {
+            return JSON.parse(cleanJson);
+        } catch (parseError) {
+            console.error("❌ Ошибка парсинга JSON:", cleanJson);
+            throw new Error(`ИИ вернул некорректный JSON: ${parseError.message}`);
+        }
 
     } catch (e) {
-        console.error("❌ SENTINEL CRITICAL:", e);
-        alert("Ошибка ИИ: " + e.message);
+        console.error("❌ SENTINEL CRITICAL ERROR:", e);
+        alert(`Ошибка ИИ: ${e.message || "Неизвестная ошибка. Проверьте ключ и интернет."}`);
         return null;
     }
 }
+
+// Экспортируем функцию в глобальную область видимости
+window.askSentinel = askSentinel;
