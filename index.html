@@ -309,9 +309,14 @@ async function aiDirectCreate() {
     const topic = prompt("Какую структуру создать? (напр. История болезни: Гастрит)");
     if (!topic) return;
     
-    const res = await fetchGeminiSDK(topic, 'architect');
+    // ✅ Вместо fetchGeminiSDK — askSentinel (из часовой.txt)
+    const res = await askSentinel(topic, 'architect');
+    
     if (res && typeof renderStructure === 'function') {
-        renderStructure(res); // Используем вашу функцию отрисовки
+        renderStructure(res);
+    } else {
+        console.error("❌ Не удалось сгенерировать структуру:", res);
+        alert("ИИ не ответил. Проверьте ключ и интернет.");
     }
     closeModal('ai-gen-modal');
 }
@@ -320,20 +325,41 @@ async function aiDirectFill() {
     const context = prompt("Введите данные (препарат или симптомы):");
     if (!context) return;
 
-    const titles = Array.from(document.querySelectorAll('.box-title')).map(t => t.innerText);
-    const query = `Заполни эти разделы: ${titles.join(', ')}. Контекст: ${context}`;
+    const titles = Array.from(document.querySelectorAll('.box-title'))
+        .map(t => t.innerText.trim())
+        .filter(t => t);
+    
+    if (titles.length === 0) {
+        alert("Нет заголовков для заполнения");
+        return;
+    }
 
-    const res = await fetchGeminiSDK(query, 'editor');
-    if (res) {
-        Object.keys(res).forEach(title => {
-            const box = Array.from(document.querySelectorAll('.box'))
-                .find(b => b.querySelector('.box-title').innerText === title);
-            if (box) box.querySelector('.box-content').innerText = res[title];
-        });
+    const query = `Заполни эти разделы: ${titles.join(', ')}. Контекст: ${context}`;
+    
+    // ✅ Единый движок — askSentinel
+    const res = await askSentinel(query, 'editor');
+
+    if (res && typeof res === 'object') {
+        for (const title in res) {
+            const targetBox = Array.from(document.querySelectorAll('.box'))
+                .find(box => {
+                    const boxTitle = box.querySelector('.box-title')?.innerText.trim();
+                    return boxTitle && boxTitle.toLowerCase() === title.toLowerCase();
+                });
+
+            if (targetBox) {
+                const contentEl = targetBox.querySelector('.box-content');
+                if (contentEl) {
+                    contentEl.innerText = res[title];
+                }
+            }
+        }
+        alert("✅ ИИ заполнил разделы");
+    } else {
+        alert("❌ ИИ не вернул данные. Проверьте API-ключ.");
     }
     closeModal('ai-gen-modal');
 }
-
     // --- ОТРИСОВКА БАЗЫ И СОРТИРОВКА ---
     function renderDB() {
         const list = document.getElementById('db-list');
