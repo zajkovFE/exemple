@@ -26,6 +26,7 @@ async function askSentinel(promptText, role = 'general', context = '') {
         safety_engineer: `Вы — инженер по техносферной безопасности. Оценивайте риски объективно, предлагайте конкретные меры защиты.`
     };
 
+    // Определяем инструкцию для роли
     let systemInstruction = systemInstructions[role] || systemInstructions.general;
 
     try {
@@ -42,8 +43,14 @@ async function askSentinel(promptText, role = 'general', context = '') {
             body: JSON.stringify({
                 model: SENTINEL_CONFIG.model,
                 messages: [
-                    { role: "system", content: systemInstruction },
-                    { role: "user", content: promptText }
+                    { 
+                        role: "system", 
+                        content: systemInstruction
+                    },
+                    { 
+                        role: "user", 
+                        content: promptText
+                    }
                 ],
                 temperature: role === 'architect' || role === 'editor' ? 0.1 : 0.3,
                 max_tokens: role === 'architect' || role === 'editor' ? 500 : 4000
@@ -66,16 +73,27 @@ async function askSentinel(promptText, role = 'general', context = '') {
         const data = JSON.parse(responseText);
         console.log("📊 Полная структура ответа:", data);
         
+        // Попытка найти содержимое в разных форматах ответа
         let content = null;
+        
+        // Формат OpenAI (стандартный)
         if (data.choices?.[0]?.message?.content) {
             content = data.choices[0].message.content.trim();
-        } else if (data.data?.choices?.[0]?.message?.content) {
+        } 
+        // Формат OpenRouter
+        else if (data.data?.choices?.[0]?.message?.content) {
             content = data.data.choices[0].message.content.trim();
-        } else if (data.message?.content) {
+        }
+        // Формат некоторых других API
+        else if (data.message?.content) {
             content = data.message.content.trim();
-        } else if (data.result) {
+        }
+        // Еще один возможный формат
+        else if (data.result) {
             content = data.result.trim();
-        } else {
+        }
+        // Если ничего не сработало, пытаемся найти любой текст
+        else {
             const stringData = JSON.stringify(data);
             const textMatch = stringData.match(/"content":"([^"]+)"/);
             if (textMatch && textMatch[1]) {
@@ -89,16 +107,19 @@ async function askSentinel(promptText, role = 'general', context = '') {
 
         console.log("📦 Сырой контент ИИ (первые 300 символов):", content.substring(0, 300) + '...');
 
+        // Для медицинских ролей - строгий JSON
         if (role === 'architect' || role === 'editor') {
-            return safeParseJSON(content);
+            return parseStrictJSON(content);
         }
         
+        // Для других ролей - возвращаем текст как есть
         return content;
         
     } catch (e) {
         console.error("❌ SENTINEL CRITICAL ERROR:", e);
         alert(`❌ Ошибка ИИ: ${e.message || "Неизвестная ошибка. Проверьте ключ и интернет."}`);
         
+        // Возвращаем тестовые данные для медицинских ролей
         if (role === 'architect') {
             return [
                 {"t": "Тестовая структура", "w": 2},
@@ -110,64 +131,41 @@ async function askSentinel(promptText, role = 'general', context = '') {
     }
 }
 
-// --- Аварийный парсер + ограничение длины ---
-function safeParseJSON(content) {
-    let cleanJson = content.replace(/```(?:json)?\n?([\s\S]*?)\n?```/gi, '$1').trim();
-
-    const jsonMatch = cleanJson.match(/(\{[\s\S]*?\}|
-
-\[[\s\S]*?\]
-
-)/);
+// ВСПОМОГАТЕЛЬНАЯ ФУНКЦИЯ: СТРОГИЙ ПАРСИНГ JSON
+function parseStrictJSON(content) {
+    let cleanJson = content;
+    
+    // Удаляем markdown-блоки кода
+    cleanJson = cleanJson.replace(/```(?:json)?\n?([\s\S]*?)\n?```/gi, '$1');
+    
+    // Ищем первый валидный JSON-объект или массив
+    const jsonMatch = cleanJson.match(/(\{[\s\S]*?\}|\[[\s\S]*?\])/);
     if (jsonMatch) {
         cleanJson = jsonMatch[1];
     } else {
-        cleanJson = cleanJson.replace(/^[^
+        // Если не нашли JSON - пытаемся очистить от текста
+        cleanJson = cleanJson
+            .replace(/^[^\[\{]+/, '')
+            .replace(/[^\]\}]+$/, '');
+    }
+    
+    cleanJson = cleanJson.trim();
+    console.log("🧹 Очищенный JSON:", cleanJson);
 
-\[\{]+/, '').replace(/[^\]
-
-\}]+$/, '');
+    if (!cleanJson || (cleanJson[0] !== '[' && cleanJson[0] !== '{')) {
+        throw new Error(`Некорректный формат JSON. Ответ: ${content.substring(0, 300)}`);
     }
 
-    try {
-        let obj = JSON.parse(cleanJson);
-        return limitFields(obj);
-    } catch (e) {
-        console.warn("❌ Ошибка парсинга JSON, пробуем исправить:", e.message);
-
-        if (!cleanJson.endsWith("}")) {
-            cleanJson = cleanJson + "}";
-        }
-
-        const quoteCount = (cleanJson.match(/"/g) || []).length;
-        if (quoteCount % 2 !== 0) {
-            cleanJson = cleanJson.replace(/"([^"]*)$/, '"$1"');
-        }
-
-        let obj = JSON.parse(cleanJson);
-        return limitFields(obj);
-    }
+    return JSON.parse(cleanJson);
 }
 
-// --- Ограничение длины значений до 600 символов ---
-function limitFields(obj) {
-    if (typeof obj !== "object" || obj === null) return obj;
-
-    Object.keys(obj).forEach(key => {
-        if (typeof obj[key] === "string" && obj[key].length > 600) {
-            obj[key] = obj[key].substring(0, 600) + "...";
-        }
-    });
-
-    return obj;
-}
-
-// СОВМЕСТИМОСТЬ СО СТАРОЙ ВЕРСИЕЙ
+// СОВМЕСТИМОСТЬ СО СТАРОЙ ВЕРСИЕЙ (КРИТИЧЕСКИ ВАЖНО!)
 async function _askMedicalAI(promptText, role) {
     console.warn("⚠️ Используется устаревшая функция _askMedicalAI. Обновите вызовы на askSentinel.");
     return await askSentinel(promptText, role);
 }
 
+// ЭКСПОРТИРУЕМ ФУНКЦИИ
 if (typeof window !== 'undefined') {
     window.askSentinel = askSentinel;
     window._askMedicalAI = _askMedicalAI;
