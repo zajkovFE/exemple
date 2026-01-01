@@ -149,23 +149,25 @@ function loadFromDB(index) {
   window.scrollTo(0,0);
 }
 // Загружает протокол по индексу
+// Загружает протокол по индексу
 function loadProtocol(index) {
-  const db = JSON.parse(localStorage.getItem('pharmaDB') || '[]');
-  if (index < 0 || index >= db.length) {
-    console.error(`❌ Запись с индексом ${index} не найдена`); 
+  try {
+    const db = JSON.parse(localStorage.getItem('pharmaDB') || '[]');
+    if (index < 0 || index >= db.length) {
+      throw new Error(`Запись с индексом ${index} не найдена`);
+    }
+    
+    const canvas = document.getElementById('form-canvas');
+    if (!canvas) {
+      throw new Error('Элемент #form-canvas не найден');
+    }
+    
+    canvas.innerHTML = db[index].html;
+    return true;
+  } catch (e) {
+    console.error("❌ Ошибка загрузки записи:", e);
     return false;
   }
-  
-  // Гарантируем, что холст существует
-  const canvas = document.getElementById('form-canvas');
-  if (!canvas) {
-    console.error('❌ Элемент #form-canvas не найден в DOM');
-    return false;
-  }
-  
-  canvas.innerHTML = db[index].html;
-  console.log(`✅ Загружена запись №${index}: ${db[index].name}`);
-  return true;
 }
 
 // Экспортируем в глобальную область видимости
