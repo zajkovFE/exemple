@@ -565,6 +565,43 @@ function updateToolbar() {
     }
   }
 }
+    // Гарантирует наличие id="f-name" на первом блоке
+function ensureFNameID() {
+  const canvas = document.getElementById('form-canvas');
+  const firstTitle = canvas.querySelector('.box-title');
+  if (!firstTitle) return;
+
+  // Удаляем старый id, если есть
+  const oldEl = document.getElementById('f-name');
+  if (oldEl) oldEl.removeAttribute('id');
+
+  // Присваиваем id на контентный блок первого заголовка
+  const contentEl = firstTitle.nextElementSibling;
+  if (contentEl) {
+    contentEl.id = 'f-name';
+  }
+}
+
+// Получает название протокола надежным способом
+function getProtocolName() {
+  // Способ 1: Через id="f-name"
+  const fNameEl = document.getElementById('f-name');
+  if (fNameEl && fNameEl.innerText.trim()) {
+    return fNameEl.innerText.trim();
+  }
+  
+  // Способ 2: Через первый блок с заголовком
+  const firstBox = document.querySelector('#form-canvas .box');
+  if (firstBox) {
+    const titleEl = firstBox.querySelector('.box-title');
+    const contentEl = firstBox.querySelector('.box-content');
+    if (contentEl && titleEl && titleEl.innerText.includes('Название')) {
+      return contentEl.innerText.trim() || 'Без названия';
+    }
+  }
+  
+  return "Новый протокол " + new Date().toLocaleDateString();
+}
 
     function filterDB() {
     const q = document.getElementById('db-search').value.toLowerCase();
