@@ -421,11 +421,11 @@ function clearAIResponse() {
         if (response) {
             // Форматируем ответ для лучшей читаемости
             let formattedResponse = response
-                .replace(/\n{3,}/g, '\n\n') // Убираем лишние переносы
-                .replace(/^(#+) (.*)$/gm, '<strong>$2</strong>') // Заголовки
-                .replace(/(\d+)\. /g, '<strong>$1.</strong> ') // Нумерованные списки
-                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Жирный текст
-                .replace(/\*(.*?)\*/g, '<em>$1</em>'); // Курсив
+                .replace(/\n{3,}/g, '\n\n')
+                .replace(/^(#+) (.*)$/gm, '<strong>$2</strong>')
+                .replace(/(\d+)\. /g, '<strong>$1.</strong> ')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>');
             
             // Добавляем примечание для историков и ученых
             if (role === 'historian' || role === 'scientist') {
