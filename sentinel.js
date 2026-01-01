@@ -114,15 +114,18 @@ async function _askMedicalAI(promptText, role) {
             'HTTP-Referer': window.location.protocol === 'file:' ? 'http://localhost' : window.location.href,
             'X-Title': 'Pharma-Architect'
         },
+        //заменил блок, увеличил количество токенов до 4000...слава мне
         body: JSON.stringify({
-            model: SENTINEL_CONFIG.model,
-            messages: [
-                { role: "system", content: systemInstructions[role] },
-                { role: "user", content: promptText }
-            ],
-            temperature: 0.1,
-            max_tokens: 500
-        })
+    model: SENTINEL_CONFIG.model,
+    messages: [
+        { role: "system", content: systemInstruction },
+        { role: "user", content: promptText }
+    ],
+    temperature: 0.3,
+    max_tokens: 4000, // Увеличено с 2000 до 4000
+    presence_penalty: 0.1, // Снижает повторения
+    frequency_penalty: 0.1
+})
     });
 
     const data = await response.json();
