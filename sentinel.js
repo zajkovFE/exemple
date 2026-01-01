@@ -8,10 +8,9 @@ const SENTINEL_CONFIG = {
         "gemini-flash-latest",   // Самый стабильный короткий адрес
         "gemini-1.5-flash",     // Запасной вариант с явным указанием версии
         "gemini-1.0-pro"        // Резерв
-        // "gemini-2.0-flash-exp" — УДАЛЕНО: нестабильно, нет в v1
     ],
     currentModel: "gemini-flash-latest", // Сразу ставим правильный
-    apiVersion: "v1",  // ← КРИТИЧЕСКИ: v1 вместо v1beta
+    apiVersion: "v1beta",
     isChecking: false
 };
 
@@ -24,17 +23,14 @@ async function sentinelHealthCheck() {
     console.log("🛡 SENTINEL: Проверка здоровья системы...");
 
     try {
-        // ✅ Исправлен URL: убраны лишние пробелы
         const response = await fetch(`https://generativelanguage.googleapis.com/${SENTINEL_CONFIG.apiVersion}/models?key=${KEY}`);
         const data = await response.json();
-
-        // 🔍 Проверка на ошибку от API (например, 429, 400, 403, 404)
-        if (data.error) {
-            const { code, message } = data.error;
-            console.warn(`❌ Gemini API Error ${code}: ${message}`);
-            throw new Error(`Gemini API: ${message} (${code})`);
-        }
-
+// 🔍 Проверка на ошибку от API (например, 429, 400, 403, 404)
+if (data.error) {
+  const { code, message } = data.error;
+  console.warn(`❌ Gemini API Error ${code}: ${message}`);
+  throw new Error(`Gemini API: ${message} (${code})`);
+}
         if (data.models) {
             for (let target of SENTINEL_CONFIG.priorityModels) {
                 const found = data.models.find(m => m.name.includes(target));
@@ -61,14 +57,11 @@ async function askSentinel(promptText, role) {
     if (!KEY) throw new Error("API Key missing");
 
     const systemInstructions = {
-        architect: "Ты — медицинский архитектор. Верни ТОЛЬКО валидный JSON-массив: [{'t': 'Заголовок', 'w': 1}] или [{'t': 'Широкий заголовок', 'w': 2}]. Никаких пояснений, только массив.",
-        editor: "Ты — врач. Верни ТОЛЬКО JSON-объект: {'Заголовок': 'Текст наполнения'}."
+        architect: "Ты — медицинский архитектор. Верни ТОЛЬКО JSON массив: [{'t': 'Заголовок', 'w': 1 или 2}].",
+        editor: "Ты — врач. Верни ТОЛЬКО JSON объект: {'Заголовок': 'Текст наполнения'}."
     };
 
-    // ✅ Исправлен URL: убраны лишние пробелы
     const url = `https://generativelanguage.googleapis.com/${SENTINEL_CONFIG.apiVersion}/models/${SENTINEL_CONFIG.currentModel}:generateContent?key=${KEY}`;
-
-    console.log(`📡 Запрос к: ${url.split('?')[0]} (модель: ${SENTINEL_CONFIG.currentModel})`);
 
     try {
         const response = await fetch(url, {
@@ -84,7 +77,7 @@ async function askSentinel(promptText, role) {
         if (response.status === 404 || response.status === 429) {
             console.warn(`🚨 Ошибка ${response.status} на модели ${SENTINEL_CONFIG.currentModel}. Откат на стабильную версию...`);
             
-            // Исключаем текущую модель из приоритетов
+            // Если 2.0 подвела, временно удаляем её из списка и ищем замену
             SENTINEL_CONFIG.priorityModels = SENTINEL_CONFIG.priorityModels.filter(m => m !== SENTINEL_CONFIG.currentModel);
             await sentinelHealthCheck(); 
             
@@ -92,35 +85,24 @@ async function askSentinel(promptText, role) {
         }
 
         const data = await response.json();
-
-        // 🔍 КРИТИЧЕСКАЯ ПРОВЕРКА: data.error от API (например, 429 в теле JSON)
-        if (data.error) {
-            const { code, message } = data.error;
-            throw new Error(`Gemini API Error ${code}: ${message}`);
-        }
-
-        // ✅ Проверка наличия candidates
+        
+        // ПРОВЕРКА: Если ИИ вернул пустой ответ или ошибку в JSON
         if (!data.candidates || !data.candidates[0]) {
-            throw new Error("Пустой ответ: candidates отсутствуют");
+            throw new Error("Пустой ответ от API");
         }
 
         const content = data.candidates[0].content.parts[0].text;
-        // Очистка от ```json, если ИИ их добавил
         return JSON.parse(content.replace(/```json|```/g, "").trim());
-
     } catch (e) {
-        console.error("❌ SENTINEL CRITICAL ERROR:", e.message || e);
-
-        // Последний fallback: если не flash-latest — переключаемся
+        console.error("❌ SENTINEL CRITICAL ERROR:", e);
+        // Последний шанс: если всё упало, пробуем принудительно flash-latest
         if (SENTINEL_CONFIG.currentModel !== "gemini-flash-latest") {
-            console.log("🔁 Принудительный fallback на gemini-flash-latest");
-            SENTINEL_CONFIG.currentModel = "gemini-flash-latest";
-            return askSentinel(promptText, role);
+             SENTINEL_CONFIG.currentModel = "gemini-flash-latest";
+             return askSentinel(promptText, role);
         }
-
         return null;
     }
 }
 
-// Запуск диагностики при старте
+// Запускаем диагностику при старте
 sentinelHealthCheck();
