@@ -117,6 +117,7 @@
     }
 }
     </style>
+<script src="https://unpkg.com/ai@2.2.35/dist/index.umd.js"></script>
 <script src="sentinel.js"></script>
 <script src="render-structure.js"></script>
 </head>
@@ -303,20 +304,52 @@ function importManualAI() {
     } catch (e) { alert("Ошибка JSON! Проверьте формат ответа."); }
 }
 
+// --- ВЕТКА 2: ГЕНЕРАТИВНЫЙ API (ИСПОЛЬЗУЕТ ГОТОВЫЙ КЛЮЧ) ---
+// --- ЕДИНЫЙ ДВИЖОК ЗАПРОСОВ ---
+async function fetchGeminiSDK(promptText, role) {
+    const KEY = localStorage.getItem('gemini_api_key')?.trim();
+    if (!KEY) return alert("Ключ API не найден! Проверьте раздел СЕРВИС.");
+
+    const roles = {
+        architect: "Ты — медицинский архитектор. Составь структуру документа. Верни ТОЛЬКО JSON массив объектов: [{'t': 'Заголовок', 'w': 1 или 2}].",
+        editor: "Ты — врач-клиницист. Заполни разделы. Верни ТОЛЬКО JSON объект: {'Заголовок': 'текст'}."
+    };
+
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${KEY}`;
+
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: `${roles[role]}\n\nЗапрос: ${promptText}` }] }],
+                generationConfig: { 
+                    temperature: 0.1, 
+                    responseMimeType: "application/json" 
+                }
+            })
+        });
+
+        const data = await response.json();
+        if (data.error) throw new Error(data.error.message);
+
+        const raw = data.candidates[0].content.parts[0].text;
+        return JSON.parse(raw.replace(/```json|```/g, "").trim());
+    } catch (e) {
+        console.error("SDK Error:", e);
+        alert("Ошибка ИИ: " + e.message);
+        return null;
+    }
+}
 
 // --- ВАШИ КНОПКИ (ТЕПЕРЬ ОНИ БУДУТ ВИДИМЫ ДЛЯ HTML) ---
 async function aiDirectCreate() {
     const topic = prompt("Какую структуру создать? (напр. История болезни: Гастрит)");
     if (!topic) return;
     
-    // ✅ Вместо fetchGeminiSDK — askSentinel (из часовой.txt)
-    const res = await askSentinel(topic, 'architect');
-    
+    const res = await fetchGeminiSDK(topic, 'architect');
     if (res && typeof renderStructure === 'function') {
-        renderStructure(res);
-    } else {
-        console.error("❌ Не удалось сгенерировать структуру:", res);
-        alert("ИИ не ответил. Проверьте ключ и интернет.");
+        renderStructure(res); // Используем вашу функцию отрисовки
     }
     closeModal('ai-gen-modal');
 }
@@ -325,41 +358,20 @@ async function aiDirectFill() {
     const context = prompt("Введите данные (препарат или симптомы):");
     if (!context) return;
 
-    const titles = Array.from(document.querySelectorAll('.box-title'))
-        .map(t => t.innerText.trim())
-        .filter(t => t);
-    
-    if (titles.length === 0) {
-        alert("Нет заголовков для заполнения");
-        return;
-    }
-
+    const titles = Array.from(document.querySelectorAll('.box-title')).map(t => t.innerText);
     const query = `Заполни эти разделы: ${titles.join(', ')}. Контекст: ${context}`;
-    
-    // ✅ Единый движок — askSentinel
-    const res = await askSentinel(query, 'editor');
 
-    if (res && typeof res === 'object') {
-        for (const title in res) {
-            const targetBox = Array.from(document.querySelectorAll('.box'))
-                .find(box => {
-                    const boxTitle = box.querySelector('.box-title')?.innerText.trim();
-                    return boxTitle && boxTitle.toLowerCase() === title.toLowerCase();
-                });
-
-            if (targetBox) {
-                const contentEl = targetBox.querySelector('.box-content');
-                if (contentEl) {
-                    contentEl.innerText = res[title];
-                }
-            }
-        }
-        alert("✅ ИИ заполнил разделы");
-    } else {
-        alert("❌ ИИ не вернул данные. Проверьте API-ключ.");
+    const res = await fetchGeminiSDK(query, 'editor');
+    if (res) {
+        Object.keys(res).forEach(title => {
+            const box = Array.from(document.querySelectorAll('.box'))
+                .find(b => b.querySelector('.box-title').innerText === title);
+            if (box) box.querySelector('.box-content').innerText = res[title];
+        });
     }
     closeModal('ai-gen-modal');
 }
+
     // --- ОТРИСОВКА БАЗЫ И СОРТИРОВКА ---
     function renderDB() {
         const list = document.getElementById('db-list');
@@ -873,20 +885,8 @@ async function callGemini(text) {
         const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-  contents: [{
-    parts: [{
-      text: `${systemInstructions[role]}\n\nКонтекст: ${promptText}`
-    }]
-  }],
-  generationConfig: {
-    temperature: 0.1,
-    maxOutputTokens: 1000,
-    // responseMimeType убран — его нет в v1
-    topP: 0.95,
-    topK: 40
-  }
-})
+            body: JSON.stringify({ contents: [{ parts: [{ text: text }] }] })
+        });
         
         const data = await resp.json();
         if (data.error) throw new Error(data.error.message);
