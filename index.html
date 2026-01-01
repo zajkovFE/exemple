@@ -452,6 +452,62 @@ async function aiDirectFill() {
     }
 
     // Логика ХРАНЕНИя И СОХРАНЕНИя ---
+    function startSaveSequence() {
+  const db = JSON.parse(localStorage.getItem('pharmaDB') || '[]');
+  let selectedGroup = "";
+  const title = document.getElementById('save-step-title');
+  const options = document.getElementById('save-options');
+  const input = document.getElementById('save-custom-input');
+  const confirmBtn = document.getElementById('save-confirm-btn');
+  
+  title.innerText = "Выберите Группу";
+  const groups = [...new Set(db.map(item => item.group))];
+  
+  const renderOpts = (list, callback) => {
+    options.innerHTML = "";
+    list.forEach(opt => {
+      const b = document.createElement('button'); 
+      b.className = "opt-btn"; 
+      b.innerText = opt;
+      b.onclick = () => { input.value = opt; callback(opt); };
+      options.appendChild(b);
+    });
+  };
+  
+  const finalize = (sub) => {
+    ensureFNameID(); // Гарантируем наличие id="f-name"
+    
+    db.push({
+      name: getProtocolName() || 'Без названия',
+      group: selectedGroup, 
+      subgroup: sub,
+      html: document.getElementById('form-canvas').innerHTML,
+      updatedAt: Date.now()
+    });
+    
+    localStorage.setItem('pharmaDB', JSON.stringify(db));
+    currentEditingIndex = db.length - 1;
+    updateToolbar(); 
+    renderDB(); 
+    closeModal('save-modal');
+    alert("✅ Протокол успешно сохранен!");
+  };
+  
+  const askSub = () => {
+    title.innerText = "Выберите Подгруппу"; 
+    input.value = "";
+    const subs = [...new Set(db.filter(i => i.group === selectedGroup).map(i => i.subgroup))];
+    renderOpts(subs, (val) => finalize(val));
+    confirmBtn.onclick = () => finalize(input.value.trim());
+  };
+  
+  renderOpts(groups, (val) => { selectedGroup = val; askSub(); });
+  openModal('save-modal');
+  confirmBtn.onclick = () => { 
+    selectedGroup = input.value.trim(); 
+    if(selectedGroup) askSub(); 
+  };
+}
 
 function updateToolbar() {
         const btnNew = document.getElementById('btn-save-new');
