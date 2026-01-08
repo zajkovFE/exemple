@@ -16,8 +16,7 @@ async function askSentinel(promptText, role = 'general', context = '') {
     }
 
     // СИСТЕМНЫЕ ИНСТРУКЦИИ ДЛЯ ВСЕХ РОЛЕЙ
-    const systemInstructions = {
-       const systemInstructions = {
+const systemInstructions = {
     // Просим больше блоков и детализации
     architect: `Ты — ведущий медицинский методолог. Спроектируй подробную структуру документа. 
     Верни ТОЛЬКО JSON-массив объектов: [{"t":"Заголовок","w":1}]. 
@@ -32,7 +31,7 @@ async function askSentinel(promptText, role = 'general', context = '') {
     scientist: `Вы — учёный с PhD в области ${context || 'различных дисциплин'}. Объясняйте сложные концепции ясно, но без упрощений.`,
     philosopher: `Вы — философ, анализирующий ${context || 'фундаментальные вопросы бытия'}. Рассматривайте разные точки зрения, приводите аргументы.`,
     safety_engineer: `Вы — инженер по техносферной безопасности. Оценивайте риски объективно, предлагайте конкретные меры защиты.`
-    };
+};
 
     // Определяем инструкцию для роли
     let systemInstruction = systemInstructions[role] || systemInstructions.general;
