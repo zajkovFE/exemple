@@ -626,31 +626,54 @@ async function aiDirectCreate() {
     closeModal('ai-gen-modal');
 }
 
-// 2. Заполнение данных (Клиницист)...да, да, да, от скромности не помрете
-async function aiDirectFill() {
-    const context = prompt("Введите данные (препарат или симптомы):");
+// 2. Заполнение данных (Клиницист)...да, да, да, от скромности не помрете в общем, делаем буддиста пофигиста версии 2.0
+async function aiDirectFill(event) {
+    const context = prompt("Введите данные (препарат, симптомы или детали исследования):");
     if (!context) return;
 
-    const titles = Array.from(document.querySelectorAll('.box-title')).map(t => t.innerText);
-    const query = `Заполни эти разделы: ${titles.join(', ')}. Контекст: ${context}`;
+    // 1. Индикатор загрузки (меняем текст кнопки, на которую нажали)
+    const btn = event?.target || document.querySelector('button[onclick*="aiDirectFill"]');
+    const oldText = btn.innerText;
+    btn.innerText = "⏳ Заполняю...";
+    btn.disabled = true;
 
-    // Снова вызываем автономный движок...трп..трп...поехали
-    const res = await callAI(query, 'editor'); 
-    
-    if (res) {
-        Object.keys(res).forEach(title => {
-           // Ищем блок, игнорируя регистр и лишние пробелы в заголовке... он не только стал умным, он стал буддистом пофигистом...мы против восстания машин. ура и возликуем сестры и братья
-            const box = Array.from(document.querySelectorAll('.box')).find(b => {
-                const boxTitle = b.querySelector('.box-title').innerText.trim().toLowerCase();
-                const aiTitle = title.trim().toLowerCase();
-                return boxTitle === aiTitle;
+    try {
+        const titles = Array.from(document.querySelectorAll('.box-title')).map(t => t.innerText.trim());
+        const query = `Заполни эти разделы: ${titles.join(', ')}. Контекст: ${context}`;
+
+        const res = await callAI(query, 'editor'); 
+        
+        if (res) {
+            Object.keys(res).forEach(aiKey => {
+                // 2. УМНЫЙ ПОИСК (Буддист-пофигист 2.0)
+                const box = Array.from(document.querySelectorAll('.box')).find(b => {
+                    const pageTitle = b.querySelector('.box-title').innerText.trim().toLowerCase();
+                    const aiTitle = aiKey.trim().toLowerCase();
+                    
+                    // Условие: полное совпадение ИЛИ заголовок страницы содержится в ключе ИИ (и наоборот)
+                    return pageTitle === aiTitle || 
+                           aiTitle.includes(pageTitle) || 
+                           pageTitle.includes(aiTitle);
+                });
+
+                if (box) {
+                    // Используем innerText для сохранения форматирования
+                    box.querySelector('.box-content').innerText = res[aiKey];
+                    console.log(`✅ Наполнен блок: ${aiKey}`);
+                } else {
+                    console.warn(`⚠️ Блок не найден для ключа ИИ: "${aiKey}"`);
+                }
             });
-            if (box) box.querySelector('.box-content').innerText = res[title];
-        });
+        }
+    } catch (e) {
+        console.error("Ошибка заполнения:", e);
+    } finally {
+        // 3. Возвращаем кнопку в исходное состояние
+        btn.innerText = oldText;
+        btn.disabled = false;
+        closeModal('ai-gen-modal');
     }
-    closeModal('ai-gen-modal');
 }
-
     // --- ОТРИСОВКА БАЗЫ И СОРТИРОВКА ---
     function renderDB() {
         const list = document.getElementById('db-list');
