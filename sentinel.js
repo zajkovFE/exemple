@@ -1,7 +1,7 @@
 // SENTINEL AI ENGINE (v2.8) - Qwen OpenRouter Edition (ПОЛНОСТЬЮ ИСПРАВЛЕНО)
 
 const SENTINEL_CONFIG = {
-    model: "openai/gpt-oss-120b:free", 
+    model: "xiaomi/mimo-v2-flash:free", 
     apiEndpoint: "https://openrouter.ai/api/v1/chat/completions" // ИСПРАВЛЕНО: убраны пробелы!
 };
 
