@@ -6,50 +6,65 @@ function renderStructure(data) {
   }
 
   const canvas = document.getElementById('form-canvas');
-  if (confirm("Очистить текущий холст и вставить новую структуру?")) {
+  // Используем стильный confirm или просто очистку
+  if (canvas.children.length > 0 && confirm("Очистить текущий холст перед вставкой?")) {
     canvas.innerHTML = '';
   }
 
   data.forEach(item => {
-    const width = item.w || 1;
+    // Гарантируем, что ширина — это число 1 или 2
+    const width = parseInt(item.w) || 1;
     
-    // Находим последнюю строку, у которой row.__usedWidth < 2
     let row = null;
     const rows = canvas.querySelectorAll('.form-row');
     
+    // Ищем строку, где есть место
     for (let i = rows.length - 1; i >= 0; i--) {
       const r = rows[i];
-      const used = r.__usedWidth || 0;
-      if (used + width <= 2) {
+      const used = parseFloat(r.dataset.usedWidth) || 0;
+      if (used + width <= 2.1) { // 2.1 для запаса на погрешность
         row = r;
         break;
       }
     }
 
-    // Если нет подходящей строки — создаём новую
     if (!row) {
       row = addNewRow();
-      row.__usedWidth = 0; // ← привязываем данные к строке
+      row.dataset.usedWidth = 0; // Используем dataset вместо __usedWidth (это надежнее)
     }
 
-    // Создаём блок
     const box = document.createElement('div');
     box.className = 'box';
-    box.style.flex = width;
+    
+    // Улучшенная настройка ширины через Flex
+    if (width >= 2) {
+      box.style.flex = "1 1 100%";
+    } else {
+      box.style.flex = "1 1 calc(50% - 15px)";
+    }
 
     box.innerHTML = `
       <div class="box-ctrl">
         <button class="ctrl-btn" onclick="resizeBox(this, 0.3)">↔️</button>
-        <input type="color" class="color-pick" onchange="this.parentElement.parentElement.style.background=this.value">
-        <button class="ctrl-btn" style="background:red" onclick="this.closest('.box').remove()">❌</button>
+        <input type="color" class="color-pick" title="Цвет фона" onchange="this.parentElement.parentElement.style.background=this.value">
+        <button class="ctrl-btn" style="background:red" onclick="removeBox(this)">❌</button>
       </div>
-      <div class="box-title" contenteditable="true">${item.t || 'Без заголовка'}</div>
-      <div class="box-content" contenteditable="true"></div>
+      <div class="box-title" contenteditable="true">${item.t || 'Новый раздел'}</div>
+      <div class="box-content" contenteditable="true" placeholder="Текст появится здесь..."></div>
     `;
 
     row.appendChild(box);
-    row.__usedWidth += width; // ← обновляем именно у строки
+    row.dataset.usedWidth = (parseFloat(row.dataset.usedWidth) || 0) + width;
   });
+}
+
+// Вспомогательная функция для удаления, которая чистит счетчик строки
+function removeBox(btn) {
+    const box = btn.closest('.box');
+    const row = box.parentElement;
+    const width = box.style.flex.includes('100%') ? 2 : 1;
+    row.dataset.usedWidth = Math.max(0, (parseFloat(row.dataset.usedWidth) || 0) - width);
+    box.remove();
 
   console.log(`✅ Структура отрисована: ${data.length} блоков → ${canvas.querySelectorAll('.form-row').length} строк`);
 }
