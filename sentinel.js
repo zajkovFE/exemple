@@ -1,7 +1,7 @@
 // SENTINEL AI ENGINE (v2.8) - Qwen OpenRouter Edition (ПОЛНОСТЬЮ ИСПРАВЛЕНО)
 
 const SENTINEL_CONFIG = {
-    model: "google/gemma-3-27b-it:free", 
+    model: "openai/gpt-oss-120b:free", 
     apiEndpoint: "https://openrouter.ai/api/v1/chat/completions" // ИСПРАВЛЕНО: убраны пробелы!
 };
 
