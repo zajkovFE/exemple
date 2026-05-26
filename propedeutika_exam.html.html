@@ -1,0 +1,2188 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Пропедевтика — Подготовка к экзамену</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #161920;
+    --card: #1e222d;
+    --border: #2a2f3e;
+    --accent: #e8c97a;
+    --accent2: #7ab8e8;
+    --accent3: #7ae8b8;
+    --danger: #e87a7a;
+    --text: #e8e6df;
+    --muted: #7a7f8e;
+    --radius: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* BG texture */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at 20% 20%, rgba(122,184,232,0.04) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 80%, rgba(232,201,122,0.04) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrap { position: relative; z-index: 1; max-width: 920px; margin: 0 auto; padding: 0 20px 60px; }
+
+  /* HEADER */
+  header {
+    padding: 48px 0 32px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 36px;
+  }
+  .subtitle {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(28px, 5vw, 48px);
+    font-weight: 900;
+    line-height: 1.1;
+    color: var(--text);
+  }
+  h1 span { color: var(--accent); }
+
+  .stats-row {
+    display: flex;
+    gap: 24px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+  .stat {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .stat strong { color: var(--accent2); }
+
+  /* TABS */
+  .tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 4px;
+    margin-bottom: 28px;
+    background: var(--surface);
+    padding: 4px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+  }
+  .tab {
+    padding: 10px 8px;
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .tab.active {
+    background: var(--card);
+    color: var(--accent);
+    border: 1px solid var(--border);
+  }
+  .tab:hover:not(.active) { color: var(--text); }
+
+  @media (min-width: 540px) {
+    .tabs { grid-template-columns: repeat(5, 1fr); }
+  }
+
+  /* MODULE SELECTOR */
+  .module-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+  .mod-btn {
+    padding: 12px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--muted);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+    line-height: 1.4;
+  }
+  .mod-btn .mod-icon { font-size: 18px; margin-bottom: 6px; display: block; }
+  .mod-btn:hover { border-color: var(--accent); color: var(--text); }
+  .mod-btn.active {
+    background: rgba(232,201,122,0.08);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* QUIZ CARD */
+  .quiz-wrap { display: none; }
+  .quiz-wrap.visible { display: block; }
+
+  .progress-bar {
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-bottom: 28px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  .q-counter {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  .question-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    margin-bottom: 18px;
+    animation: fadeUp 0.3s ease;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .question-text {
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1.6;
+    margin-bottom: 22px;
+    color: var(--text);
+  }
+
+  .options { display: flex; flex-direction: column; gap: 10px; }
+
+  .option-btn {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.18s;
+    text-align: left;
+    line-height: 1.5;
+  }
+  .option-btn:hover:not(:disabled) {
+    border-color: var(--accent2);
+    background: rgba(122,184,232,0.06);
+  }
+  .option-btn .opt-letter {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    min-width: 18px;
+    margin-top: 2px;
+  }
+  .option-btn.correct {
+    border-color: var(--accent3);
+    background: rgba(122,232,184,0.08);
+    color: var(--accent3);
+  }
+  .option-btn.correct .opt-letter { color: var(--accent3); }
+  .option-btn.wrong {
+    border-color: var(--danger);
+    background: rgba(232,122,122,0.08);
+    color: var(--danger);
+  }
+  .option-btn.wrong .opt-letter { color: var(--danger); }
+  .option-btn:disabled { cursor: default; }
+
+  .explanation {
+    margin-top: 16px;
+    padding: 14px 16px;
+    background: rgba(122,184,232,0.06);
+    border-left: 3px solid var(--accent2);
+    border-radius: 0 8px 8px 0;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+    display: none;
+  }
+  .explanation.visible { display: block; animation: fadeUp 0.25s ease; }
+
+  .nav-row {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 8px;
+  }
+  .btn {
+    padding: 11px 22px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.18s;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #0d0f14;
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+  .btn-primary:hover { background: #f0d48a; }
+  .btn-ghost { background: transparent; color: var(--muted); }
+  .btn-ghost:hover { color: var(--text); border-color: var(--muted); }
+
+  /* RESULT */
+  .result-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 40px;
+    text-align: center;
+    animation: fadeUp 0.4s ease;
+  }
+  .result-score {
+    font-family: 'Playfair Display', serif;
+    font-size: 72px;
+    font-weight: 900;
+    color: var(--accent);
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .result-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+  .result-msg {
+    font-size: 18px;
+    color: var(--text);
+    margin-bottom: 32px;
+    font-weight: 400;
+  }
+
+  /* FLASHCARDS */
+  .flashcard-wrap { display: none; }
+  .flashcard-wrap.visible { display: block; }
+
+  .flashcard {
+    perspective: 1200px;
+    margin-bottom: 20px;
+    cursor: pointer;
+  }
+  .flashcard-inner {
+    position: relative;
+    width: 100%;
+    min-height: 200px;
+    transform-style: preserve-3d;
+    transition: transform 0.5s cubic-bezier(0.4,0,0.2,1);
+  }
+  .flashcard.flipped .flashcard-inner { transform: rotateY(180deg); }
+  .card-face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  .card-face.back {
+    transform: rotateY(180deg);
+    border-color: var(--accent3);
+    background: rgba(122,232,184,0.04);
+  }
+  .card-face .hint {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+  .card-face .card-q {
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--text);
+  }
+  .card-face.back .card-q {
+    color: var(--accent3);
+    font-weight: 500;
+  }
+  /* fix card height */
+  .flashcard { min-height: 200px; }
+  .flashcard-inner { min-height: 200px; }
+  .card-face { min-height: 200px; position: absolute; width: 100%; }
+
+  .fc-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 12px;
+  }
+  .fc-count {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  /* SCORE BADGE */
+  .score-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    background: rgba(232,201,122,0.1);
+    border: 1px solid rgba(232,201,122,0.3);
+    border-radius: 100px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    margin-top: 16px;
+  }
+
+  @media (max-width: 600px) {
+    .tab { font-size: 10px; }
+    .module-grid { grid-template-columns: 1fr 1fr; }
+  }
+
+  /* RESULT SCREEN */
+  .result-screen { display: none; animation: fadeUp 0.4s ease; }
+  .result-screen.visible { display: block; }
+  .result-meta {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 8px;
+    letter-spacing: 1px;
+  }
+  .result-pools {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+  .result-pool-item {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  /* POOL BAR on mod cards */
+  .mod-count {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    display: block;
+    margin-top: 2px;
+    letter-spacing: 0.5px;
+  }
+  .pool-bar {
+    display: flex;
+    height: 4px;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 8px;
+    background: var(--border);
+    width: 100%;
+  }
+  .pool-seg { height: 100%; transition: width 0.4s ease; }
+  .pool-new  { background: #555; }
+  .pool-weak { background: #e87a7a; }
+  .pool-mid  { background: #e8c97a; }
+  .pool-good { background: #7ae8b8; }
+
+  /* HISTORY */
+  .history-wrap { display: none; }
+  .history-wrap.visible { display: block; }
+  .history-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .history-item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    animation: fadeUp 0.25s ease;
+  }
+  .history-pct {
+    font-family: 'Playfair Display', serif;
+    font-size: 32px;
+    font-weight: 900;
+    min-width: 72px;
+    text-align: center;
+  }
+  .history-pct.hi { color: var(--accent3); }
+  .history-pct.mid { color: var(--accent); }
+  .history-pct.lo { color: var(--danger); }
+  .history-details { flex: 1; }
+  .history-mod {
+    font-size: 14px;
+    color: var(--text);
+    margin-bottom: 4px;
+    font-weight: 400;
+  }
+  .history-time {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .history-score {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    text-align: right;
+    white-space: nowrap;
+  }
+  .history-empty {
+    text-align: center;
+    color: var(--muted);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    padding: 48px 0;
+  }
+
+  /* IMPORT */
+  .import-wrap { display: none; }
+  .import-wrap.visible { display: block; }
+
+  .import-type-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+  .import-type-btn {
+    flex: 1;
+    padding: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--muted);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.18s;
+  }
+  .import-type-btn.active {
+    background: rgba(232,201,122,0.08);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .import-type-btn:hover:not(.active) { color: var(--text); border-color: var(--muted); }
+
+  .import-section { margin-bottom: 20px; }
+  .import-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .import-copy-btn {
+    cursor: pointer;
+    color: var(--accent2);
+    font-size: 11px;
+    letter-spacing: 1px;
+    transition: opacity 0.15s;
+  }
+  .import-copy-btn:hover { opacity: 0.7; }
+
+  .import-schema {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--accent3);
+    line-height: 1.7;
+    white-space: pre;
+    overflow-x: auto;
+  }
+
+  .import-mod-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .import-mod-pill {
+    padding: 6px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    font-size: 12px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .import-mod-pill:hover { border-color: var(--accent); color: var(--text); }
+  .import-mod-pill.active { border-color: var(--accent); color: var(--accent); background: rgba(232,201,122,0.08); }
+
+  .import-input {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .import-input:focus { border-color: var(--accent2); }
+
+  .import-textarea {
+    width: 100%;
+    min-height: 160px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .import-textarea:focus { border-color: var(--accent2); }
+
+  .import-file-label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .import-filename {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .import-feedback {
+    min-height: 24px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    border-radius: 8px;
+    padding: 0;
+    transition: all 0.2s;
+  }
+  .import-feedback.ok { color: var(--accent3); padding: 10px 14px; background: rgba(122,232,184,0.07); border: 1px solid rgba(122,232,184,0.2); }
+  .import-feedback.err { color: var(--danger); padding: 10px 14px; background: rgba(232,122,122,0.07); border: 1px solid rgba(232,122,122,0.2); }
+  .emoji-hint {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 5px;
+    line-height: 1.5;
+  }
+
+  /* EDITOR */
+  .editor-wrap { display: none; }
+  .editor-wrap.visible { display: block; }
+
+  .editor-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 10px;
+    animation: fadeUp 0.2s ease;
+  }
+  .editor-card.editing { border-color: var(--accent2); }
+
+  .editor-q-text {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.5;
+    margin-bottom: 10px;
+  }
+  .editor-meta {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    margin-bottom: 10px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .editor-ans-badge {
+    padding: 2px 8px;
+    border-radius: 100px;
+    background: rgba(122,232,184,0.12);
+    border: 1px solid rgba(122,232,184,0.3);
+    color: var(--accent3);
+  }
+  .editor-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  /* Edit form */
+  .edit-form { margin-top: 12px; border-top: 1px solid var(--border); padding-top: 14px; }
+  .edit-field-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+    margin-top: 12px;
+  }
+  .edit-field-label:first-child { margin-top: 0; }
+  .edit-q-input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 13px;
+    outline: none;
+    resize: vertical;
+    min-height: 60px;
+    transition: border-color 0.15s;
+  }
+  .edit-q-input:focus { border-color: var(--accent2); }
+
+  .edit-opts-list { display: flex; flex-direction: column; gap: 6px; }
+  .edit-opt-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .edit-opt-letter {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    width: 16px;
+    flex-shrink: 0;
+    text-align: center;
+  }
+  .edit-opt-input {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    color: var(--text);
+    font-size: 12px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .edit-opt-input:focus { border-color: var(--accent2); }
+  .edit-opt-radio {
+    width: 18px; height: 18px;
+    accent-color: var(--accent3);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .edit-opt-row.is-answer .edit-opt-input { border-color: rgba(122,232,184,0.4); }
+
+  .edit-save-row {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 14px;
+  }
+
+  .editor-empty {
+    text-align: center;
+    color: var(--muted);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    padding: 40px 0;
+  }
+  .editor-count {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 16px;
+    letter-spacing: 1px;
+  }
+
+  /* COMPLEX BUTTON */
+  #complex-btn-wrap { margin-bottom: 12px; }
+  .complex-panel {
+    background: linear-gradient(135deg, rgba(122,165,232,0.08) 0%, rgba(232,201,122,0.08) 100%);
+    border: 1px solid rgba(122,165,232,0.30);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .complex-panel:hover { border-color: rgba(122,165,232,0.55); }
+  .complex-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+  }
+  .complex-icon { font-size: 20px; flex-shrink: 0; }
+  .complex-text {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    flex: 1;
+  }
+  .complex-sub {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    white-space: nowrap;
+  }
+  .complex-arrow {
+    font-size: 16px;
+    color: var(--muted);
+    transition: transform 0.2s;
+    flex-shrink: 0;
+  }
+  .complex-arrow.open { transform: rotate(180deg); }
+
+  .complex-options {
+    border-top: 1px solid var(--border);
+    padding: 14px 18px 16px;
+    animation: fadeUp 0.15s ease;
+  }
+  .complex-options-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+  .complex-checks {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .complex-check-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+  }
+  .complex-check-row input[type=checkbox] {
+    width: 17px; height: 17px;
+    accent-color: var(--accent2);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .complex-check-label {
+    font-size: 13px;
+    color: var(--text);
+    flex: 1;
+  }
+  .complex-check-count {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+  }
+  .complex-options-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
+  }
+  .complex-sel-info {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--accent2);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="subtitle">Пропедевтика внутренних болезней · 3 курс</div>
+    <h1>Подготовка к <span>экзамену</span></h1>
+    <div class="stats-row">
+      <div class="stat">Модулей: <strong>5</strong></div>
+      <div class="stat">Тестов: <strong id="total-q">0</strong></div>
+      <div class="stat">Карточек: <strong id="total-fc">0</strong></div>
+      <div id="global-score" class="score-badge" style="display:none">🏆 Правильных: <span id="gs-val">0</span></div>
+    </div>
+  </header>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchMode('test')">📝 Тесты</button>
+    <button class="tab" onclick="switchMode('flash')">🃏 Карточки</button>
+    <button class="tab" onclick="switchMode('history')">📊 История</button>
+    <button class="tab" onclick="switchMode('import')">➕ Добавить</button>
+    <button class="tab" onclick="switchMode('editor')">✏️ Редактор</button>
+  </div>
+
+  <!-- MODULE SELECT -->
+  <div id="complex-btn-wrap">
+    <div class="complex-panel" id="complex-panel">
+      <button class="complex-btn" id="complex-btn" onclick="toggleComplexPanel()">
+        <span class="complex-icon">⚡</span>
+        <span class="complex-text">Комплексный тест</span>
+        <span class="complex-sub" id="complex-sub"></span>
+        <span class="complex-arrow" id="complex-arrow">▾</span>
+      </button>
+      <div class="complex-options" id="complex-options" style="display:none">
+        <div class="complex-options-label">Выберите системы:</div>
+        <div class="complex-checks" id="complex-checks"></div>
+        <div class="complex-options-footer">
+          <span class="complex-sel-info" id="complex-sel-info"></span>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-ghost" style="font-size:11px;padding:6px 10px" onclick="complexSelectAll(true)">Все</button>
+            <button class="btn btn-ghost" style="font-size:11px;padding:6px 10px" onclick="complexSelectAll(false)">Ничего</button>
+            <button class="btn btn-primary" style="font-size:12px;padding:8px 16px" onclick="startComplex()">▶ Начать</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="module-grid" id="mod-grid"></div>
+
+  <!-- QUIZ -->
+  <div class="quiz-wrap" id="quiz-wrap">
+    <div class="progress-bar"><div class="progress-fill" id="prog"></div></div>
+    <div class="q-counter" id="q-counter"></div>
+    <div class="question-card" id="q-card">
+      <div class="question-text" id="q-text"></div>
+      <div class="options" id="q-opts"></div>
+      <div class="explanation" id="q-exp"></div>
+    </div>
+    <div class="nav-row">
+      <button class="btn btn-ghost" onclick="restartQuiz()">↺ Сначала</button>
+      <button class="btn btn-primary" id="next-btn" onclick="nextQ()" style="display:none">Следующий →</button>
+    </div>
+  </div>
+
+  <!-- RESULT SCREEN -->
+  <div class="result-screen" id="result-screen">
+    <div class="result-card">
+      <div class="result-score" id="res-pct"></div>
+      <div class="result-label" id="res-label"></div>
+      <div class="result-msg" id="res-msg"></div>
+      <div class="result-meta" id="res-meta"></div>
+      <div class="result-pools" id="res-pools"></div>
+    </div>
+    <div class="nav-row" style="margin-top:20px; justify-content:center; gap:16px">
+      <button class="btn btn-ghost" onclick="restartQuiz()">↺ Сначала</button>
+      <button class="btn btn-primary" onclick="switchMode('history')">📊 История</button>
+    </div>
+  </div>
+
+  <!-- FLASHCARDS -->
+  <div class="flashcard-wrap" id="flash-wrap">
+    <div class="flashcard" id="flashcard" onclick="flipCard()">
+      <div class="flashcard-inner" id="fc-inner">
+        <div class="card-face front">
+          <div class="hint">Нажмите, чтобы увидеть ответ</div>
+          <div class="card-q" id="fc-q"></div>
+        </div>
+        <div class="card-face back">
+          <div class="hint">✓ Ответ</div>
+          <div class="card-q" id="fc-a"></div>
+        </div>
+      </div>
+    </div>
+    <div class="fc-nav">
+      <button class="btn btn-ghost" onclick="prevCard()">← Назад</button>
+      <div class="fc-count" id="fc-count"></div>
+      <button class="btn btn-primary" onclick="nextCard()">Вперёд →</button>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="history-wrap" id="history-wrap">
+    <div class="history-header">
+      <span class="subtitle">Журнал результатов</span>
+      <button class="btn btn-ghost" style="font-size:11px;padding:6px 12px" onclick="clearHistory()">🗑 Очистить</button>
+    </div>
+    <div id="history-list"></div>
+  </div>
+
+  <!-- IMPORT -->
+  <div class="import-wrap" id="import-wrap">
+    <div class="import-type-row">
+      <button class="import-type-btn active" id="itype-qs" onclick="setImportType('qs')">📝 Вопросы теста</button>
+      <button class="import-type-btn" id="itype-fc" onclick="setImportType('fc')">🃏 Карточки</button>
+    </div>
+
+    <!-- Target module selector -->
+    <div class="import-section">
+      <div class="import-label">Добавить в модуль</div>
+      <div class="import-mod-row" id="import-mod-row"></div>
+      <div style="margin-top:10px">
+        <div class="import-label" style="margin-bottom:8px">Или создать новый модуль</div>
+        <div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap">
+          <div style="flex:1;min-width:160px">
+            <input id="new-mod-name" class="import-input" style="width:100%;box-sizing:border-box" placeholder="Название, напр. ЛОР 🦻" />
+            <div class="emoji-hint">Эмодзи можно вставить прямо в название: ЛОР 🦻 или 🧠 Психиатрия</div>
+          </div>
+          <button class="btn btn-ghost" style="font-size:11px;padding:8px 14px;white-space:nowrap" onclick="createNewMod()">+ Создать</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- JSON format reference -->
+    <div class="import-section">
+      <div class="import-label">Формат JSON <span class="import-copy-btn" onclick="copyTemplate()">⧉ скопировать шаблон</span></div>
+      <div class="import-schema" id="import-schema"></div>
+    </div>
+
+    <!-- Paste area -->
+    <div class="import-section">
+      <div class="import-label">Вставить JSON</div>
+      <textarea class="import-textarea" id="import-paste" placeholder='[ { "q": "...", "opts": ["А","Б","В","Г","Д"], "ans": 0 }, … ]'></textarea>
+    </div>
+
+    <!-- File upload -->
+    <div class="import-section">
+      <div class="import-label">Или загрузить файл .json</div>
+      <label class="import-file-label">
+        <input type="file" accept=".json" id="import-file" onchange="handleFile(event)" style="display:none" />
+        <span class="btn btn-ghost" onclick="document.getElementById('import-file').click()">📂 Выбрать файл</span>
+        <span class="import-filename" id="import-filename">файл не выбран</span>
+      </label>
+    </div>
+
+    <!-- Feedback -->
+    <div class="import-feedback" id="import-feedback"></div>
+
+    <!-- Actions -->
+    <div class="nav-row" style="justify-content:flex-end;margin-top:4px">
+      <button class="btn btn-ghost" onclick="clearImport()">✕ Сбросить</button>
+      <button class="btn btn-primary" onclick="doImport()">✓ Добавить</button>
+    </div>
+  </div>
+
+  <!-- EDITOR -->
+  <div class="editor-wrap" id="editor-wrap">
+    <div class="import-section">
+      <div class="import-label">Модуль для редактирования</div>
+      <div class="import-mod-row" id="editor-mod-row"></div>
+      <div id="editor-mod-actions" style="margin-top:10px;display:none">
+        <div id="delete-mod-confirm" style="display:none;background:rgba(232,122,122,0.08);border:1px solid rgba(232,122,122,0.3);border-radius:10px;padding:12px 14px;margin-top:6px">
+          <div style="font-size:13px;color:var(--text);margin-bottom:10px" id="delete-mod-msg"></div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-ghost" style="font-size:11px;padding:6px 12px" onclick="cancelDeleteModule()">Отмена</button>
+            <button class="btn btn-ghost" style="font-size:11px;padding:6px 12px;color:var(--danger);border-color:var(--danger)" onclick="confirmDeleteModule()">🗑 Да, удалить</button>
+          </div>
+        </div>
+        <button class="btn btn-ghost" id="delete-mod-btn" style="font-size:11px;padding:6px 12px;color:var(--danger)" onclick="askDeleteModule()">🗑 Удалить этот модуль</button>
+      </div>
+    </div>
+    <div id="editor-list"></div>
+  </div>
+
+</div>
+
+<script>
+const MODULES = [
+  {
+    id: 'blood', icon: '🩸', name: 'Кроветворная система',
+    qs: [
+      { q: 'Нормальное содержание железа в сыворотке крови составляет:', opts: ['2–10 мкмоль/л','6–15 мкмоль/л','10–28 мкмоль/л','12–30 мкмоль/л','15–40 мкмоль/л'], ans: 3 },
+      { q: 'Нормальное содержание гемоглобина в крови у взрослых:', opts: ['90–140 г/л','100–150 г/л','110–160 г/л','120–170 г/л','130–180 г/л'], ans: 3 },
+      { q: 'Анемический синдром проявляется:', opts: ['извращением вкуса','сухостью кожи','беспричинной общей слабостью','выпадением волос','деформацией ногтей'], ans: 2 },
+      { q: 'Гипосидероз характеризуется:', opts: ['извращением обоняния','головокружением','беспричинной общей слабостью','учащённым сердцебиением','одышкой'], ans: 0 },
+      { q: 'Сидеропенический синдром развивается при:', opts: ['гемолизе эритроцитов','дефиците фолиевой кислоты','дефиците витамина В12','хронических очагах кровопотери','аплазии костного мозга'], ans: 3 },
+      { q: 'Орган, содержащий основные запасы железа:', opts: ['печень','селезёнка','почки','головной мозг','лёгкие'], ans: 1 },
+      { q: 'Исследование необходимое при гипохромной анемии:', opts: ['билирубин','креатинин','ревмотесты','ферритин в сыворотке','сахар крови'], ans: 3 },
+      { q: 'Для дефицита железа характерно:', opts: ['мегалобластный тип кроветворения','гипохромия эритроцитов','нормохромия эритроцитов','панцитопения','гипербилирубинемия'], ans: 1 },
+      { q: 'Нормальное содержание ферритина в сыворотке:', opts: ['10–12 мкг/л','80–350 мкг/л','10–30 мкг/л','15–300 мкг/л','5–175 мкг/л'], ans: 3 },
+      { q: 'Пойкилоцитоз эритроцитов — это:', opts: ['изменение среднего диаметра','изменение формы эритроцитов','эритроциты с базофильной пунктацией','эритроциты с тельцами Жолли','эритроциты с кольцами Кебота'], ans: 1 },
+      { q: 'Анизоцитоз эритроцитов — это:', opts: ['эритроциты с патологическими включениями','мишеневидные эритроциты','гиперхромия эритроцитов','овальная форма эритроцитов','наличие в крови эритроцитов различной величины'], ans: 4 },
+      { q: 'Орган, содержащий запасы витамина В12:', opts: ['головной мозг','надпочечники','печень','почки','селезёнка'], ans: 2 },
+      { q: 'Всасывание витамина В12 и фолиевой кислоты происходит преимущественно:', opts: ['в желудке','в двенадцатиперстной кишке','в верхних отделах тонкого кишечника','в толстой кишке','в нижних отделах тонкого кишечника'], ans: 4 },
+      { q: 'Макроцитоз и гиперхромия эритроцитов обусловлена:', opts: ['гипосидерозом','дефицитом фолиевой кислоты','гемосидерозом','гемолизом эритроцитов','эритроцитозом'], ans: 1 },
+      { q: 'Дефицит витамина В12 проявляется:', opts: ['макроцитами','микроцитами','нормоцитами','микросфероцитами','серповидно-клеточными эритроцитами'], ans: 0 },
+      { q: 'Гемолитический синдром проявляется:', opts: ['бледностью кожи','сухостью кожи','желтушностью кожи','лейкемидами на коже','трофическими язвочками'], ans: 2 },
+      { q: 'Гемолиз эритроцитов приводит к:', opts: ['прямой гипербилирубинемии','непрямой гипербилирубинемии','гипербилирубинемии обеих фракций','гипобилирубинемии','абилирубинемии'], ans: 1 },
+      { q: 'Гемолиз вследствие антиэритроцитарных антител подтверждается:', opts: ['прямой пробой Кумбса','непрямой пробой Кумбса','прямой сахарозной пробой','гемосидерином мочи','гемоглобинурией'], ans: 0 },
+      { q: 'Дисметаболическая дегенерация канатиков спинного мозга при дефиците В12 — это:', opts: ['анемический синдром','нейроанемический синдром','сидеропенический синдром','гемолитический синдром','нейролейкоз'], ans: 1 },
+      { q: 'Ретикулоцитоз развивается при:', opts: ['анемическом синдроме','сидеропеническом синдроме','гемолитическом синдроме','синдроме перегрузки железом','гипосидерозе'], ans: 2 },
+      { q: 'Аретикулоцитемия развивается при:', opts: ['наличии антител против эритрокариоцитов костного мозга','наличии антител против эритроцитов периферической крови','ферментопатии эритроцитов','гемоглобинопатии','мембранопатии эритроцитов'], ans: 0 },
+      { q: 'Причина микроцитоза эритроцитов:', opts: ['повышенная секвестрация в селезёнке','избыток «старых» эритроцитов','повышение количества молодых эритроцитов','уменьшение содержания гемоглобина в эритроците','внутрисосудистый гемолиз'], ans: 3 },
+      { q: 'При панцитопении план обследования:', opts: ['определение ферритина','прямая проба Кумбса','печёночные тесты','креатинин и почечные тесты','исследование костного мозга'], ans: 4 },
+      { q: 'Синдром фуникулярного миелоза проявляется:', opts: ['нарушением тактильной и болевой чувствительности','общей слабостью','гиперплазией лимфатической ткани','извращением обоняния','дисфагией'], ans: 0 },
+    ],
+    fc: [
+      { q: 'Что такое сидеропенический синдром?', a: 'Синдром дефицита железа. Проявляется извращением вкуса (пика), обоняния, дисфагией, ломкостью ногтей, сухостью кожи.' },
+      { q: 'В чём разница между пойкилоцитозом и анизоцитозом?', a: 'Пойкилоцитоз — изменение ФОРМЫ эритроцитов. Анизоцитоз — изменение РАЗМЕРОВ (наличие эритроцитов разной величины).' },
+      { q: 'Что такое проба Кумбса и когда применяется?', a: 'Прямая проба Кумбса — тест для выявления антиэритроцитарных антител на поверхности эритроцитов. Подтверждает аутоиммунный гемолиз.' },
+      { q: 'Что такое синдром фуникулярного миелоза?', a: 'Дегенерация боковых и задних канатиков спинного мозга при дефиците В12. Проявляется нарушением чувствительности, парестезиями, атаксией.' },
+      { q: 'Чем отличается прямая от непрямой гипербилирубинемии?', a: 'Прямая (конъюгированная) — при нарушении оттока желчи. Непрямая (неконъюгированная) — при гемолизе эритроцитов. При гемолизе растёт непрямой билирубин.' },
+      { q: 'Нормы: гемоглобин, железо, ферритин', a: 'Гемоглобин: 120–170 г/л. Железо: 12–30 мкмоль/л. Ферритин: 15–300 мкг/л.' },
+    ]
+  },
+  {
+    id: 'kidney', icon: '🫘', name: 'Мочевыводящая система',
+    qs: [
+      { q: 'Клинические проявления facies nefritica:', opts: ['бледность и отёчность лица','акроцианоз','геморрагическая сыпь','набухание шейных вен','ксантелазмы'], ans: 0 },
+      { q: 'Хронический пиелонефрит вызывает:', opts: ['грамположительная флора','грамотрицательная флора','вирусы','риккетсии','простейшие'], ans: 1 },
+      { q: 'Под действием ренина происходит:', opts: ['сужение приносящей артериолы клубочка','расширение приносящей артериолы','уменьшение размеров пор базальной мембраны','гипертрофия сосудистых петель','уменьшение реабсорбции белка'], ans: 0 },
+      { q: 'При синдроме инфекции МВП в пробе по Нечипоренко:', opts: ['Лей 1500, Эр 800, цил 450','Лей 2000, Эр 1000, цил 500','Лей 5000, Эр 1000, цил 500','Лей 2000, Эр 800, цил 250','Лей 200, Эр 7300, цил 450'], ans: 2 },
+      { q: 'Действие АДГ осуществляется в:', opts: ['проксимальном канальце','петле Генле','дистальном канальце','собирательной трубочке','по ходу всего нефрона'], ans: 3 },
+      { q: 'Бактериурией считается выделение условно-патогенной флоры более:', opts: ['100/мл','1000/мл','10 000/мл','100 000/мл','1 000 000/мл'], ans: 3 },
+      { q: 'Болевой синдром при остром гломерулонефрите обусловлен:', opts: ['нарушением оттока мочи','воспалительным отёком мочеточника','растяжением почечной лоханки','спастическим сокращением мочеточника','растяжением почечной капсулы'], ans: 4 },
+      { q: 'Низкие показатели удельного веса мочи обозначаются как:', opts: ['гиперстенурия','гипостенурия','изостенурия','ишурия','дизурия'], ans: 1 },
+      { q: 'Учащённое мочеиспускание называется:', opts: ['поллакиурией','никтурией','полиурией','олигурией','странгурией'], ans: 0 },
+      { q: 'При остронефритическом синдроме поражается:', opts: ['интерстициальная ткань','клубочек','канальцы и интерстиций','корковое и мозговое вещество','слизистая мочевого пузыря'], ans: 1 },
+      { q: 'Характеристика остронефритического синдрома:', opts: ['отёки, гиперлипидемия','гематурия, зуд кожи','АГ, бледность кожи','гиперлипидемия, АГ','отёки, гематурия, артериальная гипертензия'], ans: 4 },
+      { q: 'О нефротическом синдроме говорят при:', opts: ['гиперпротеинемии','гипохолестеринемии','гипокалиемии','АГ','протеинурии > 3,5 г/сут'], ans: 4 },
+      { q: 'Нефротический синдром характеризуется:', opts: ['нефротический','мочевой','гипертензивный','синдром инфекционных осложнений','ХПН'], ans: 0, note: 'Отёки + высокая протеинурия + гипопротеинемия + гиперлипидемия = нефротический синдром' },
+      { q: 'Отёки при нефротическом синдроме:', opts: ['распространённые','локальные','усиливаются к вечеру','сопровождаются гиперпротеинемией','проходят самостоятельно'], ans: 0 },
+      { q: 'Для ортостатической протеинурии верно:', opts: ['развивается ХПН','протеинурия > 2 г/сут','протеинурия отсутствует в горизонтальном положении','протеинурия + отёки','протеинурия у пожилых'], ans: 2 },
+    ],
+    fc: [
+      { q: 'Чем отличается нефротический синдром от нефритического?', a: 'Нефротический: отёки + протеинурия > 3,5 г/сут + гипопротеинемия + гиперлипидемия (без гематурии и АГ). Нефритический: отёки + гематурия + АГ + протеинурия (умеренная).' },
+      { q: 'Проба по Нечипоренко — норма и трактовка', a: 'Норма: лейкоциты < 2000, эритроциты < 1000, цилиндры < 20 в 1 мл. При ИМВП — лейкоцитурия > 5000.' },
+      { q: 'Что такое бактериурия и её диагностический порог?', a: 'Значимая бактериурия — более 100 000 (10⁵) микробных тел в 1 мл мочи. Характерна для инфекции мочевыводящих путей.' },
+      { q: 'Что такое poллакиурия, полиурия, олигурия, анурия?', a: 'Поллакиурия — учащение мочеиспускания. Полиурия — > 2 л/сут. Олигурия — < 500 мл/сут. Анурия — < 50 мл/сут.' },
+      { q: 'Facies nefritica — что это?', a: 'Нефритическое лицо: бледность + одутловатость лица, особенно выраженная отёчность периорбитально (под глазами). Характерна для гломерулонефрита.' },
+    ]
+  },
+  {
+    id: 'resp', icon: '🫁', name: 'Дыхательная система',
+    qs: [
+      { q: 'Везикулярное дыхание возникает в результате:', opts: ['завихрений при прохождении через голосовую щель','завихрений при прохождении по бронхам','колебаний альвеолярных стенок при вдохе','трения листков плевры','завихрений в полостных образованиях'], ans: 2 },
+      { q: 'Бронхиальное дыхание возникает в результате:', opts: ['разлипания альвеол при вдохе','завихрений при прохождении через голосовую щель','колебаний альвеолярных стенок','трения листков плевры','завихрений в полости носа'], ans: 1 },
+      { q: 'Перкуторный звук при воспалительном уплотнении лёгочной ткани:', opts: ['тупой или притупленный','ясный лёгочный','тимпанический','притупление с тимпаническим оттенком','коробочный'], ans: 0 },
+      { q: 'Покашливание при аускультации используется для:', opts: ['отличить шум трения плевры от крепитации','выявления скрытой бронхиальной обструкции','отличить сухие хрипы от влажных','отличить хрипы от крепитации','лучшего выслушивания бронхиального дыхания'], ans: 3 },
+      { q: 'Дыхательный шум при долевом воспалительном уплотнении:', opts: ['ослабленное везикулярное','амфорическое','бронхиальное','жёсткое','смешанное бронховезикулярное'], ans: 2 },
+      { q: 'Крепитация обусловлена:', opts: ['небольшим количеством экссудата в альвеолах (пристеночно)','воспалением листков плевры','альвеолы заполнены экссудатом полностью','вязкий секрет в крупных бронхах','вязкий секрет в мелких бронхах или спазм'], ans: 0 },
+      { q: 'Крепитация возникает в:', opts: ['альвеолах','мелких бронхах','средних бронхах','крупных бронхах','бронхиолах'], ans: 0 },
+      { q: 'Мокрота при синдроме долевого уплотнения лёгочной ткани:', opts: ['стекловидная','слизисто-гнойная','трёхслойная','«ржавая»','серозная пенистая розового цвета'], ans: 3 },
+      { q: 'Крепитация от мелкопузырчатых хрипов отличается тем, что:', opts: ['возникает на выдохе','возникает на вдохе','возникает на вдохе и выдохе','усиливается при форсированном дыхании','усиливается после покашливания'], ans: 1 },
+      { q: 'Признак деструкции ткани лёгкого в мокроте:', opts: ['кристаллы Шарко–Лейдена','лейкоциты','спирали Куршмана','эластические волокна','эритроциты'], ans: 3 },
+      { q: 'При каком синдроме голосовое дрожание усилено?', opts: ['уплотнения лёгочной ткани','повышения воздушности','скопления жидкости в плевре','полости, не сообщающейся с бронхом','скопления воздуха в плевре'], ans: 0 },
+      { q: 'Дыхательный шум при полости, соединяющейся с бронхом:', opts: ['ослабленное везикулярное','бронхиальное','амфорическое','жёсткое','смешанное'], ans: 2 },
+      { q: 'Мокрота при синдроме полости в лёгочной ткани:', opts: ['обильная гнойная двухслойная с запахом','слизисто-гнойная утром','скудная вязкая','«ржавая» без запаха','слизисто-гнойная без крови'], ans: 0 },
+      { q: 'Влажные крупнопузырчатые хрипы обусловлены:', opts: ['вязкий секрет в крупных бронхах','вязкий секрет в мелких бронхах','жидкий секрет в крупных бронхах или полостях','жидкий секрет в мелких бронхах','жидкий секрет в мелких бронхах + уплотнение'], ans: 2 },
+      { q: 'Рентгенологически при синдроме уплотнения лёгочной ткани:', opts: ['долевое затемнение','повышенная прозрачность','дольковое просветление','округлый очаг с уровнем жидкости','затемнение по ходу борозды'], ans: 0 },
+    ],
+    fc: [
+      { q: 'Чем крепитация отличается от хрипов?', a: 'Крепитация — возникает ТОЛЬКО на вдохе, не изменяется при покашливании, звук «треск снега». Хрипы — на вдохе и выдохе, изменяются после покашливания.' },
+      { q: 'Везикулярное vs бронхиальное дыхание', a: 'Везикулярное: колебания альвеол, слышно на вдохе и начале выдоха, мягкое «ф». Бронхиальное: завихрения у голосовой щели, грубое «х», вдох = выдох по длительности.' },
+      { q: '«Ржавая» мокрота — при каком синдроме?', a: 'При синдроме воспалительного уплотнения лёгочной ткани (крупозная пневмония). Цвет обусловлен распадом эритроцитов в мокроте.' },
+      { q: 'Какой элемент мокроты достоверно указывает на деструкцию лёгкого?', a: 'Эластические волокна — фрагменты разрушенной альвеолярной ткани. Присутствие в мокроте = деструкция паренхимы.' },
+      { q: 'При каком синдроме голосовое дрожание усилено, ослаблено, отсутствует?', a: 'Усилено: уплотнение лёгкого. Ослаблено: жидкость или воздух в плевре, эмфизема. Отсутствует: обтурационный ателектаз, пневмоторакс.' },
+    ]
+  },
+  {
+    id: 'cardio', icon: '❤️', name: 'Сердечно-сосудистая система',
+    qs: [
+      { q: 'Разлитой куполообразный верхушечный толчок в VI м/р на 2 см кнаружи от СКЛ:', opts: ['гипертрофия и дилатация левого желудочка','гипертрофия и дилатация правого желудочка','гипертрофия левого предсердия','гипертрофия правого предсердия','гипертрофия правого желудочка'], ans: 0 },
+      { q: 'Выраженный сердечный толчок и эпигастральная пульсация — признак:', opts: ['гипертрофии и дилатации левого желудочка','гипертрофии и дилатации правого желудочка','гипертрофии левого предсердия','гипертрофии правого предсердия','гипертрофии левого желудочка'], ans: 1 },
+      { q: 'Дрожание на верхушке, не совпадающее с пульсом сонной артерии — признак:', opts: ['недостаточности аортального клапана','недостаточности митрального клапана','аортального стеноза','митрального стеноза','недостаточности трикуспидального клапана'], ans: 3 },
+      { q: 'I тон ослаблен, систолический шум с проведением в подмышечную область:', opts: ['недостаточность аортального клапана','недостаточность митрального клапана','аортальный стеноз','митральный стеноз','недостаточность трикуспидального клапана'], ans: 1 },
+      { q: 'Митральный клапан лучше выслушивается:', opts: ['в V м/р слева, 1,5 см кнутри от СКЛ','во II м/р слева','во II м/р справа','справа от грудины в IV м/р','в точке Боткина–Эрба'], ans: 0 },
+      { q: 'Верхушечный толчок образован:', opts: ['дугой аорты','брюшным отделом аорты','правым желудочком','левым желудочком','левым предсердием'], ans: 3 },
+      { q: 'Верхушечный толчок при недостаточности аортального клапана:', opts: ['малый ослабленный ограниченный','малый усиленный ограниченный','высокий усиленный разлитой','малый','ограниченный'], ans: 2 },
+      { q: 'Pulsus deficiens — это:', opts: ['ослабление пульсации на одной лучевой','уменьшение величины пульса на обеих лучевых','пульс > ЧСС','пульс < ЧСС','отсутствие пульсации на обеих лучевых'], ans: 3 },
+      { q: 'Площадь митрального отверстия в норме:', opts: ['1–2 см²','3–4 см²','4–5 см²','4–6 см²','2–3 см²'], ans: 3 },
+      { q: 'Критический стеноз митрального отверстия:', opts: ['1 см²','1,3 см²','1,5 см²','1,9 см²','2 см²'], ans: 0 },
+      { q: 'Гипертрофия левого желудочка на ЭКГ:', opts: ['RV5 + SV1 ≥ 38 мм, R aVL > 11 мм','RV1 > 7 мм','RV5 < RV4','R V5-6 < 15 мм','наличие зубца S V5-6'], ans: 0 },
+      { q: 'Ритм «перепела» при митральном стенозе — это:', opts: ['хлопающий I тон + усиленный II тон + тон открытия митрального клапана','I тон ослаблен + патологический III тон','I тон не изменён + систолический шум','I тон усилен + мезодиастолический шум','без изменений тонов + систолический шум'], ans: 0 },
+      { q: 'Наиболее информативный метод диагностики недостаточности митрального клапана:', opts: ['аускультация','фонокардиография','рентгенография','эходопплер кардиография','коронароангиография'], ans: 3 },
+      { q: 'Признак левожелудочковой сердечной недостаточности:', opts: ['набухание шейных вен','асцит','увеличение печени','ортопноэ','отёки на ногах'], ans: 3 },
+      { q: 'Выраженная пульсация сонных артерий характерна для:', opts: ['аортального стеноза','недостаточности аортального клапана','недостаточности митрального клапана','недостаточности трикуспидального клапана','недостаточности клапана лёгочной артерии'], ans: 1 },
+      { q: 'Акцент II тона на аорте возникает при:', opts: ['синдроме АГ','синдроме ОКН','синдроме воспаления миокарда','синдроме воспаления перикарда','синдроме ХКН'], ans: 0 },
+      { q: 'Прямой признак недостаточности митрального клапана при допплере:', opts: ['турбулентный диастолический поток','регургитация из ЛЖ в ЛП во время систолы','регургитация из аорты в ЛЖ','регургитация из ЛЖ в ЛП во время диастолы','регургитация из ПЖ в ПП'], ans: 1 },
+      { q: 'Прямой признак недостаточности аортального клапана при допплере:', opts: ['регургитация из ПП в ПЖ','регургитация из ЛЖ в ЛП','регургитация из ПЖ в ПП','регургитация из аорты в ЛЖ','регургитация из лёгочного ствола в ПЖ'], ans: 3 },
+    ],
+    fc: [
+      { q: 'Ритм «перепела» — что это и при каком пороке?', a: 'Митральный стеноз. Хлопающий I тон + усиленный II тон + тон открытия митрального клапана. Создаёт трёхчленный ритм, напоминающий крик перепела.' },
+      { q: 'Ортопноэ — что это и при каком синдроме?', a: 'Вынужденное положение сидя (ортопноэ) — при синдроме левожелудочковой сердечной недостаточности. Облегчает дыхание за счёт депонирования крови в нижних конечностях.' },
+      { q: 'Pulsus deficiens — что это?', a: 'Дефицит пульса: число пульсовых волн на лучевой артерии МЕНЬШЕ числа сердечных сокращений. Характерен для мерцательной аритмии.' },
+      { q: 'Критерии гипертрофии ЛЖ на ЭКГ', a: 'RV5 + SV1 ≥ 38 мм (признак Соколова–Лайона) или R aVL > 11 мм.' },
+      { q: 'Чем отличаются границы сердца при митральном стенозе vs аортальной недостаточности?', a: 'Митральный стеноз: расширение ВПРАВО и ВВЕРХ (правый желудочек + левое предсердие). Аортальная недостаточность: расширение ВЛЕВО (гипертрофия и дилатация ЛЖ).' },
+    ]
+  },
+  {
+    id: 'endo', icon: '🦋', name: 'Эндокринная система',
+    qs: [
+      { q: 'Симптомы гипогликемии:', opts: ['чувство голода, повышенная потливость','быстрая утомляемость, жажда','тошнота, рвота, боли в животе','боли в сердце, повышение АД','сухость кожи'], ans: 0 },
+      { q: 'Доврачебная помощь при гипогликемии (пациент в сознании):', opts: ['срочное кормление, сладкий чай','в/в введение глюкагона','п/к инсулин короткого действия','п/к инсулин ультракороткого действия','в/в 40% глюкоза 100 мл'], ans: 0 },
+      { q: 'Триада симптомов гипергликемии:', opts: ['полиурия, полидипсия, полифагия','снижение зрения, слуха, памяти','тошнота, рвота, боль в животе','головная боль, головокружение','диарея, боль в животе, тошнота'], ans: 0 },
+      { q: 'Причины развития гипогликемии:', opts: ['ожирение','чрезмерная физическая нагрузка','стресс','гиподинамия','беременность'], ans: 1 },
+      { q: 'Предрасполагающие факторы гипергликемии:', opts: ['ожирение, гиподинамия, стресс','избыток грубоволокнистой клетчатки','чрезмерная физическая нагрузка','дефицит массы тела','неполноценное питание'], ans: 0 },
+      { q: 'Причина гипогликемии — это:', opts: ['синдром гиперкортицизма','избыточная масса тела','синдром гипокортицизма','воспаление щитовидной железы','синдром гипертиреоза'], ans: 2 },
+      { q: 'Причина гипергликемии — это:', opts: ['синдром гиперкортицизма','синдром гипотиреоза','синдром гипокортицизма','синдром гипопаратиреоза','синдром анорексии'], ans: 0 },
+      { q: 'Уровень глюкозы в плазме венозной крови в норме:', opts: ['натощак 3,3–5,5; через 2ч > 7,8','натощак 5,6–6,1; через 2ч 6,1–7,0','натощак 5,6–6,1; через 2ч < 6,7','натощак 4–6,1; через 2ч < 7,8','натощак 4,6–5,1; через 2ч < 8,5'], ans: 3 },
+      { q: 'Условия проведения ПГТТ:', opts: ['проводится вечером','перед тестом приём анальгетиков','накануне ≥ 300 г углеводов','во время теста не есть не менее 4 ч','утром, на фоне ≥ 3-дневного неограниченного питания'], ans: 4 },
+      { q: 'ПГТТ проводится:', opts: ['на фоне острого заболевания','когда HbA1c > 6,5%','при сомнительных значениях гликемии для уточнения диагноза','когда глюкоза > 11,0','когда глюкоза натощак < 3,3'], ans: 2 },
+      { q: 'Симптом Штельвага при гипертиреозе:', opts: ['Кохера','Штельвага','Мебиуса','Краузе','Елинека'], ans: 1, note: 'Штельвага — редкое мигание при гипертиреозе' },
+      { q: 'ЧСС при синдроме гипертиреоза:', opts: ['менее 50','50–60','60–70','70–80','более 80'], ans: 4 },
+      { q: 'Пальпация щитовидной железы выявляет:', opts: ['размеры, консистенцию, болезненность','общий объём железы','загрудинный зоб','функцию щитовидной железы','йод-дефицитное состояние'], ans: 0 },
+      { q: 'Для гиперфункции щитовидной железы характерна:', opts: ['сонливость','брадикардия','отёчность лица','повышенная возбудимость','ожирение'], ans: 3 },
+      { q: 'При острой гипогликемии:', opts: ['кожа влажная, двигательное возбуждение','дыхание шумное и редкое','кожа сухая','тургор снижен','жажда'], ans: 0 },
+      { q: 'К симптомам гипотиреоза относятся:', opts: ['поносы','потливость','запоры','цианоз','сердцебиение'], ans: 2 },
+      { q: 'Лабораторные признаки гипотиреоза:', opts: ['снижение Т3 и Т4 в крови','повышение Т3 и Т4','повышение ТТГ и Т4','снижение уровня ТТГ','повышение Т3, Т4, снижение ТТГ'], ans: 0 },
+      { q: 'Для синдрома гипокортицизма характерно:', opts: ['гиперпигментация кожи','увеличение массы тела','повышение АД','тахикардия','полифагия'], ans: 0 },
+      { q: 'Объём талии у мужчин в норме не должен превышать:', opts: ['не более 94 см','не более 106 см','не более 86 см','менее 60 см','более 102 см'], ans: 0 },
+      { q: 'Формула ИМТ (индекс массы тела):', opts: ['рост/вес²','вес/рост²','рост²/вес','вес²/рост','вес/рост'], ans: 1 },
+      { q: 'Единицы измерения ИМТ:', opts: ['м²/кг','м/кг²','кг/м²','кг²/м','кг/м'], ans: 2 },
+    ],
+    fc: [
+      { q: 'Триада гипергликемии', a: 'Полиурия (много мочи) + Полидипсия (жажда) + Полифагия (повышенный аппетит). «3 поли».' },
+      { q: 'Гипогликемия vs Гипергликемия: кожа', a: 'Гипогликемия: кожа ВЛАЖНАЯ (потливость), двигательное возбуждение. Гипергликемия: кожа СУХАЯ, тургор снижен, жажда.' },
+      { q: 'Симптомы гипертиреоза (запомнить легко)', a: 'Тахикардия > 80, повышенная возбудимость, потливость, похудение, экзофтальм. Симптом Штельвага — редкое мигание.' },
+      { q: 'Симптомы гипотиреоза', a: 'Брадикардия, сонливость, запоры, отёчность лица, ожирение, сухость кожи. Всё «замедлено».' },
+      { q: 'Лабораторная диагностика гипотиреоза vs гипертиреоза', a: 'Гипотиреоз: Т3, Т4 снижены, ТТГ повышен. Гипертиреоз: Т3, Т4 повышены, ТТГ снижен.' },
+      { q: 'ИМТ: формула, единицы, норма', a: 'ИМТ = вес (кг) / рост² (м²). Единицы: кг/м². Норма: 18,5–24,9. Ожирение: > 30.' },
+      { q: 'ПГТТ: когда и как проводится?', a: 'Проводится утром, после ≥ 3 дней неограниченного питания, при сомнительных значениях гликемии. Норма через 2 ч после нагрузки: < 7,8 ммоль/л.' },
+    ]
+  }
+];
+
+// ---- STATE ----
+let mode = 'test';
+let currentMod = null;
+let questions = [];
+let qIndex = 0;
+let answered = false;
+let score = 0;
+let totalScore = 0;
+let totalAnswered = 0;
+
+let flashcards = [];
+let fcIndex = 0;
+
+// ---- SPACED REPETITION (Pools + Weights) ----
+// Рейтинг каждого вопроса хранится в localStorage по ключу: modId + вопрос
+// rating: 0=новый, 1=слабый🔴, 2=средний🟡, 3=сильный🟢
+// streak: сколько раз подряд правильно ответил
+const SR_KEY = 'propedeutika_sr';
+const SESSION_SIZE = 50;
+
+// Пул → вес при выборке (чем выше вес, тем чаще попадает)
+const POOL_WEIGHTS = { 0: 5, 1: 5, 2: 3, 3: 1 };
+// Пул → нужно правильных ответов подряд, чтобы перейти в следующий
+const STREAK_UP   = { 0: 1, 1: 2, 2: 3 };
+
+function srKey(modId, q) { return modId + '::' + q.q.slice(0, 60); }
+
+function loadSR() {
+  try { return JSON.parse(localStorage.getItem(SR_KEY) || '{}'); } catch(e) { return {}; }
+}
+function saveSR(data) { localStorage.setItem(SR_KEY, JSON.stringify(data)); }
+
+function getQData(sr, modId, q) {
+  const k = srKey(modId, q);
+  return sr[k] || { rating: 0, streak: 0 };
+}
+
+// Выбрать SESSION_SIZE вопросов с учётом весов пулов
+function pickSession(mod) {
+  const sr = loadSR();
+  const qs = mod.qs;
+  if (qs.length === 0) return [];
+  if (qs.length <= SESSION_SIZE) return shuffle([...qs]);
+
+  // Взвешенная выборка без повторений
+  const pool = qs.map(q => {
+    const d = getQData(sr, mod.id, q);
+    return { q, weight: POOL_WEIGHTS[d.rating] };
+  });
+
+  const picked = [];
+  const used = new Set();
+  const totalW = () => pool.reduce((s, p, i) => used.has(i) ? s : s + p.weight, 0);
+
+  while (picked.length < SESSION_SIZE) {
+    let r = Math.random() * totalW();
+    for (let i = 0; i < pool.length; i++) {
+      if (used.has(i)) continue;
+      r -= pool[i].weight;
+      if (r <= 0) { picked.push(pool[i].q); used.add(i); break; }
+    }
+  }
+  return picked;
+}
+
+// Обновить рейтинг вопроса после ответа
+function updateSR(modId, q, correct) {
+  const sr = loadSR();
+  const k = srKey(modId, q);
+  const d = sr[k] || { rating: 0, streak: 0 };
+
+  if (correct) {
+    d.streak++;
+    const needed = STREAK_UP[d.rating];
+    if (needed !== undefined && d.streak >= needed) {
+      d.rating = Math.min(3, d.rating + 1);
+      d.streak = 0;
+    }
+  } else {
+    d.rating = Math.max(1, d.rating - 1); // новый (0) при ошибке → слабый (1)
+    d.streak = 0;
+  }
+  sr[k] = d;
+  saveSR(sr);
+}
+
+// Статистика пулов для модуля
+function getPoolStats(mod) {
+  const sr = loadSR();
+  const counts = { 0: 0, 1: 0, 2: 0, 3: 0 };
+  mod.qs.forEach(q => { counts[getQData(sr, mod.id, q).rating]++; });
+  return counts;
+}
+
+// ---- INIT ----
+function init() {
+  document.getElementById('total-q').textContent = MODULES.reduce((a,m) => a + m.qs.length, 0);
+  document.getElementById('total-fc').textContent = MODULES.reduce((a,m) => a + m.fc.length, 0);
+  buildModGrid();
+  updateComplexBtn();
+}
+
+function buildModGrid() {
+  const g = document.getElementById('mod-grid');
+  g.innerHTML = '';
+  MODULES.forEach(m => {
+    const b = document.createElement('button');
+    b.className = 'mod-btn' + (currentMod === m.id ? ' active' : '');
+    const counts = getPoolStats(m);
+    const total = m.qs.length;
+    const sessionInfo = total > SESSION_SIZE ? ` · ${SESSION_SIZE} из ${total}` : ` · ${total} вопр.`;
+    const poolBar = total > 0
+      ? `<div class="pool-bar">
+          <div class="pool-seg pool-new"  style="width:${counts[0]/total*100}%"></div>
+          <div class="pool-seg pool-weak" style="width:${counts[1]/total*100}%"></div>
+          <div class="pool-seg pool-mid"  style="width:${counts[2]/total*100}%"></div>
+          <div class="pool-seg pool-good" style="width:${counts[3]/total*100}%"></div>
+        </div>`
+      : '';
+    b.innerHTML = `<span class="mod-icon">${m.icon}</span>${m.name}<span class="mod-count">${sessionInfo}</span>${poolBar}`;
+    b.onclick = () => selectMod(m.id);
+    g.appendChild(b);
+  });
+}
+
+function selectMod(id) {
+  currentMod = id;
+  buildModGrid();
+  const mod = MODULES.find(m => m.id === id);
+  if (mode === 'test') startQuiz(mod);
+  else startFlash(mod);
+}
+
+function switchMode(m) {
+  mode = m;
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    t.classList.toggle('active',
+      (i===0 && m==='test') || (i===1 && m==='flash') || (i===2 && m==='history') ||
+      (i===3 && m==='import') || (i===4 && m==='editor'));
+  });
+  document.getElementById('quiz-wrap').classList.remove('visible');
+  document.getElementById('result-screen').classList.remove('visible');
+  document.getElementById('flash-wrap').classList.remove('visible');
+  document.getElementById('history-wrap').classList.remove('visible');
+  document.getElementById('import-wrap').classList.remove('visible');
+  document.getElementById('editor-wrap').classList.remove('visible');
+  const showModGrid = (m === 'test' || m === 'flash');
+  document.getElementById('mod-grid').style.display = showModGrid ? '' : 'none';
+
+  if (m === 'history') { renderHistory(); return; }
+  if (m === 'import') { renderImport(); return; }
+  if (m === 'editor') { renderEditor(); return; }
+  updateComplexBtn();
+  if (currentMod) selectMod(currentMod);
+}
+
+// ---- COMPLEX TEST ----
+let isComplex = false;
+let complexSelected = new Set();
+let complexDeselected = new Set(); // явно снятые пользователем
+
+function toggleComplexPanel() {
+  const opts = document.getElementById('complex-options');
+  const arrow = document.getElementById('complex-arrow');
+  const open = opts.style.display === 'none';
+  opts.style.display = open ? 'block' : 'none';
+  arrow.classList.toggle('open', open);
+  if (open) buildComplexChecks();
+}
+
+function buildComplexChecks() {
+  // Добавляем все модули с вопросами, которых ещё нет в выборке
+  MODULES.filter(m => m.qs.length > 0).forEach(m => {
+    if (!complexSelected.has(m.id) && !complexDeselected.has(m.id)) {
+      complexSelected.add(m.id);
+    }
+  });
+  const wrap = document.getElementById('complex-checks');
+  wrap.innerHTML = MODULES.filter(m => m.qs.length > 0).map(m => `
+    <label class="complex-check-row">
+      <input type="checkbox" ${complexSelected.has(m.id) ? 'checked' : ''}
+        onchange="toggleComplexMod('${m.id}', this.checked)" />
+      <span class="complex-check-label">${m.icon} ${m.name}</span>
+      <span class="complex-check-count">${m.qs.length} вопр.</span>
+    </label>`).join('');
+  updateComplexSelInfo();
+}
+
+function toggleComplexMod(id, checked) {
+  if (checked) {
+    complexSelected.add(id);
+    complexDeselected.delete(id);
+  } else {
+    complexSelected.delete(id);
+    complexDeselected.add(id);
+  }
+  updateComplexSelInfo();
+}
+
+function complexSelectAll(val) {
+  MODULES.filter(m => m.qs.length > 0).forEach(m => {
+    if (val) { complexSelected.add(m.id); complexDeselected.delete(m.id); }
+    else { complexSelected.delete(m.id); complexDeselected.add(m.id); }
+  });
+  buildComplexChecks();
+}
+
+function updateComplexSelInfo() {
+  const total = [...complexSelected].reduce((a, id) => {
+    const m = MODULES.find(m => m.id === id);
+    return a + (m ? m.qs.length : 0);
+  }, 0);
+  const n = complexSelected.size;
+  document.getElementById('complex-sel-info').textContent =
+    n > 0 ? n + ' сист. · ' + Math.min(SESSION_SIZE, total) + ' вопр.' : 'ничего не выбрано';
+}
+
+function pickComplex() {
+  const modsWithQs = MODULES.filter(m => m.qs.length > 0 && complexSelected.has(m.id));
+  if (modsWithQs.length === 0) return [];
+
+  const perMod = Math.floor(SESSION_SIZE / modsWithQs.length);
+  const remainder = SESSION_SIZE - perMod * modsWithQs.length;
+  const sr = loadSR();
+
+  let picked = [];
+  modsWithQs.forEach((mod, idx) => {
+    const count = perMod + (idx < remainder ? 1 : 0);
+    const pool = mod.qs.map(q => ({
+      q: { ...q, _modId: mod.id, _modIcon: mod.icon, _modName: mod.name },
+      weight: POOL_WEIGHTS[getQData(sr, mod.id, q).rating]
+    }));
+    if (pool.length <= count) { picked.push(...pool.map(p => p.q)); return; }
+    const used = new Set();
+    const totalW = () => pool.reduce((s, p, i) => used.has(i) ? s : s + p.weight, 0);
+    let n = 0;
+    while (n < count) {
+      let r = Math.random() * totalW();
+      for (let i = 0; i < pool.length; i++) {
+        if (used.has(i)) continue;
+        r -= pool[i].weight;
+        if (r <= 0) { picked.push(pool[i].q); used.add(i); n++; break; }
+      }
+    }
+  });
+  return shuffle(picked);
+}
+
+function startComplex() {
+  if (complexSelected.size === 0) {
+    document.getElementById('complex-sel-info').textContent = '⚠️ Выберите хотя бы одну систему';
+    return;
+  }
+  // Закрываем панель
+  document.getElementById('complex-options').style.display = 'none';
+  document.getElementById('complex-arrow').classList.remove('open');
+
+  isComplex = true;
+  currentMod = null;
+  buildModGrid();
+  updateComplexBtn();
+  questions = pickComplex();
+  if (questions.length === 0) return;
+  qIndex = 0; score = 0; answered = false;
+  document.getElementById('result-screen').classList.remove('visible');
+  document.getElementById('quiz-wrap').classList.add('visible');
+  document.getElementById('flash-wrap').classList.remove('visible');
+  showQ();
+}
+
+function updateComplexBtn() {
+  const sub = document.getElementById('complex-sub');
+  const wrap = document.getElementById('complex-btn-wrap');
+  if (!sub || !wrap) return;
+  const modsWithQs = MODULES.filter(m => m.qs.length > 0);
+  const totalQs = MODULES.reduce((a, m) => a + m.qs.length, 0);
+  sub.textContent = Math.min(SESSION_SIZE, totalQs) + ' вопр. · ' + modsWithQs.length + ' систем';
+  wrap.style.display = mode === 'test' ? '' : 'none';
+}
+function startQuiz(mod) {
+  isComplex = false;
+  questions = pickSession(mod);
+  qIndex = 0; score = 0; answered = false;
+  document.getElementById('result-screen').classList.remove('visible');
+  document.getElementById('quiz-wrap').classList.add('visible');
+  document.getElementById('flash-wrap').classList.remove('visible');
+  showQ();
+}
+
+function showQ() {
+  if (qIndex >= questions.length) { showResult(); return; }
+  const q = questions[qIndex];
+  answered = false;
+  document.getElementById('next-btn').style.display = 'none';
+  document.getElementById('q-exp').classList.remove('visible');
+  document.getElementById('q-exp').textContent = '';
+
+  const pct = (qIndex / questions.length) * 100;
+  document.getElementById('prog').style.width = pct + '%';
+
+  const modId = isComplex ? (q._modId || currentMod) : currentMod;
+  const sr = loadSR();
+  const d = getQData(sr, modId, q);
+  const poolLabel = ['🆕 Новый','🔴 Слабый','🟡 Средний','🟢 Сильный'][d.rating];
+  const modTag = isComplex && q._modIcon ? q._modIcon + ' · ' : '';
+  document.getElementById('q-counter').textContent =
+    'Вопрос ' + (qIndex + 1) + ' из ' + questions.length + '  ·  ' + modTag + poolLabel;
+
+  document.getElementById('q-text').textContent = q.q;
+
+  const opts = document.getElementById('q-opts');
+  opts.innerHTML = '';
+  const letters = ['А','Б','В','Г','Д'];
+  q.opts.forEach((opt, i) => {
+    const b = document.createElement('button');
+    b.className = 'option-btn';
+    b.innerHTML = '<span class="opt-letter">' + letters[i] + '</span><span>' + opt + '</span>';
+    b.onclick = () => selectOpt(i, q, b);
+    opts.appendChild(b);
+  });
+
+  document.getElementById('q-card').style.animation = 'none';
+  requestAnimationFrame(() => document.getElementById('q-card').style.animation = '');
+}
+
+function selectOpt(i, q, btn) {
+  if (answered) return;
+  answered = true;
+  const btns = document.querySelectorAll('.option-btn');
+  btns.forEach(b => b.disabled = true);
+
+  const correct = i === q.ans;
+  if (correct) {
+    btn.classList.add('correct');
+    score++; totalScore++;
+  } else {
+    btn.classList.add('wrong');
+    btns[q.ans].classList.add('correct');
+  }
+  totalAnswered++;
+
+  const modId = isComplex ? (q._modId || currentMod) : currentMod;
+  updateSR(modId, q, correct);
+
+  if (q.note) {
+    const exp = document.getElementById('q-exp');
+    exp.textContent = '💡 ' + q.note;
+    exp.classList.add('visible');
+  }
+
+  document.getElementById('next-btn').style.display = '';
+  updateGlobal();
+}
+
+function nextQ() {
+  qIndex++;
+  showQ();
+}
+
+function restartQuiz() {
+  document.getElementById('result-screen').classList.remove('visible');
+  if (isComplex) { startComplex(); return; }
+  const mod = MODULES.find(m => m.id === currentMod);
+  if (mod) startQuiz(mod);
+}
+
+function showResult() {
+  const pct = Math.round((score / questions.length) * 100);
+  const msgs = [
+    [0, 49, '😔 Нужно повторить материал'],
+    [50, 69, '🙂 Неплохо, но есть пробелы'],
+    [70, 84, '👍 Хороший результат!'],
+    [85, 100, '🎉 Отлично! Вы готовы к экзамену!']
+  ];
+  const msg = msgs.find(([lo, hi]) => pct >= lo && pct <= hi)?.[2] || '';
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('ru-RU', { day:'2-digit', month:'2-digit', year:'numeric' });
+  const timeStr = now.toLocaleTimeString('ru-RU', { hour:'2-digit', minute:'2-digit' });
+
+  document.getElementById('quiz-wrap').classList.remove('visible');
+  document.getElementById('result-screen').classList.add('visible');
+  document.getElementById('res-pct').textContent = pct + '%';
+  document.getElementById('res-label').textContent = 'Правильных ответов: ' + score + ' из ' + questions.length;
+  document.getElementById('res-msg').textContent = msg;
+
+  const poolsEl = document.getElementById('res-pools');
+
+  if (isComplex) {
+    document.getElementById('res-meta').textContent = '⚡ Комплексный тест · ' + dateStr + ' · ' + timeStr;
+    if (poolsEl) {
+      poolsEl.innerHTML = MODULES.filter(m => m.qs.length > 0).map(m => {
+        const c = getPoolStats(m);
+        return '<div class="result-pool-item">' + m.icon + ' ' + m.name + ': 🔴' + c[1] + ' 🟡' + c[2] + ' 🟢' + c[3] + '</div>';
+      }).join('');
+    }
+    saveHistory({ pct, score, total: questions.length, modId: 'complex', modName: 'Комплексный тест', modIcon: '⚡', date: dateStr, time: timeStr });
+  } else {
+    const mod = MODULES.find(m => m.id === currentMod);
+    document.getElementById('res-meta').textContent = (mod?.icon || '') + ' ' + (mod?.name || '') + ' · ' + dateStr + ' · ' + timeStr;
+    if (poolsEl && mod) {
+      const counts = getPoolStats(mod);
+      poolsEl.innerHTML =
+        '<div class="result-pool-item">⬛ Новые: ' + counts[0] + '</div>' +
+        '<div class="result-pool-item">🔴 Слабые: ' + counts[1] + '</div>' +
+        '<div class="result-pool-item">🟡 Средние: ' + counts[2] + '</div>' +
+        '<div class="result-pool-item">🟢 Сильные: ' + counts[3] + '</div>';
+    }
+    saveHistory({ pct, score, total: questions.length, modId: currentMod, modName: mod?.name || '', modIcon: mod?.icon || '', date: dateStr, time: timeStr });
+  }
+
+  updateGlobal();
+  buildModGrid();
+}
+
+function saveHistory(entry) {
+  const key = 'propedeutika_history';
+  let history = [];
+  try { history = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) {}
+  history.unshift(entry); // новые сверху
+  if (history.length > 50) history = history.slice(0, 50);
+  localStorage.setItem(key, JSON.stringify(history));
+}
+
+function renderHistory() {
+  document.getElementById('history-wrap').classList.add('visible');
+  const key = 'propedeutika_history';
+  let history = [];
+  try { history = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) {}
+  const list = document.getElementById('history-list');
+  if (history.length === 0) {
+    list.innerHTML = '<div class="history-empty">Пока нет завершённых тестов</div>';
+    return;
+  }
+  list.innerHTML = history.map(e => {
+    const cls = e.pct >= 85 ? 'hi' : e.pct >= 50 ? 'mid' : 'lo';
+    return `
+      <div class="history-item">
+        <div class="history-pct ${cls}">${e.pct}%</div>
+        <div class="history-details">
+          <div class="history-mod">${e.modIcon} ${e.modName}</div>
+          <div class="history-time">${e.date} в ${e.time}</div>
+        </div>
+        <div class="history-score">${e.score}/${e.total}</div>
+      </div>`;
+  }).join('');
+}
+
+function clearHistory() {
+  if (confirm('Очистить всю историю?')) {
+    localStorage.removeItem('propedeutika_history');
+    renderHistory();
+  }
+}
+
+// ---- FLASHCARDS ----
+function startFlash(mod) {
+  flashcards = shuffle([...mod.fc]);
+  fcIndex = 0;
+  document.getElementById('flash-wrap').classList.add('visible');
+  document.getElementById('quiz-wrap').classList.remove('visible');
+  showCard();
+}
+
+function showCard() {
+  const fc = flashcards[fcIndex];
+  document.getElementById('fc-q').textContent = fc.q;
+  document.getElementById('fc-a').textContent = fc.a;
+  document.getElementById('fc-count').textContent = `${fcIndex + 1} / ${flashcards.length}`;
+  const card = document.getElementById('flashcard');
+  card.classList.remove('flipped');
+}
+
+function flipCard() {
+  document.getElementById('flashcard').classList.toggle('flipped');
+}
+
+function nextCard() {
+  if (fcIndex < flashcards.length - 1) fcIndex++;
+  showCard();
+}
+function prevCard() {
+  if (fcIndex > 0) fcIndex--;
+  showCard();
+}
+
+function updateGlobal() {
+  if (totalAnswered > 0) {
+    document.getElementById('global-score').style.display = '';
+    document.getElementById('gs-val').textContent = `${totalScore}/${totalAnswered} (${Math.round(totalScore/totalAnswered*100)}%)`;
+  }
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+// ---- IMPORT ----
+let importType = 'qs';   // 'qs' | 'fc'
+let importTargetMod = null;  // id выбранного модуля
+
+const SCHEMA_QS = `[
+  {
+    "q": "Текст вопроса",
+    "opts": ["Вариант А", "Вариант Б", "Вариант В", "Вариант Г", "Вариант Д"],
+    "ans": 0,
+    "note": "Необязательная подсказка"
+  }
+]`;
+
+const SCHEMA_FC = `[
+  {
+    "q": "Вопрос / термин на лицевой стороне",
+    "a": "Ответ на обратной стороне карточки"
+  }
+]`;
+
+function setImportType(t) {
+  importType = t;
+  document.getElementById('itype-qs').classList.toggle('active', t === 'qs');
+  document.getElementById('itype-fc').classList.toggle('active', t === 'fc');
+  document.getElementById('import-schema').textContent = t === 'qs' ? SCHEMA_QS : SCHEMA_FC;
+  const ta = document.getElementById('import-paste');
+  ta.placeholder = t === 'qs'
+    ? '[ { "q": "...", "opts": ["А","Б","В","Г","Д"], "ans": 0 }, … ]'
+    : '[ { "q": "Термин", "a": "Определение" }, … ]';
+  setFeedback('', '');
+}
+
+function renderImport() {
+  document.getElementById('import-wrap').classList.add('visible');
+  // Синхронизируем кнопки с текущим типом
+  document.getElementById('itype-qs').classList.toggle('active', importType === 'qs');
+  document.getElementById('itype-fc').classList.toggle('active', importType === 'fc');
+  document.getElementById('import-schema').textContent = importType === 'qs' ? SCHEMA_QS : SCHEMA_FC;
+  buildImportModPills();
+}
+
+function buildImportModPills() {
+  const row = document.getElementById('import-mod-row');
+  row.innerHTML = MODULES.map(m =>
+    `<div class="import-mod-pill${importTargetMod === m.id ? ' active' : ''}" onclick="selectImportMod('${m.id}')">${m.icon} ${m.name}</div>`
+  ).join('');
+}
+
+function selectImportMod(id) {
+  importTargetMod = id;
+  buildImportModPills();
+}
+
+function createNewMod() {
+  const raw = document.getElementById('new-mod-name').value.trim();
+  if (!raw) { setFeedback('Введите название модуля', 'err'); return; }
+
+  // Извлекаем эмодзи из строки (первый или последний символ если это эмодзи)
+  const emojiMatch = raw.match(/\p{Emoji_Presentation}|\p{Extended_Pictographic}/gu);
+  const icon = emojiMatch ? emojiMatch[0] : '📂';
+  // Название — строка без первого/последнего эмодзи и лишних пробелов
+  const name = raw.replace(/^\s*\p{Emoji_Presentation}\s*|\s*\p{Emoji_Presentation}\s*$/gu, '').trim() || raw;
+
+  const id = 'custom_' + Date.now();
+  MODULES.push({ id, icon, name, qs: [], fc: [] });
+  importTargetMod = id;
+  document.getElementById('new-mod-name').value = '';
+  buildImportModPills();
+  buildModGrid();
+  updateStats();
+  setFeedback('✓ Модуль «' + icon + ' ' + name + '» создан', 'ok');
+}
+
+function handleFile(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  document.getElementById('import-filename').textContent = file.name;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    document.getElementById('import-paste').value = ev.target.result;
+    setFeedback('Файл загружен — нажмите «Добавить»', 'ok');
+  };
+  reader.readAsText(file);
+}
+
+function doImport() {
+  if (!importTargetMod) { setFeedback('Выберите модуль для добавления', 'err'); return; }
+  const raw = document.getElementById('import-paste').value.trim();
+  if (!raw) { setFeedback('Вставьте JSON или загрузите файл', 'err'); return; }
+
+  let data;
+  try { data = JSON.parse(raw); } catch(e) { setFeedback('Ошибка парсинга JSON: ' + e.message, 'err'); return; }
+  if (!Array.isArray(data) || data.length === 0) { setFeedback('Ожидается непустой массив [ … ]', 'err'); return; }
+
+  const mod = MODULES.find(m => m.id === importTargetMod);
+  if (!mod) { setFeedback('Модуль не найден', 'err'); return; }
+
+  if (importType === 'qs') {
+    const valid = data.filter(x => x.q && Array.isArray(x.opts) && typeof x.ans === 'number');
+    if (valid.length === 0) { setFeedback('Нет корректных вопросов. Проверьте поля q, opts, ans', 'err'); return; }
+    const existingQs = new Set(mod.qs.map(x => x.q.trim().toLowerCase()));
+    const newItems = valid.filter(x => !existingQs.has(x.q.trim().toLowerCase()));
+    const skipped = valid.length - newItems.length;
+    mod.qs.push(...newItems);
+    updateStats();
+    const msg = newItems.length > 0
+      ? `✓ Добавлено ${newItems.length} вопрос(ов) в «${mod.icon} ${mod.name}»` + (skipped > 0 ? ` · пропущено дублей: ${skipped}` : '')
+      : `Все ${skipped} вопрос(ов) уже есть в модуле — дубли не добавлены`;
+    setFeedback(msg, newItems.length > 0 ? 'ok' : 'err');
+  } else {
+    const valid = data.filter(x => x.q && x.a);
+    if (valid.length === 0) { setFeedback('Нет корректных карточек. Проверьте поля q и a', 'err'); return; }
+    const existingFc = new Set(mod.fc.map(x => x.q.trim().toLowerCase()));
+    const newItems = valid.filter(x => !existingFc.has(x.q.trim().toLowerCase()));
+    const skipped = valid.length - newItems.length;
+    mod.fc.push(...newItems);
+    updateStats();
+    const msg = newItems.length > 0
+      ? `✓ Добавлено ${newItems.length} карточек в «${mod.icon} ${mod.name}»` + (skipped > 0 ? ` · пропущено дублей: ${skipped}` : '')
+      : `Все ${skipped} карточек уже есть в модуле — дубли не добавлены`;
+    setFeedback(msg, newItems.length > 0 ? 'ok' : 'err');
+  }
+  document.getElementById('import-paste').value = '';
+  document.getElementById('import-filename').textContent = 'файл не выбран';
+}
+
+function clearImport() {
+  document.getElementById('import-paste').value = '';
+  document.getElementById('import-filename').textContent = 'файл не выбран';
+  document.getElementById('import-file').value = '';
+  setFeedback('', '');
+}
+
+function copyTemplate() {
+  const tpl = importType === 'qs' ? SCHEMA_QS : SCHEMA_FC;
+  navigator.clipboard.writeText(tpl).then(() => setFeedback('Шаблон скопирован в буфер', 'ok'));
+}
+
+function setFeedback(msg, type) {
+  const el = document.getElementById('import-feedback');
+  el.textContent = msg;
+  el.className = 'import-feedback' + (type ? ' ' + type : '');
+}
+
+function updateStats() {
+  document.getElementById('total-q').textContent = MODULES.reduce((a,m) => a + m.qs.length, 0);
+  document.getElementById('total-fc').textContent = MODULES.reduce((a,m) => a + m.fc.length, 0);
+}
+
+// ---- EDITOR ----
+let editorModId = null;
+
+function renderEditor() {
+  document.getElementById('editor-wrap').classList.add('visible');
+  buildEditorModPills();
+  renderEditorList();
+}
+
+function buildEditorModPills() {
+  const row = document.getElementById('editor-mod-row');
+  row.innerHTML = MODULES.map(m =>
+    `<div class="import-mod-pill${editorModId === m.id ? ' active' : ''}"
+      onclick="selectEditorMod('${m.id}')">${m.icon} ${m.name}</div>`
+  ).join('');
+}
+
+function selectEditorMod(id) {
+  editorModId = id;
+  buildEditorModPills();
+  // Показываем кнопку удаления только для кастомных модулей
+  const actions = document.getElementById('editor-mod-actions');
+  const mod = MODULES.find(m => m.id === id);
+  if (actions && mod) {
+    actions.style.display = '';
+  }
+  renderEditorList();
+}
+
+function askDeleteModule() {
+  const mod = MODULES.find(m => m.id === editorModId);
+  if (!mod) return;
+  const msgEl = document.getElementById('delete-mod-msg');
+  msgEl.textContent = 'Удалить ' + mod.icon + ' ' + mod.name + '? Все вопросы и карточки будут удалены безвозвратно.';
+  document.getElementById('delete-mod-confirm').style.display = 'block';
+  document.getElementById('delete-mod-btn').style.display = 'none';
+}
+
+function cancelDeleteModule() {
+  document.getElementById('delete-mod-confirm').style.display = 'none';
+  document.getElementById('delete-mod-btn').style.display = '';
+}
+
+function confirmDeleteModule() {
+  const idx = MODULES.findIndex(m => m.id === editorModId);
+  if (idx !== -1) MODULES.splice(idx, 1);
+  const sr = loadSR();
+  const modIdToDelete = editorModId;
+  Object.keys(sr).forEach(k => { if (k.startsWith(modIdToDelete + '::')) delete sr[k]; });
+  saveSR(sr);
+  editorModId = null;
+  document.getElementById('editor-mod-actions').style.display = 'none';
+  document.getElementById('delete-mod-confirm').style.display = 'none';
+  document.getElementById('delete-mod-btn').style.display = '';
+  buildModGrid();
+  updateStats();
+  buildEditorModPills();
+  renderEditorList();
+}
+
+function renderEditorList() {
+  const list = document.getElementById('editor-list');
+  if (!editorModId) {
+    list.innerHTML = '<div class="editor-empty">Выберите модуль выше</div>';
+    return;
+  }
+  const mod = MODULES.find(m => m.id === editorModId);
+  if (!mod || mod.qs.length === 0) {
+    list.innerHTML = '<div class="editor-empty">В этом модуле нет вопросов</div>';
+    return;
+  }
+  const letters = ['А','Б','В','Г','Д'];
+  list.innerHTML = '<div class="editor-count">' + mod.qs.length + ' вопрос(ов) · нажмите «✏️» чтобы редактировать</div>' +
+    mod.qs.map((q, idx) => {
+      const correctLetter = letters[q.ans] || '?';
+      const safeQ = q.q.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      const safeAns = (q.opts[q.ans] || '—').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      return '<div class="editor-card" id="ecard-' + idx + '">' +
+        '<div class="editor-q-text">' + (idx+1) + '. ' + safeQ + '</div>' +
+        '<div class="editor-meta">' +
+          '<span class="editor-ans-badge">✓ ' + correctLetter + ': ' + safeAns + '</span>' +
+          '<span>' + q.opts.length + ' вариантов</span>' +
+        '</div>' +
+        '<div class="editor-actions">' +
+          '<button class="btn btn-ghost" style="font-size:11px;padding:6px 12px" data-action="edit" data-idx="' + idx + '">✏️ Изменить</button>' +
+          '<button class="btn btn-ghost" style="font-size:11px;padding:6px 12px;color:var(--danger)" data-action="ask-del" data-idx="' + idx + '">🗑 Удалить</button>' +
+        '</div>' +
+        '<div class="del-q-confirm" id="delq-' + idx + '" style="display:none;margin-top:10px;background:rgba(232,122,122,0.08);border:1px solid rgba(232,122,122,0.3);border-radius:8px;padding:10px 12px">' +
+          '<div style="font-size:12px;color:var(--text);margin-bottom:8px">Удалить этот вопрос безвозвратно?</div>' +
+          '<div style="display:flex;gap:8px">' +
+            '<button class="btn btn-ghost" style="font-size:11px;padding:5px 10px" data-action="cancel-del" data-idx="' + idx + '">Отмена</button>' +
+            '<button class="btn btn-ghost" style="font-size:11px;padding:5px 10px;color:var(--danger);border-color:var(--danger)" data-action="confirm-del" data-idx="' + idx + '">Да, удалить</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="edit-form" id="eform-' + idx + '" style="display:none"></div>' +
+      '</div>';
+    }).join('');
+
+  // Единый обработчик кликов — без inline onclick
+  list.onclick = function(e) {
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    const idx = parseInt(btn.dataset.idx);
+    const action = btn.dataset.action;
+    if (action === 'edit') openEditForm(idx);
+    if (action === 'ask-del') {
+      document.getElementById('delq-' + idx).style.display = 'block';
+      btn.style.display = 'none';
+    }
+    if (action === 'cancel-del') {
+      document.getElementById('delq-' + idx).style.display = 'none';
+      list.querySelector('[data-action="ask-del"][data-idx="' + idx + '"]').style.display = '';
+    }
+    if (action === 'confirm-del') deleteQuestion(idx);
+  };
+}
+
+function openEditForm(idx) {
+  document.querySelectorAll('.edit-form').forEach(f => f.style.display = 'none');
+  document.querySelectorAll('.editor-card').forEach(c => c.classList.remove('editing'));
+
+  const mod = MODULES.find(m => m.id === editorModId);
+  const q = mod.qs[idx];
+  const letters = ['А','Б','В','Г','Д'];
+  const form = document.getElementById('eform-' + idx);
+  const card = document.getElementById('ecard-' + idx);
+  card.classList.add('editing');
+
+  // Build form via DOM to avoid template literal issues
+  form.innerHTML = '';
+
+  const lbl1 = document.createElement('div');
+  lbl1.className = 'edit-field-label';
+  lbl1.textContent = 'Текст вопроса';
+  form.appendChild(lbl1);
+
+  const ta = document.createElement('textarea');
+  ta.className = 'edit-q-input';
+  ta.id = 'eq-text-' + idx;
+  ta.value = q.q;
+  form.appendChild(ta);
+
+  const lbl2 = document.createElement('div');
+  lbl2.className = 'edit-field-label';
+  lbl2.textContent = 'Варианты ответов · отметьте правильный ●';
+  form.appendChild(lbl2);
+
+  const optsList = document.createElement('div');
+  optsList.className = 'edit-opts-list';
+  optsList.id = 'eq-opts-' + idx;
+  q.opts.forEach((opt, i) => {
+    const row = document.createElement('div');
+    row.className = 'edit-opt-row' + (q.ans === i ? ' is-answer' : '');
+    row.id = 'erow-' + idx + '-' + i;
+
+    const letter = document.createElement('span');
+    letter.className = 'edit-opt-letter';
+    letter.textContent = letters[i];
+
+    const input = document.createElement('input');
+    input.className = 'edit-opt-input';
+    input.id = 'eopt-' + idx + '-' + i;
+    input.value = opt;
+
+    const radio = document.createElement('input');
+    radio.type = 'radio';
+    radio.className = 'edit-opt-radio';
+    radio.name = 'eans-' + idx;
+    radio.value = i;
+    radio.checked = (q.ans === i);
+    radio.addEventListener('change', function() { highlightAns(idx, i); });
+
+    row.appendChild(letter);
+    row.appendChild(input);
+    row.appendChild(radio);
+    optsList.appendChild(row);
+  });
+  form.appendChild(optsList);
+
+  const saveRow = document.createElement('div');
+  saveRow.className = 'edit-save-row';
+
+  const cancelBtn = document.createElement('button');
+  cancelBtn.className = 'btn btn-ghost';
+  cancelBtn.textContent = 'Отмена';
+  cancelBtn.addEventListener('click', function() { closeEditForm(idx); });
+
+  const saveBtn = document.createElement('button');
+  saveBtn.className = 'btn btn-primary';
+  saveBtn.textContent = '💾 Сохранить';
+  saveBtn.addEventListener('click', function() { saveEdit(idx); });
+
+  saveRow.appendChild(cancelBtn);
+  saveRow.appendChild(saveBtn);
+  form.appendChild(saveRow);
+
+  form.style.display = 'block';
+  form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function highlightAns(idx, ansIdx) {
+  const mod = MODULES.find(m => m.id === editorModId);
+  const optCount = mod.qs[idx].opts.length;
+  for (let i = 0; i < optCount; i++) {
+    const row = document.getElementById('erow-' + idx + '-' + i);
+    if (row) row.classList.toggle('is-answer', i === ansIdx);
+  }
+}
+
+function saveEdit(idx) {
+  const mod = MODULES.find(m => m.id === editorModId);
+  const q = mod.qs[idx];
+
+  const newText = document.getElementById('eq-text-' + idx).value.trim();
+  if (!newText) { alert('Текст вопроса не может быть пустым'); return; }
+
+  const newOpts = [];
+  for (let i = 0; i < q.opts.length; i++) {
+    const val = document.getElementById('eopt-' + idx + '-' + i)?.value.trim();
+    if (val === undefined) break;
+    newOpts.push(val || q.opts[i]);
+  }
+
+  const radios = document.querySelectorAll(`input[name="eans-${idx}"]`);
+  let newAns = q.ans;
+  radios.forEach(r => { if (r.checked) newAns = parseInt(r.value); });
+
+  mod.qs[idx] = { ...q, q: newText, opts: newOpts, ans: newAns };
+  renderEditorList(); // перерисовываем список
+}
+
+function closeEditForm(idx) {
+  const form = document.getElementById('eform-' + idx);
+  const card = document.getElementById('ecard-' + idx);
+  if (form) form.style.display = 'none';
+  if (card) card.classList.remove('editing');
+}
+
+function deleteQuestion(idx) {
+  const mod = MODULES.find(m => m.id === editorModId);
+  if (!mod || !mod.qs[idx]) return;
+  const preview = mod.qs[idx].q.slice(0, 80);
+  if (!confirm('Удалить вопрос? ' + preview)) return;
+  mod.qs.splice(idx, 1);
+  updateStats();
+  buildModGrid();
+  renderEditorList();
+}
+
+init();
+</script>
+<!-- 🟢 УНИВЕРСАЛЬНОЕ АВТОСОХРАНЕНИЕ (без правки основного кода) -->
+<script>
+(function() {
+  const KEY = 'propedeutika_autosave_v1';
+  const STORAGE = window.localStorage;
+  // Список имён, которые чаще всего используют ИИ-генераторы для хранения данных
+  const STATE_KEYS = ['modules','tests','cards','history','questions','results','quizState','appData','state','data','modulesList','testResults','flashcards'];
+
+  function gatherState() {
+    const state = {};
+    STATE_KEYS.forEach(k => {
+      if (window[k] !== undefined) {
+        try { state[k] = JSON.parse(JSON.stringify(window[k])); }
+        catch(e) { state[k] = window[k]; }
+      }
+    });
+    return state;
+  }
+
+  function applyState(saved) {
+    STATE_KEYS.forEach(k => { if (saved[k] !== undefined) window[k] = saved[k]; });
+    // Пытаемся обновить интерфейс, если в коде есть стандартные функции рендера
+    ['render','updateUI','refresh','draw','show','init'].forEach(fn => {
+      if (typeof window[fn] === 'function') try { window[fn](); } catch(e){}
+    });
+  }
+
+  function save() {
+    const state = gatherState();
+    if (Object.keys(state).length) {
+      STORAGE.setItem(KEY, JSON.stringify(state));
+      console.log('💾 Данные сохранены локально');
+    }
+  }
+
+  function load() {
+    try {
+      const raw = STORAGE.getItem(KEY);
+      if (raw) { applyState(JSON.parse(raw)); console.log('✅ Состояние восстановлено'); return true; }
+    } catch(e) { console.warn('⚠️ Ошибка загрузки:', e); }
+    return false;
+  }
+
+  // 1. Восстановление при загрузке
+  window.addEventListener('DOMContentLoaded', () => {
+    setTimeout(load, 300); // даём основному скрипту инициализироваться
+  });
+
+  // 2. Фоновое сохранение каждые 15 сек + при закрытии вкладки
+  setInterval(save, 15000);
+  window.addEventListener('beforeunload', save);
+
+  // 3. Плавающая панель управления
+  const panel = document.createElement('div');
+  panel.style.cssText = 'position:fixed;bottom:20px;right:20px;background:#1e293b;color:#fff;padding:12px 14px;border-radius:12px;font-family:system-ui;font-size:13px;z-index:99999;display:flex;gap:8px;align-items:center;box-shadow:0 6px 16px rgba(0,0,0,0.35);';
+  panel.innerHTML = `
+    <button id="ps_save" style="background:#10b981;color:#fff;border:none;padding:7px 11px;border-radius:7px;cursor:pointer;font-weight:500;">💾 Сохранить</button>
+    <button id="ps_load" style="background:#3b82f6;color:#fff;border:none;padding:7px 11px;border-radius:7px;cursor:pointer;font-weight:500;">🔄 Загрузить</button>
+    <button id="ps_clear" style="background:#ef4444;color:#fff;border:none;padding:7px 11px;border-radius:7px;cursor:pointer;font-weight:500;">🗑 Сброс</button>
+  `;
+  document.body.appendChild(panel);
+
+  document.getElementById('ps_save').onclick = () => { save(); panel.querySelector('span')?.remove(); const m = document.createElement('span'); m.textContent='✅'; m.style.marginLeft='6px'; m.style.color='#4ade80'; panel.appendChild(m); setTimeout(()=>m.remove(),1500); };
+  document.getElementById('ps_load').onclick = () => { if(load()) location.reload(); else alert('❌ Нет сохранённых данных'); };
+  document.getElementById('ps_clear').onclick = () => { if(confirm('🗑 Удалить все сохранённые вопросы и прогресс?')) { STORAGE.removeItem(KEY); location.reload(); } };
+})();
+</script>
+<!-- 🔴 КОНЕЦ БЛОКА -->
+</body>
+</html>
