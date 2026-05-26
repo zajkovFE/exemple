@@ -260,6 +260,23 @@
     <button style="background:#34495e" onclick="document.getElementById('import-file').click()">📥 Импорт HTML</button>
     <input type="file" id="import-file" style="display:none" accept=".html" onchange="importHTML(this)">
 </div>
+    <!-- НАЧАЛО: Кнопка перехода во второе приложение -->
+<div style="margin-top: 8px; display: inline-flex; gap: 10px; align-items: center;">
+  <a href="propedeutika_exam.html" class="cross-app-btn">📚 Пропедевтика: Экзамен</a>
+</div>
+<style>
+  .cross-app-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 9px 15px; background: #10b981; color: #fff;
+    text-decoration: none; border-radius: 6px; font-weight: 500;
+    font-family: inherit; cursor: pointer;
+    transition: background 0.2s, transform 0.1s; border: none;
+    font-size: 0.95rem; line-height: 1;
+  }
+  .cross-app-btn:hover { background: #059669; }
+  .cross-app-btn:active { transform: scale(0.97); }
+</style>
+<!-- КОНЕЦ: Кнопка перехода -->
         
 <div class="tool-group">
     <h4>📦 База (JSON)</h4>
