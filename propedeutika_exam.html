@@ -1814,7 +1814,6 @@ function createNewMod() {
   buildModGrid();
   updateStats();
   setFeedback('✓ Модуль «' + icon + ' ' + name + '» создан', 'ok');
-  // 👇 ДОБАВИТЬ ЭТУ СТРОКУ:
   persistModules();
 }
 
@@ -1866,9 +1865,8 @@ function doImport() {
       ? `✓ Добавлено ${newItems.length} карточек в «${mod.icon} ${mod.name}»` + (skipped > 0 ? ` · пропущено дублей: ${skipped}` : '')
       : `Все ${skipped} карточек уже есть в модуле — дубли не добавлены`;
     setFeedback(msg, newItems.length > 0 ? 'ok' : 'err');
-    // 👇 ДОБАВИТЬ ЭТУ СТРОКУ:
-  persistModules();
   }
+  persistModules(); // ✅ сохраняем после ЛЮБОГО успешного импорта
   document.getElementById('import-paste').value = '';
   document.getElementById('import-filename').textContent = 'файл не выбран';
 }
@@ -1954,7 +1952,6 @@ function confirmDeleteModule() {
   updateStats();
   buildEditorModPills();
   renderEditorList();
-  // 👇 ДОБАВИТЬ ЭТУ СТРОКУ:
   persistModules();
 }
 
@@ -2127,7 +2124,6 @@ function saveEdit(idx) {
 
   mod.qs[idx] = { ...q, q: newText, opts: newOpts, ans: newAns };
   renderEditorList(); // перерисовываем список
-  // 👇 ДОБАВИТЬ ЭТУ СТРОКУ:
   persistModules();
 }
 
@@ -2147,7 +2143,6 @@ function deleteQuestion(idx) {
   updateStats();
   buildModGrid();
   renderEditorList();
-  // 👇 ДОБАВИТЬ ЭТУ СТРОКУ:
   persistModules();
 }
 
