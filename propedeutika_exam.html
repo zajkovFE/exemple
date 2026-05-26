@@ -1215,7 +1215,34 @@ const MODULES = [
     ]
   }
 ];
+// ==== 🟢 ПЕРСИСТЕНТНОСТЬ МОДУЛЕЙ (Lable moduls system vers 2) ====
+const PERSIST_KEY = 'propedeutika_modules_persist';
 
+// Загружаем сохранённые модули при старте (если есть)
+(function loadPersistedModules() {
+  try {
+    const saved = localStorage.getItem(PERSIST_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        // Заменяем MODULES на сохранённые, сохраняя ссылки для совместимости
+        MODULES.length = 0;
+        parsed.forEach(m => MODULES.push(m));
+        console.log('✅ Модули восстановлены из localStorage');
+      }
+    }
+  } catch (e) { console.warn('⚠️ Не удалось загрузить сохранённые модули:', e); }
+})();
+
+// Функция сохранения (вызывайте после любого изменения MODULES)
+function persistModules() {
+  try {
+    localStorage.setItem(PERSIST_KEY, JSON.stringify(MODULES));
+    console.log('💾 Модули сохранены');
+  } catch (e) { console.error('❌ Ошибка сохранения модулей:', e); }
+}
+// ==== 🔴 КОНЕЦ БЛОКА ПЕРСИСТЕНТНОСТИ ====
+  
 // ---- STATE ----
 let mode = 'test';
 let currentMod = null;
@@ -1787,6 +1814,8 @@ function createNewMod() {
   buildModGrid();
   updateStats();
   setFeedback('✓ Модуль «' + icon + ' ' + name + '» создан', 'ok');
+  // 👇 ДОБАВИТЬ ЭТУ СТРОКУ:
+  persistModules();
 }
 
 function handleFile(e) {
@@ -1837,6 +1866,8 @@ function doImport() {
       ? `✓ Добавлено ${newItems.length} карточек в «${mod.icon} ${mod.name}»` + (skipped > 0 ? ` · пропущено дублей: ${skipped}` : '')
       : `Все ${skipped} карточек уже есть в модуле — дубли не добавлены`;
     setFeedback(msg, newItems.length > 0 ? 'ok' : 'err');
+    // 👇 ДОБАВИТЬ ЭТУ СТРОКУ:
+  persistModules();
   }
   document.getElementById('import-paste').value = '';
   document.getElementById('import-filename').textContent = 'файл не выбран';
@@ -1923,6 +1954,8 @@ function confirmDeleteModule() {
   updateStats();
   buildEditorModPills();
   renderEditorList();
+  // 👇 ДОБАВИТЬ ЭТУ СТРОКУ:
+  persistModules();
 }
 
 function renderEditorList() {
@@ -2094,6 +2127,8 @@ function saveEdit(idx) {
 
   mod.qs[idx] = { ...q, q: newText, opts: newOpts, ans: newAns };
   renderEditorList(); // перерисовываем список
+  // 👇 ДОБАВИТЬ ЭТУ СТРОКУ:
+  persistModules();
 }
 
 function closeEditForm(idx) {
@@ -2112,6 +2147,8 @@ function deleteQuestion(idx) {
   updateStats();
   buildModGrid();
   renderEditorList();
+  // 👇 ДОБАВИТЬ ЭТУ СТРОКУ:
+  persistModules();
 }
 
 init();
@@ -2175,6 +2212,7 @@ init();
     <button id="ps_save" style="background:#10b981;color:#fff;border:none;padding:7px 11px;border-radius:7px;cursor:pointer;font-weight:500;">💾 Сохранить</button>
     <button id="ps_load" style="background:#3b82f6;color:#fff;border:none;padding:7px 11px;border-radius:7px;cursor:pointer;font-weight:500;">🔄 Загрузить</button>
     <button id="ps_clear" style="background:#ef4444;color:#fff;border:none;padding:7px 11px;border-radius:7px;cursor:pointer;font-weight:500;">🗑 Сброс</button>
+    <button onclick="if(confirm('Сбросить МОДУЛИ?')){localStorage.removeItem('propedeutika_modules_persist');location.reload()}" style="background:#ef4444;color:#fff;border:none;padding:5px 8px;border-radius:6px;cursor:pointer;font-size:11px;margin-left:4px;">🗑 Модули</button>
   `;
   document.body.appendChild(panel);
 
