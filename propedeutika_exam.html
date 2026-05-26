@@ -113,208 +113,7 @@
   .tab:hover:not(.active) { color: var(--text); }
 
   @media (min-width: 540px) {
-    .tabs { grid-template-columns: repeat(7, 1fr); }
-  }
-
-  /* LEVEL PANEL */
-  .level-wrap { display: none; }
-  .level-wrap.visible { display: block; }
-
-  .level-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 32px 28px;
-    margin-bottom: 18px;
-    text-align: center;
-    animation: fadeUp 0.3s ease;
-  }
-  .level-emoji {
-    font-size: 64px;
-    line-height: 1;
-    margin-bottom: 12px;
-    display: block;
-  }
-  .level-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 26px;
-    font-weight: 700;
-    color: var(--accent);
-    margin-bottom: 6px;
-  }
-  .level-subtitle {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 12px;
-    color: var(--muted);
-    letter-spacing: 1px;
-    margin-bottom: 24px;
-  }
-  .level-xp-bar-wrap {
-    max-width: 400px;
-    margin: 0 auto 10px;
-  }
-  .level-xp-label {
-    display: flex;
-    justify-content: space-between;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    color: var(--muted);
-    margin-bottom: 6px;
-  }
-  .level-xp-bar {
-    height: 8px;
-    background: var(--border);
-    border-radius: 4px;
-    overflow: hidden;
-  }
-  .level-xp-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--accent2), var(--accent));
-    border-radius: 4px;
-    transition: width 0.6s ease;
-  }
-  .level-next {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    color: var(--muted);
-    margin-top: 8px;
-  }
-  .level-stats-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    margin-top: 24px;
-    max-width: 480px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-  .level-stat-box {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px 10px;
-  }
-  .level-stat-val {
-    font-family: 'Playfair Display', serif;
-    font-size: 28px;
-    font-weight: 700;
-    color: var(--accent2);
-    line-height: 1;
-    margin-bottom: 4px;
-  }
-  .level-stat-lbl {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 10px;
-    color: var(--muted);
-    letter-spacing: 1px;
-    text-transform: uppercase;
-  }
-  .level-ladder {
-    margin-top: 28px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    max-width: 480px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-  .level-ladder-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 14px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    opacity: 0.45;
-    transition: all 0.2s;
-  }
-  .level-ladder-item.current {
-    opacity: 1;
-    border-color: var(--accent);
-    background: rgba(232,201,122,0.07);
-  }
-  .level-ladder-item.unlocked {
-    opacity: 0.75;
-  }
-  .level-ladder-emoji { font-size: 20px; min-width: 28px; text-align: center; }
-  .level-ladder-name {
-    font-size: 13px;
-    color: var(--text);
-    flex: 1;
-  }
-  .level-ladder-sub {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 10px;
-    color: var(--muted);
-  }
-  .level-ladder-xp {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 10px;
-    color: var(--muted);
-    white-space: nowrap;
-  }
-
-  /* WEAK SPOTS */
-  .weak-wrap { display: none; }
-  .weak-wrap.visible { display: block; }
-  .weak-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-  .weak-empty {
-    text-align: center;
-    color: var(--muted);
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 13px;
-    padding: 48px 0;
-    line-height: 2;
-  }
-  .weak-mod-section { margin-bottom: 24px; }
-  .weak-mod-title {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .weak-mod-count {
-    background: rgba(232,122,122,0.15);
-    border: 1px solid rgba(232,122,122,0.3);
-    color: var(--danger);
-    padding: 2px 8px;
-    border-radius: 100px;
-    font-size: 10px;
-  }
-  .weak-q-item {
-    background: var(--card);
-    border: 1px solid rgba(232,122,122,0.25);
-    border-left: 3px solid var(--danger);
-    border-radius: 10px;
-    padding: 12px 14px;
-    margin-bottom: 8px;
-    font-size: 13px;
-    color: var(--text);
-    line-height: 1.5;
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-  }
-  .weak-q-streak {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 10px;
-    color: var(--danger);
-    white-space: nowrap;
-    margin-top: 2px;
-    min-width: 40px;
+    .tabs { grid-template-columns: repeat(5, 1fr); }
   }
 
   /* MODULE SELECTOR */
@@ -1091,8 +890,6 @@
   <div class="tabs">
     <button class="tab active" onclick="switchMode('test')">📝 Тесты</button>
     <button class="tab" onclick="switchMode('flash')">🃏 Карточки</button>
-    <button class="tab" onclick="switchMode('weak')">🔴 Слабые</button>
-    <button class="tab" onclick="switchMode('level')">🏆 Уровень</button>
     <button class="tab" onclick="switchMode('history')">📊 История</button>
     <button class="tab" onclick="switchMode('import')">➕ Добавить</button>
     <button class="tab" onclick="switchMode('editor')">✏️ Редактор</button>
@@ -1174,22 +971,8 @@
     </div>
   </div>
 
-  <!-- WEAK SPOTS -->
-  <div class="weak-wrap" id="weak-wrap">
-    <div class="weak-header">
-      <span class="subtitle">🔴 Слабые места</span>
-      <button class="btn btn-primary" style="font-size:11px;padding:8px 16px" onclick="startWeakQuiz()">▶ Тренировать слабые</button>
-    </div>
-    <div id="weak-list"></div>
-  </div>
-
-  <!-- LEVEL -->
-  <div class="level-wrap" id="level-wrap">
-    <div class="level-card" id="level-card"></div>
-    <div class="level-ladder" id="level-ladder"></div>
-  </div>
-
-
+  <!-- HISTORY -->
+  <div class="history-wrap" id="history-wrap">
     <div class="history-header">
       <span class="subtitle">Журнал результатов</span>
       <button class="btn btn-ghost" style="font-size:11px;padding:6px 12px" onclick="clearHistory()">🗑 Очистить</button>
@@ -1595,9 +1378,10 @@ function selectMod(id) {
 
 function switchMode(m) {
   mode = m;
-  const tabModes = ['test','flash','weak','level','history','import','editor'];
   document.querySelectorAll('.tab').forEach((t,i) => {
-    t.classList.toggle('active', tabModes[i] === m);
+    t.classList.toggle('active',
+      (i===0 && m==='test') || (i===1 && m==='flash') || (i===2 && m==='history') ||
+      (i===3 && m==='import') || (i===4 && m==='editor'));
   });
   document.getElementById('quiz-wrap').classList.remove('visible');
   document.getElementById('result-screen').classList.remove('visible');
@@ -1605,16 +1389,12 @@ function switchMode(m) {
   document.getElementById('history-wrap').classList.remove('visible');
   document.getElementById('import-wrap').classList.remove('visible');
   document.getElementById('editor-wrap').classList.remove('visible');
-  document.getElementById('weak-wrap').classList.remove('visible');
-  document.getElementById('level-wrap').classList.remove('visible');
   const showModGrid = (m === 'test' || m === 'flash');
   document.getElementById('mod-grid').style.display = showModGrid ? '' : 'none';
 
   if (m === 'history') { renderHistory(); return; }
   if (m === 'import') { renderImport(); return; }
   if (m === 'editor') { renderEditor(); return; }
-  if (m === 'weak') { renderWeak(); return; }
-  if (m === 'level') { renderLevel(); return; }
   updateComplexBtn();
   if (currentMod) selectMod(currentMod);
 }
@@ -1875,13 +1655,6 @@ function showResult() {
 
   updateGlobal();
   buildModGrid();
-
-  // Начисляем XP
-  const gained = addXP(score, questions.length);
-  const xpEl = document.createElement('div');
-  xpEl.style.cssText = 'font-family:\'IBM Plex Mono\',monospace;font-size:13px;color:var(--accent);margin-top:12px;animation:fadeUp 0.4s ease';
-  xpEl.textContent = '+' + gained + ' XP → уровень: ' + getCurrentLevel(loadXP()).name;
-  document.getElementById('result-screen').querySelector('.result-card').appendChild(xpEl);
 }
 
 function saveHistory(entry) {
@@ -2371,169 +2144,6 @@ function deleteQuestion(idx) {
   buildModGrid();
   renderEditorList();
   persistModules();
-}
-
-// ---- LEVEL SYSTEM ----
-const LEVELS = [
-  { emoji: '👶', name: 'Я сам пациент',          sub: 'Гуглю симптомы у себя',                    xpMin: 0    },
-  { emoji: '😬', name: 'Первый живой больной',    sub: 'Он дышит. Я тоже. Уже хорошо',             xpMin: 50   },
-  { emoji: '🫣', name: 'Не навреди',              sub: 'Главное — ничего не сломать',               xpMin: 150  },
-  { emoji: '🤝', name: 'Я помогаю',               sub: 'Держу зонд. Уверенно',                     xpMin: 350  },
-  { emoji: '💪', name: 'Я лечу',                  sub: 'Назначаю. Иногда правильно',               xpMin: 700  },
-  { emoji: '🧘', name: 'Пациент сам выздоровел',  sub: '...но я рядом стоял',                      xpMin: 1200 },
-  { emoji: '🏆', name: 'Пропедевт',               sub: 'Вижу диагноз по походке в коридоре',       xpMin: 2000 },
-];
-
-const XP_KEY = 'propedeutika_xp';
-
-function loadXP() {
-  try { return parseInt(localStorage.getItem(XP_KEY) || '0'); } catch(e) { return 0; }
-}
-function saveXP(xp) { localStorage.setItem(XP_KEY, String(xp)); }
-
-function addXP(correct, total) {
-  // За правильный ответ +3 XP, за завершение теста бонус
-  const gained = correct * 3 + Math.floor(total * 0.5);
-  const xp = loadXP() + gained;
-  saveXP(xp);
-  return gained;
-}
-
-function getCurrentLevel(xp) {
-  let lvl = LEVELS[0];
-  for (const l of LEVELS) { if (xp >= l.xpMin) lvl = l; else break; }
-  return lvl;
-}
-
-function getNextLevel(xp) {
-  return LEVELS.find(l => l.xpMin > xp) || null;
-}
-
-function renderLevel() {
-  document.getElementById('level-wrap').classList.add('visible');
-  const xp = loadXP();
-  const lvl = getCurrentLevel(xp);
-  const next = getNextLevel(xp);
-  const lvlIdx = LEVELS.indexOf(lvl);
-
-  // Общая статистика
-  const sr = loadSR();
-  let totalAnsweredAll = 0, totalCorrectAll = 0, totalWeakAll = 0;
-  MODULES.forEach(mod => {
-    mod.qs.forEach(q => {
-      const d = getQData(sr, mod.id, q);
-      if (d.rating > 0 || d.streak > 0) totalAnsweredAll++;
-      if (d.rating >= 3) totalCorrectAll++;
-      if (d.rating === 1) totalWeakAll++;
-    });
-  });
-
-  const xpInLevel = xp - lvl.xpMin;
-  const xpNeeded = next ? next.xpMin - lvl.xpMin : 1;
-  const pct = next ? Math.min(100, Math.round((xpInLevel / xpNeeded) * 100)) : 100;
-
-  const card = document.getElementById('level-card');
-  card.innerHTML = `
-    <span class="level-emoji">${lvl.emoji}</span>
-    <div class="level-title">${lvl.name}</div>
-    <div class="level-subtitle">${lvl.sub}</div>
-    <div class="level-xp-bar-wrap">
-      <div class="level-xp-label">
-        <span>XP: ${xp}</span>
-        <span>${next ? 'До «' + next.name + '»: ' + (next.xpMin - xp) + ' XP' : '🏆 Максимальный уровень!'}</span>
-      </div>
-      <div class="level-xp-bar"><div class="level-xp-fill" style="width:${pct}%"></div></div>
-    </div>
-    <div class="level-stats-grid">
-      <div class="level-stat-box">
-        <div class="level-stat-val">${xp}</div>
-        <div class="level-stat-lbl">Всего XP</div>
-      </div>
-      <div class="level-stat-box">
-        <div class="level-stat-val">${totalCorrectAll}</div>
-        <div class="level-stat-lbl">Сильных вопр.</div>
-      </div>
-      <div class="level-stat-box">
-        <div class="level-stat-val" style="color:var(--danger)">${totalWeakAll}</div>
-        <div class="level-stat-lbl">Слабых вопр.</div>
-      </div>
-    </div>
-  `;
-
-  const ladder = document.getElementById('level-ladder');
-  ladder.innerHTML = LEVELS.map((l, i) => {
-    let cls = '';
-    if (i < lvlIdx) cls = 'unlocked';
-    if (i === lvlIdx) cls = 'current';
-    return `<div class="level-ladder-item ${cls}">
-      <span class="level-ladder-emoji">${l.emoji}</span>
-      <span class="level-ladder-name">${l.name}<br><span style="font-size:11px;color:var(--muted)">${l.sub}</span></span>
-      <span class="level-ladder-xp">${l.xpMin} XP</span>
-    </div>`;
-  }).join('');
-}
-
-// ---- WEAK SPOTS ----
-function getWeakQuestions() {
-  const sr = loadSR();
-  const result = [];
-  MODULES.forEach(mod => {
-    const weakQs = mod.qs.filter(q => getQData(sr, mod.id, q).rating === 1);
-    if (weakQs.length > 0) result.push({ mod, qs: weakQs });
-  });
-  return result;
-}
-
-function renderWeak() {
-  document.getElementById('weak-wrap').classList.add('visible');
-  const data = getWeakQuestions();
-  const list = document.getElementById('weak-list');
-
-  if (data.length === 0) {
-    list.innerHTML = `<div class="weak-empty">
-      🎉 Слабых вопросов нет!<br>
-      Либо вы всё знаете, либо ещё не начали 😄<br><br>
-      <span style="font-size:11px">Вопросы попадают сюда после первой ошибки в тесте</span>
-    </div>`;
-    return;
-  }
-
-  const totalWeak = data.reduce((a, d) => a + d.qs.length, 0);
-  list.innerHTML = `<div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);margin-bottom:18px">
-    Найдено <span style="color:var(--danger);font-weight:600">${totalWeak}</span> слабых вопросов в ${data.length} модулях
-  </div>` + data.map(({ mod, qs }) => `
-    <div class="weak-mod-section">
-      <div class="weak-mod-title">
-        ${mod.icon} ${mod.name}
-        <span class="weak-mod-count">${qs.length} вопр.</span>
-      </div>
-      ${qs.map(q => `
-        <div class="weak-q-item">
-          <span class="weak-q-streak">🔴</span>
-          <span>${q.q}</span>
-        </div>`).join('')}
-    </div>`).join('');
-}
-
-function startWeakQuiz() {
-  const data = getWeakQuestions();
-  if (data.length === 0) { alert('Слабых вопросов нет — пройдите тесты, чтобы они появились!'); return; }
-  // Собираем вопросы из всех модулей, помечаем modId
-  const allWeak = [];
-  data.forEach(({ mod, qs }) => qs.forEach(q => allWeak.push({ ...q, _modId: mod.id, _modIcon: mod.icon, _modName: mod.name })));
-  isComplex = true;
-  currentMod = null;
-  questions = shuffle(allWeak).slice(0, SESSION_SIZE);
-  qIndex = 0; score = 0; answered = false;
-  buildModGrid();
-  document.getElementById('weak-wrap').classList.remove('visible');
-  document.getElementById('result-screen').classList.remove('visible');
-  document.getElementById('quiz-wrap').classList.add('visible');
-  document.getElementById('flash-wrap').classList.remove('visible');
-  document.getElementById('mod-grid').style.display = 'none';
-  mode = 'test';
-  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', i === 0));
-  showQ();
 }
 
 init();
