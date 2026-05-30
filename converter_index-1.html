@@ -947,7 +947,7 @@ function loadJSONFile(e) {
     document.getElementById('json-input').value = ev.target.result;
     validateJSON();
   };
-  reader.readAsText(file);
+  reader.readAsText(file, 'UTF-8');
 }
 
 function showJSONError(msg) {
