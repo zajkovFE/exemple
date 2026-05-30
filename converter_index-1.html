@@ -404,14 +404,14 @@ h1 span { color: var(--accent); }
       <div class="target-label">Цикл</div>
       <select class="select" id="target-cycle" onchange="onCycleChange()"></select>
       <div style="margin-top:8px">
-        <input class="input" id="new-cycle-name" placeholder="+ Новый цикл (напр. Хирургия 🔪)" style="display:none" />
+        <input class="input" id="new-cycle-name" placeholder="+ Новый цикл (напр. Хирургия 🔪)" style="display:none" oninput="updateTargetSummary()" />
       </div>
     </div>
     <div>
       <div class="target-label">Модуль (система)</div>
       <select class="select" id="target-module" onchange="onModuleChange()"></select>
       <div style="margin-top:8px">
-        <input class="input" id="new-mod-name" placeholder="+ Новый модуль (напр. ЛОР 🦻)" style="display:none" />
+        <input class="input" id="new-mod-name" placeholder="+ Новый модуль (напр. ЛОР 🦻)" style="display:none" oninput="updateTargetSummary()" />
       </div>
     </div>
   </div>
@@ -601,7 +601,7 @@ document.addEventListener('keydown', (e) => {
 // ============================================================
 window.addEventListener('DOMContentLoaded', () => {
   pinInit();
-  document.getElementById('repo-input').value = localStorage.getItem(REPO_KEY) || '';
+  document.getElementById('repo-input').value = localStorage.getItem(REPO_KEY) || 'zajkovFE/exemple';
   const pat = localStorage.getItem(PAT_KEY);
   if (pat) document.getElementById('pat-input').value = pat;
   buildCycleSelect();
@@ -673,9 +673,14 @@ function onModuleChange() {
 function updateTargetSummary() {
   const cycleV  = document.getElementById('target-cycle').value;
   const moduleV = document.getElementById('target-module').value;
-  const cycleN  = cycleV  === '__new__' ? (document.getElementById('new-cycle-name').value  || 'новый цикл')  : CATALOG.find(c=>c.id===cycleV)?.name  || cycleV;
-  const moduleN = moduleV === '__new__' ? (document.getElementById('new-mod-name').value   || 'новый модуль') : CATALOG.find(c=>c.id===document.getElementById('target-cycle').value)?.modules.find(m=>m.id===moduleV)?.name || moduleV;
-  document.getElementById('target-summary').textContent = cycleN + ' → ' + moduleN;
+  const cycleN  = cycleV  === '__new__'
+    ? (document.getElementById('new-cycle-name').value  || 'новый-цикл')
+    : CATALOG.find(c=>c.id===cycleV)?.name || cycleV;
+  const moduleN = moduleV === '__new__'
+    ? (document.getElementById('new-mod-name').value || 'новый-модуль')
+    : CATALOG.find(c=>c.id===cycleV)?.modules.find(m=>m.id===moduleV)?.name || moduleV;
+  const path = getTargetFilePath() || '—';
+  document.getElementById('target-summary').textContent = cycleN + ' → ' + moduleN + '   📁 ' + path;
 }
 
 // ============================================================
@@ -993,8 +998,17 @@ function getTargetFilePath() {
 }
 
 function slugify(s) {
+  const tr = {
+    'а':'a','б':'b','в':'v','г':'g','д':'d','е':'e','ё':'yo','ж':'zh',
+    'з':'z','и':'i','й':'y','к':'k','л':'l','м':'m','н':'n','о':'o',
+    'п':'p','р':'r','с':'s','т':'t','у':'u','ф':'f','х':'kh','ц':'ts',
+    'ч':'ch','ш':'sh','щ':'sch','ъ':'','ы':'y','ь':'','э':'e','ю':'yu','я':'ya'
+  };
   return (s || '').toLowerCase().trim()
-    .replace(/[^\w\s-]/g,'').replace(/\s+/g,'-').replace(/-+/g,'-') || 'module';
+    .split('').map(c => tr[c] !== undefined ? tr[c] : c)
+    .join('')
+    .replace(/[^\w\s-]/g,'').replace(/\s+/g,'-').replace(/-+/g,'-')
+    .replace(/^-+|-+$/g,'') || 'module';
 }
 
 // ============================================================
