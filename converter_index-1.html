@@ -1062,8 +1062,13 @@ async function pushToGitHub() {
       existingSha = existing.sha;
       // Декодируем base64
       try {
-        const decoded = atob(existing.content.replace(/\n/g,''));
-        existingQs = JSON.parse(decoded);
+        const rawBytes = Uint8Array.from(
+  atob(existing.content.replace(/\n/g,'')),
+  c => c.charCodeAt(0)
+);
+
+const decoded = new TextDecoder('utf-8').decode(rawBytes);
+existingQs = JSON.parse(decoded);
         showPushStatus('📂 Файл найден · ' + existingQs.length + ' вопросов уже есть · Выполняю дедупликацию...', 'info');
       } catch(e) { existingQs = []; }
     } else if (checkR.status === 404) {
