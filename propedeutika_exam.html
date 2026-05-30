@@ -2779,8 +2779,12 @@ function syncGetRepo() {
 
 function renderSync() {
   document.getElementById('sync-wrap').classList.add('visible');
-  const saved = localStorage.getItem(SYNC_REPO_KEY) || SYNC_REPO_DEFAULT;
-  document.getElementById('sync-repo-input').value = saved;
+  const savedRepo = localStorage.getItem(SYNC_REPO_KEY) || SYNC_REPO_DEFAULT;
+  // Если в localStorage сохранился полный путь (старый баг) — обрезаем до username/repo
+  const repoClean = savedRepo.replace(/\/tree\/.*$/, '').replace(/\/blob\/.*$/, '').trim();
+  const repoFinal = repoClean || SYNC_REPO_DEFAULT;
+  if (repoFinal !== savedRepo) localStorage.setItem(SYNC_REPO_KEY, repoFinal);
+  document.getElementById('sync-repo-input').value = repoFinal;
   const last = localStorage.getItem(SYNC_LAST_KEY);
   document.getElementById('sync-last-info').textContent =
     last ? 'Последняя синхронизация: ' + last : 'Последняя синхронизация: никогда';
@@ -2802,7 +2806,7 @@ async function syncCheckRepo() {
   const st = document.getElementById('sync-repo-badge');
   st.textContent = '⏳ Проверка...'; st.className = 'sync-repo-badge idle';
   try {
-    const r = await fetch(syncApiUrl(repo, SYNC_DATA_PATH));
+    const r = await fetch(`https://api.github.com/repos/${repo}`);
     if (r.ok) { st.textContent = '✅ Репозиторий найден'; st.className = 'sync-repo-badge ok'; }
     else       { st.textContent = '❌ Не найден (' + r.status + ')'; st.className = 'sync-repo-badge err'; }
   } catch(e) { st.textContent = '❌ Ошибка сети'; st.className = 'sync-repo-badge err'; }
