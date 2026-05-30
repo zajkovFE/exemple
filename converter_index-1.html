@@ -444,6 +444,7 @@ h1 span { color: var(--accent); }
   <div class="btn-row" style="margin-top:18px">
     <button class="btn btn-green" id="push-btn" onclick="pushToGitHub()">⬆ Отправить в репозиторий</button>
     <button class="btn btn-ghost" onclick="downloadJSON()">⬇ Скачать JSON</button>
+    <button class="btn btn-ghost" style="color:var(--danger);border-color:var(--danger)" onclick="fixEncodingInRepo()">🔧 Починить кодировку файлов в репо</button>
   </div>
 
   <div class="push-status" id="push-status"></div>
@@ -1014,6 +1015,17 @@ function slugify(s) {
 // ============================================================
 // GITHUB PUSH
 // ============================================================
+// Безопасное кодирование UTF-8 → base64 (без переполнения стека)
+function utf8ToBase64(str) {
+  const bytes = new TextEncoder().encode(str);
+  let binary = '';
+  const chunkSize = 8192;
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+  }
+  return btoa(binary);
+}
+
 async function pushToGitHub() {
   const qs = getReadyQs();
   if (qs.length === 0) { showPushStatus('⚠ Нет вопросов для отправки. Сначала распознайте или введите вопросы.', 'err'); return; }
@@ -1073,7 +1085,8 @@ async function pushToGitHub() {
     }
 
     // 3. Кодируем и отправляем
-    const content = btoa(unescape(encodeURIComponent(JSON.stringify(merged, null, 2))));
+    const jsonStr = JSON.stringify(merged, null, 2);
+    const content = utf8ToBase64(jsonStr);
     const payload = {
       message: `Добавлено ${newQs.length} вопросов в ${filePath}`,
       content,
@@ -1111,6 +1124,83 @@ async function pushToGitHub() {
 // ============================================================
 // DOWNLOAD JSON
 // ============================================================
+// ============================================================
+// FIX ENCODING — перечитывает все файлы и перезаписывает с правильной кодировкой
+// ============================================================
+async function fixEncodingInRepo() {
+  const repo = document.getElementById('repo-input').value.trim();
+  const pat  = document.getElementById('pat-input').value.trim();
+  if (!repo || !pat) { showPushStatus('⚠ Укажите репозиторий и токен', 'err'); return; }
+
+  if (!confirm('Перезаписать все JSON-файлы в папке data/ с правильной кодировкой UTF-8?\nЭто исправит "кракозябры" в вопросах.')) return;
+
+  showPushStatus('⏳ Сканирую репозиторий...', 'info');
+
+  const headers = {
+    'Authorization': 'token ' + pat,
+    'Content-Type': 'application/json',
+    'Accept': 'application/vnd.github.v3+json'
+  };
+
+  try {
+    // Получаем все папки в data/
+    const dataR = await fetch(`https://api.github.com/repos/${repo}/contents/data`, { headers });
+    if (!dataR.ok) { showPushStatus('❌ Папка data не найдена: ' + dataR.status, 'err'); return; }
+    const folders = (await dataR.json()).filter(x => x.type === 'dir');
+
+    let fixed = 0, errors = 0;
+
+    for (const folder of folders) {
+      const modR = await fetch(`https://api.github.com/repos/${repo}/contents/${folder.path}`, { headers });
+      if (!modR.ok) continue;
+      const files = (await modR.json()).filter(x => x.type === 'file' && x.name.endsWith('.json'));
+
+      for (const file of files) {
+        showPushStatus(`⏳ Обрабатываю ${file.path}...`, 'info');
+        try {
+          // Читаем файл
+          const fileR = await fetch(`https://api.github.com/repos/${repo}/contents/${file.path}`, { headers });
+          if (!fileR.ok) { errors++; continue; }
+          const fileData = await fileR.json();
+
+          // Декодируем с правильной кодировкой
+          const rawBytes = Uint8Array.from(atob(fileData.content.replace(/\n/g,'')), c => c.charCodeAt(0));
+          const decoded  = new TextDecoder('utf-8').decode(rawBytes);
+          const parsed   = JSON.parse(decoded);
+
+          // Перекодируем правильно и записываем обратно
+          const jsonStr  = JSON.stringify(parsed, null, 2);
+          const content = utf8ToBase64(jsonStr);
+
+          const putR = await fetch(`https://api.github.com/repos/${repo}/contents/${file.path}`, {
+            method: 'PUT',
+            headers,
+            body: JSON.stringify({
+              message: `Исправлена кодировка: ${file.path}`,
+              content,
+              sha: fileData.sha,
+              branch: 'main'
+            })
+          });
+
+          if (putR.ok) fixed++;
+          else errors++;
+
+          await new Promise(r => setTimeout(r, 200));
+        } catch(e) { errors++; }
+      }
+    }
+
+    showPushStatus(
+      `✅ Готово! Исправлено файлов: ${fixed}` + (errors > 0 ? ` · Ошибок: ${errors}` : '') +
+      '\nТеперь пересинхронизируйте в приложении экзамена.',
+      'ok'
+    );
+  } catch(e) {
+    showPushStatus('❌ Ошибка: ' + e.message, 'err');
+  }
+}
+
 function downloadJSON() {
   const qs = getReadyQs();
   if (qs.length === 0) { showPushStatus('⚠ Нет вопросов для скачивания', 'err'); return; }
