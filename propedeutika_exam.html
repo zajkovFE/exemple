@@ -1429,6 +1429,7 @@
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn btn-ghost"   style="font-size:11px;padding:8px 14px" onclick="syncSelectAll(true)">Выбрать всё</button>
           <button class="btn btn-ghost"   style="font-size:11px;padding:8px 14px" onclick="syncSelectAll(false)">Снять всё</button>
+          <button class="btn btn-ghost"   style="font-size:11px;padding:8px 14px" onclick="syncLoadCatalog()">🔄 Обновить каталог</button>
           <button class="btn btn-primary" id="sync-run-btn" onclick="runSync()">⟳ Синхронизировать</button>
         </div>
       </div>
@@ -2750,20 +2751,75 @@ const SYNC_BRANCH       = 'main';
 const SYNC_REPO_DEFAULT = 'zajkovFE/exemple';
 const SYNC_DATA_PATH    = 'data';
 
-const SYNC_CATALOG = [
-  {
-    id: 'propedeutika', icon: '🩺', name: 'Пропедевтика внутренних болезней',
-    modules: [
-      { id: 'blood',  icon: '🩸', name: 'Кроветворная система',         file: 'data/propedeutika/blood.json'  },
-      { id: 'kidney', icon: '🫘', name: 'Мочевыводящая система',         file: 'data/propedeutika/kidney.json' },
-      { id: 'resp',   icon: '🫁', name: 'Дыхательная система',           file: 'data/propedeutika/resp.json'   },
-      { id: 'cardio', icon: '❤️', name: 'Сердечно-сосудистая система',   file: 'data/propedeutika/cardio.json' },
-      { id: 'endo',   icon: '🦋', name: 'Эндокринная система',           file: 'data/propedeutika/endo.json'   },
-    ]
+// Каталог загружается динамически из репозитория
+let SYNC_CATALOG = [];
+
+// Иконки по ключевым словам в имени файла
+function syncGuessIcon(name) {
+  const n = name.toLowerCase();
+  if (n.includes('blood') || n.includes('krov'))   return '🩸';
+  if (n.includes('kidney') || n.includes('moch'))  return '🫘';
+  if (n.includes('resp') || n.includes('dykh') || n.includes('lung')) return '🫁';
+  if (n.includes('cardio') || n.includes('serd'))  return '❤️';
+  if (n.includes('endo'))                           return '🦋';
+  if (n.includes('neuro') || n.includes('nervn'))  return '🧠';
+  if (n.includes('surg') || n.includes('khir'))    return '🔪';
+  if (n.includes('ped') || n.includes('det'))      return '👶';
+  return '📂';
+}
+
+async function syncLoadCatalog() {
+  const repo = syncGetRepo();
+  const grid = document.getElementById('sync-catalog-grid');
+  grid.innerHTML = '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:12px;color:var(--muted);padding:20px 0">⏳ Загружаю структуру репозитория...</div>';
+
+  try {
+    // Шаг 1: получаем список папок в /data
+    const dataR = await fetch(syncApiUrl(repo, SYNC_DATA_PATH));
+    if (!dataR.ok) {
+      grid.innerHTML = '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:12px;color:var(--danger);padding:20px 0">❌ Папка data не найдена в репозитории (' + dataR.status + ')</div>';
+      return;
+    }
+    const dataContents = await dataR.json();
+    const cycleFolders = dataContents.filter(x => x.type === 'dir');
+
+    if (cycleFolders.length === 0) {
+      grid.innerHTML = '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:12px;color:var(--muted);padding:20px 0">Папка data пуста — добавьте файлы через конвертер</div>';
+      return;
+    }
+
+    // Шаг 2: для каждой папки-цикла получаем список .json файлов
+    SYNC_CATALOG = [];
+    for (const folder of cycleFolders) {
+      const modR = await fetch(syncApiUrl(repo, folder.path));
+      if (!modR.ok) continue;
+      const modContents = await modR.json();
+      const jsonFiles = modContents.filter(x => x.type === 'file' && x.name.endsWith('.json'));
+      if (jsonFiles.length === 0) continue;
+
+      const modules = jsonFiles.map(f => {
+        const id   = f.name.replace('.json', '');
+        const icon = syncGuessIcon(id);
+        // Читаем имя модуля из локальных данных если есть, иначе из имени файла
+        const localMod = MODULES.find(m => m.id === id);
+        const name = localMod ? localMod.name : id;
+        return { id, icon, name, file: f.path };
+      });
+
+      SYNC_CATALOG.push({
+        id:   folder.name,
+        icon: syncGuessIcon(folder.name),
+        name: folder.name.charAt(0).toUpperCase() + folder.name.slice(1).replace(/_/g,' '),
+        modules
+      });
+    }
+
+    syncRenderCatalog();
+
+  } catch(e) {
+    grid.innerHTML = '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:12px;color:var(--danger);padding:20px 0">❌ Ошибка загрузки каталога: ' + e.message + '</div>';
   }
-  // Добавляйте новые циклы сюда:
-  // { id: 'surgery', icon: '🔪', name: 'Хирургия', modules: [...] }
-];
+}
 
 const syncSelected = new Set();
 
@@ -2789,7 +2845,7 @@ function renderSync() {
   document.getElementById('sync-last-info').textContent =
     last ? 'Последняя синхронизация: ' + last : 'Последняя синхронизация: никогда';
   syncRenderStats();
-  syncRenderCatalog();
+  syncLoadCatalog();
   syncRenderLocalList();
   syncUpdateSelCount();
 }
