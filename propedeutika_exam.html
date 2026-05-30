@@ -113,7 +113,7 @@
   .tab:hover:not(.active) { color: var(--text); }
 
   @media (min-width: 540px) {
-    .tabs { grid-template-columns: repeat(5, 1fr); }
+    .tabs { grid-template-columns: repeat(8, 1fr); }
   }
 
   /* MODULE SELECTOR */
@@ -870,6 +870,324 @@
     font-size: 11px;
     color: var(--accent2);
   }
+
+  /* LEVEL */
+  .level-wrap { display:none; }
+  .level-wrap.visible { display:block; }
+  .level-hero {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 36px 28px;
+    text-align: center;
+    margin-bottom: 16px;
+    animation: fadeUp 0.3s ease;
+  }
+  .level-emoji { font-size: 60px; line-height: 1; display: block; margin-bottom: 12px; }
+  .level-title { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 700; color: var(--accent); margin-bottom: 4px; }
+  .level-quote { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--muted); letter-spacing: 1px; margin-bottom: 22px; }
+  .level-xp-row { display:flex; justify-content:space-between; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--muted); margin-bottom:6px; max-width:380px; margin-left:auto; margin-right:auto; }
+  .level-bar { height:8px; background:var(--border); border-radius:4px; overflow:hidden; max-width:380px; margin:0 auto 6px; }
+  .level-bar-fill { height:100%; background:linear-gradient(90deg,var(--accent2),var(--accent)); border-radius:4px; transition:width 0.6s ease; }
+  .level-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; max-width:380px; margin:20px auto 0; }
+  .level-stat-box { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:12px 8px; text-align:center; }
+  .level-stat-val { font-family:'Playfair Display',serif; font-size:26px; font-weight:700; color:var(--accent2); line-height:1; margin-bottom:4px; }
+  .level-stat-lbl { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; }
+  .level-ladder { display:flex; flex-direction:column; gap:8px; margin-top:16px; }
+  .level-rung { display:flex; align-items:center; gap:12px; padding:10px 14px; background:var(--surface); border:1px solid var(--border); border-radius:10px; opacity:0.4; }
+  .level-rung.done { opacity:0.7; }
+  .level-rung.current { opacity:1; border-color:var(--accent); background:rgba(232,201,122,0.06); }
+  .level-rung-icon { font-size:20px; min-width:28px; text-align:center; }
+  .level-rung-body { flex:1; }
+  .level-rung-name { font-size:13px; color:var(--text); }
+  .level-rung-sub { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--muted); margin-top:2px; }
+  .level-rung-xp { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--muted); }
+
+  /* WEAK */
+  .weak-wrap { display:none; }
+  .weak-wrap.visible { display:block; }
+  .weak-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:10px; }
+  .weak-empty { text-align:center; color:var(--muted); font-family:'IBM Plex Mono',monospace; font-size:13px; padding:48px 0; line-height:2.2; }
+  .weak-section { margin-bottom:22px; }
+  .weak-section-title { font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--muted); margin-bottom:10px; display:flex; align-items:center; gap:8px; }
+  .weak-badge { background:rgba(232,122,122,0.15); border:1px solid rgba(232,122,122,0.3); color:var(--danger); padding:2px 8px; border-radius:100px; font-size:10px; }
+  .weak-item { background:var(--card); border:1px solid rgba(232,122,122,0.2); border-left:3px solid var(--danger); border-radius:10px; padding:11px 14px; margin-bottom:7px; font-size:13px; color:var(--text); line-height:1.5; }
+
+  /* SYNC */
+  .sync-wrap { display:none; }
+  .sync-wrap.visible { display:block; }
+
+  /* repo bar — из db_index */
+  .sync-repo-bar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .sync-repo-lbl {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    white-space: nowrap;
+  }
+  .sync-repo-input {
+    flex: 1;
+    min-width: 200px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .sync-repo-input:focus { border-color: var(--accent2); }
+  .sync-repo-input::placeholder { color: var(--muted); }
+  .sync-repo-badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    padding: 6px 12px;
+    border-radius: 100px;
+    white-space: nowrap;
+  }
+  .sync-repo-badge.ok   { background: rgba(122,232,184,0.1); color: var(--accent3); border: 1px solid rgba(122,232,184,0.25); }
+  .sync-repo-badge.err  { background: rgba(232,122,122,0.1); color: var(--danger);  border: 1px solid rgba(232,122,122,0.25); }
+  .sync-repo-badge.idle { background: rgba(122,184,232,0.1); color: var(--accent2); border: 1px solid rgba(122,184,232,0.25); }
+
+  /* stats */
+  .sync-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+  .sync-stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    text-align: center;
+  }
+  .sync-stat-val {
+    font-family: 'Playfair Display', serif;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--accent2);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .sync-stat-lbl {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* notice */
+  .sync-notice {
+    background: rgba(232,201,122,0.07);
+    border: 1px solid rgba(232,201,122,0.2);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.7;
+    margin-bottom: 20px;
+  }
+  .sync-notice strong { color: var(--accent); }
+
+  /* sync panel */
+  .sync-panel {
+    background: linear-gradient(135deg, rgba(122,184,232,0.06), rgba(232,201,122,0.06));
+    border: 1px solid rgba(122,184,232,0.25);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 28px;
+  }
+  .sync-panel-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .sync-panel-info {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+  .sync-panel-info strong { color: var(--accent2); }
+  .sync-progress { margin-top: 16px; display: none; }
+  .sync-progress.active { display: block; }
+  .sync-progress-bar {
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .sync-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    border-radius: 2px;
+    transition: width 0.3s ease;
+  }
+  .sync-log {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.8;
+    max-height: 120px;
+    overflow-y: auto;
+  }
+  .sync-log .ok   { color: var(--accent3); }
+  .sync-log .warn { color: var(--accent); }
+  .sync-log .err  { color: var(--danger); }
+
+  /* section title */
+  .sync-section-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .sync-section-title::after { content:''; flex:1; height:1px; background:var(--border); }
+
+  /* cycle grid — из db_index */
+  .sync-cycle-grid { display: flex; flex-direction: column; gap: 12px; margin-bottom: 28px; }
+  .sync-cycle-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .sync-cycle-card.selected { border-color: var(--accent2); }
+  .sync-cycle-hdr {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 20px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .sync-cycle-check { width:18px; height:18px; accent-color:var(--accent2); cursor:pointer; flex-shrink:0; }
+  .sync-cycle-icon  { font-size: 22px; }
+  .sync-cycle-name  { flex:1; font-size:15px; font-weight:500; color:var(--text); }
+  .sync-cycle-meta  { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--muted); }
+  .sync-cycle-arrow { font-size:14px; color:var(--muted); transition:transform 0.2s; }
+  .sync-cycle-arrow.open { transform: rotate(180deg); }
+  .sync-cycle-mods {
+    border-top: 1px solid var(--border);
+    padding: 12px 20px 16px 52px;
+    display: none;
+    flex-wrap: wrap;
+    gap: 8px;
+    animation: fadeUp 0.15s ease;
+  }
+  .sync-cycle-mods.open { display: flex; }
+  .sync-mod-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    font-size: 12px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .sync-mod-pill input { accent-color: var(--accent2); cursor: pointer; }
+  .sync-mod-pill:hover { border-color: var(--accent2); color: var(--text); }
+  .sync-mod-pill.selected { border-color: var(--accent2); color: var(--accent2); background: rgba(122,184,232,0.07); }
+  .sync-mod-count { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--muted); }
+
+  /* local list */
+  .sync-local-item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    animation: fadeUp 0.2s ease;
+  }
+  .sync-local-icon  { font-size: 20px; }
+  .sync-local-name  { flex: 1; font-size: 14px; color: var(--text); }
+  .sync-local-counts {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    text-align: right;
+    line-height: 1.6;
+  }
+  .sync-badge {
+    padding: 3px 10px;
+    border-radius: 100px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+  }
+  .badge-builtin { background: rgba(122,184,232,0.1); color: var(--accent2); border: 1px solid rgba(122,184,232,0.2); }
+  .badge-synced  { background: rgba(122,232,184,0.1); color: var(--accent3); border: 1px solid rgba(122,232,184,0.2); }
+  .badge-local   { background: rgba(232,201,122,0.1); color: var(--accent);  border: 1px solid rgba(232,201,122,0.2); }
+
+  .sync-spinner {
+    display: inline-block;
+    width: 14px; height: 14px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent2);
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    vertical-align: middle;
+    margin-right: 6px;
+  }
+
+  /* EXAM TIMER */
+  .exam-timer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 16px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .exam-timer-val { font-size: 20px; font-weight: 600; color: var(--accent2); min-width: 60px; font-family: 'IBM Plex Mono', monospace; }
+  .exam-timer-val.warning { color: var(--danger); animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+  .exam-toggle {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 1px;
+    color: var(--muted); cursor: pointer; padding: 4px 8px;
+    border: 1px solid var(--border); border-radius: 6px;
+    background: transparent; transition: all 0.15s; margin-left: auto;
+  }
+  .exam-toggle:hover { color: var(--text); border-color: var(--muted); }
+  .exam-toggle.on { color: var(--accent); border-color: var(--accent); }
 </style>
 </head>
 <body>
@@ -890,9 +1208,12 @@
   <div class="tabs">
     <button class="tab active" onclick="switchMode('test')">📝 Тесты</button>
     <button class="tab" onclick="switchMode('flash')">🃏 Карточки</button>
+    <button class="tab" onclick="switchMode('weak')">🔴 Слабые</button>
+    <button class="tab" onclick="switchMode('level')">🏆 Уровень</button>
     <button class="tab" onclick="switchMode('history')">📊 История</button>
     <button class="tab" onclick="switchMode('import')">➕ Добавить</button>
     <button class="tab" onclick="switchMode('editor')">✏️ Редактор</button>
+    <button class="tab" onclick="switchMode('sync')">☁️ Синхр.</button>
   </div>
 
   <!-- MODULE SELECT -->
@@ -912,6 +1233,7 @@
           <div style="display:flex;gap:8px">
             <button class="btn btn-ghost" style="font-size:11px;padding:6px 10px" onclick="complexSelectAll(true)">Все</button>
             <button class="btn btn-ghost" style="font-size:11px;padding:6px 10px" onclick="complexSelectAll(false)">Ничего</button>
+            <button class="exam-toggle" id="exam-mode-btn" onclick="toggleExamMode()" style="font-size:11px;padding:6px 10px">⏱ Экзамен</button>
             <button class="btn btn-primary" style="font-size:12px;padding:8px 16px" onclick="startComplex()">▶ Начать</button>
           </div>
         </div>
@@ -922,6 +1244,11 @@
 
   <!-- QUIZ -->
   <div class="quiz-wrap" id="quiz-wrap">
+    <div class="exam-timer" id="exam-timer">
+      <span class="exam-timer-val" id="timer-val">--:--</span>
+      <span id="timer-label" style="flex:1;font-size:11px;letter-spacing:1px">ТАЙМЕР ВЫКЛ</span>
+      <button class="exam-toggle" id="exam-toggle" onclick="toggleExamMode()">⏱ Режим экзамена</button>
+    </div>
     <div class="progress-bar"><div class="progress-fill" id="prog"></div></div>
     <div class="q-counter" id="q-counter"></div>
     <div class="question-card" id="q-card">
@@ -969,6 +1296,21 @@
       <div class="fc-count" id="fc-count"></div>
       <button class="btn btn-primary" onclick="nextCard()">Вперёд →</button>
     </div>
+  </div>
+
+  <!-- WEAK SPOTS -->
+  <div class="weak-wrap" id="weak-wrap">
+    <div class="weak-header">
+      <span class="subtitle">🔴 Слабые места</span>
+      <button class="btn btn-primary" style="font-size:11px;padding:8px 16px" onclick="startWeakQuiz()">▶ Тренировать</button>
+    </div>
+    <div id="weak-list"></div>
+  </div>
+
+  <!-- LEVEL -->
+  <div class="level-wrap" id="level-wrap">
+    <div class="level-hero" id="level-hero"></div>
+    <div class="level-ladder" id="level-ladder"></div>
   </div>
 
   <!-- HISTORY -->
@@ -1036,6 +1378,7 @@
   </div>
 
   <!-- EDITOR -->
+  <!-- EDITOR -->
   <div class="editor-wrap" id="editor-wrap">
     <div class="import-section">
       <div class="import-label">Модуль для редактирования</div>
@@ -1052,6 +1395,57 @@
       </div>
     </div>
     <div id="editor-list"></div>
+  </div>
+
+  <!-- SYNC -->
+  <div class="sync-wrap" id="sync-wrap">
+
+    <!-- Репозиторий -->
+    <div class="sync-repo-bar">
+      <span class="sync-repo-lbl">РЕПОЗИТОРИЙ</span>
+      <input class="sync-repo-input" id="sync-repo-input" placeholder="username/repo-name" />
+      <span class="sync-repo-badge idle" id="sync-repo-badge">⬜ Не проверен</span>
+      <button class="btn btn-accent2" style="font-size:11px;padding:8px 14px" onclick="syncCheckRepo()">Проверить</button>
+      <button class="btn btn-ghost"   style="font-size:11px;padding:8px 14px" onclick="syncSaveRepo()">💾 Сохранить</button>
+    </div>
+
+    <!-- Статистика -->
+    <div class="sync-stats-grid" id="sync-stats-grid"></div>
+
+    <!-- Подсказка -->
+    <div class="sync-notice">
+      <strong>Как это работает:</strong> выберите цикл и модули ниже → нажмите «Синхронизировать».
+      Приложение загрузит вопросы из репозитория и добавит только те, которых ещё нет у вас.
+      Дубли определяются по тексту вопроса.
+    </div>
+
+    <!-- Панель запуска -->
+    <div class="sync-panel">
+      <div class="sync-panel-row">
+        <div class="sync-panel-info">
+          Выбрано: <strong id="sync-sel-info">0 модулей · 0 вопросов</strong><br>
+          <span id="sync-last-info">Последняя синхронизация: никогда</span>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-ghost"   style="font-size:11px;padding:8px 14px" onclick="syncSelectAll(true)">Выбрать всё</button>
+          <button class="btn btn-ghost"   style="font-size:11px;padding:8px 14px" onclick="syncSelectAll(false)">Снять всё</button>
+          <button class="btn btn-primary" id="sync-run-btn" onclick="runSync()">⟳ Синхронизировать</button>
+        </div>
+      </div>
+      <div class="sync-progress" id="sync-progress">
+        <div class="sync-progress-bar"><div class="sync-progress-fill" id="sync-bar-fill" style="width:0%"></div></div>
+        <div class="sync-log" id="sync-log"></div>
+      </div>
+    </div>
+
+    <!-- Каталог циклов -->
+    <div class="sync-section-title">Доступные циклы и модули</div>
+    <div class="sync-cycle-grid" id="sync-catalog-grid"></div>
+
+    <!-- Локальная база -->
+    <div class="sync-section-title">Локальная база</div>
+    <div id="sync-local-list"></div>
+
   </div>
 
 </div>
@@ -1259,7 +1653,7 @@ let fcIndex = 0;
 // ---- SPACED REPETITION (Pools + Weights) ----
 // Рейтинг каждого вопроса хранится в localStorage по ключу: modId + вопрос
 // rating: 0=новый, 1=слабый🔴, 2=средний🟡, 3=сильный🟢
-// streak: сколько раз подряд правильно ответил
+// errors: суммарно ошибок по вопросу (для порога слабых мест)
 const SR_KEY = 'propedeutika_sr';
 const SESSION_SIZE = 50;
 
@@ -1312,7 +1706,7 @@ function pickSession(mod) {
 function updateSR(modId, q, correct) {
   const sr = loadSR();
   const k = srKey(modId, q);
-  const d = sr[k] || { rating: 0, streak: 0 };
+  const d = sr[k] || { rating: 0, streak: 0, errors: 0 };
 
   if (correct) {
     d.streak++;
@@ -1322,7 +1716,8 @@ function updateSR(modId, q, correct) {
       d.streak = 0;
     }
   } else {
-    d.rating = Math.max(1, d.rating - 1); // новый (0) при ошибке → слабый (1)
+    d.errors = (d.errors || 0) + 1;
+    d.rating = Math.max(1, d.rating - 1);
     d.streak = 0;
   }
   sr[k] = d;
@@ -1378,10 +1773,9 @@ function selectMod(id) {
 
 function switchMode(m) {
   mode = m;
+  const tabOrder = ['test','flash','weak','level','history','import','editor','sync'];
   document.querySelectorAll('.tab').forEach((t,i) => {
-    t.classList.toggle('active',
-      (i===0 && m==='test') || (i===1 && m==='flash') || (i===2 && m==='history') ||
-      (i===3 && m==='import') || (i===4 && m==='editor'));
+    t.classList.toggle('active', tabOrder[i] === m);
   });
   document.getElementById('quiz-wrap').classList.remove('visible');
   document.getElementById('result-screen').classList.remove('visible');
@@ -1389,18 +1783,25 @@ function switchMode(m) {
   document.getElementById('history-wrap').classList.remove('visible');
   document.getElementById('import-wrap').classList.remove('visible');
   document.getElementById('editor-wrap').classList.remove('visible');
+  document.getElementById('weak-wrap').classList.remove('visible');
+  document.getElementById('level-wrap').classList.remove('visible');
+  document.getElementById('sync-wrap').classList.remove('visible');
   const showModGrid = (m === 'test' || m === 'flash');
   document.getElementById('mod-grid').style.display = showModGrid ? '' : 'none';
 
   if (m === 'history') { renderHistory(); return; }
-  if (m === 'import') { renderImport(); return; }
-  if (m === 'editor') { renderEditor(); return; }
+  if (m === 'import')  { renderImport();  return; }
+  if (m === 'editor')  { renderEditor();  return; }
+  if (m === 'weak')    { renderWeak();    return; }
+  if (m === 'level')   { renderLevel();   return; }
+  if (m === 'sync')    { renderSync();    return; }
   updateComplexBtn();
   if (currentMod) selectMod(currentMod);
 }
 
 // ---- COMPLEX TEST ----
 let isComplex = false;
+let isWeakSession = false;
 let complexSelected = new Set();
 let complexDeselected = new Set(); // явно снятые пользователем
 
@@ -1501,6 +1902,7 @@ function startComplex() {
   document.getElementById('complex-arrow').classList.remove('open');
 
   isComplex = true;
+  isWeakSession = false;
   currentMod = null;
   buildModGrid();
   updateComplexBtn();
@@ -1524,11 +1926,13 @@ function updateComplexBtn() {
 }
 function startQuiz(mod) {
   isComplex = false;
+  isWeakSession = false;
   questions = pickSession(mod);
   qIndex = 0; score = 0; answered = false;
   document.getElementById('result-screen').classList.remove('visible');
   document.getElementById('quiz-wrap').classList.add('visible');
   document.getElementById('flash-wrap').classList.remove('visible');
+  startExamTimer(questions.length);
   showQ();
 }
 
@@ -1553,14 +1957,19 @@ function showQ() {
 
   document.getElementById('q-text').textContent = q.q;
 
+  // Перемешиваем варианты, сохраняя правильный ответ
+  const optsShuffled = q.opts.map((text, i) => ({ text, origIdx: i }));
+  shuffle(optsShuffled);
+  const newAnsIdx = optsShuffled.findIndex(o => o.origIdx === q.ans);
+
   const opts = document.getElementById('q-opts');
   opts.innerHTML = '';
   const letters = ['А','Б','В','Г','Д'];
-  q.opts.forEach((opt, i) => {
+  optsShuffled.forEach((opt, i) => {
     const b = document.createElement('button');
     b.className = 'option-btn';
-    b.innerHTML = '<span class="opt-letter">' + letters[i] + '</span><span>' + opt + '</span>';
-    b.onclick = () => selectOpt(i, q, b);
+    b.innerHTML = '<span class="opt-letter">' + letters[i] + '</span><span>' + opt.text + '</span>';
+    b.onclick = () => selectOpt(i, newAnsIdx, q, b, opts);
     opts.appendChild(b);
   });
 
@@ -1568,19 +1977,19 @@ function showQ() {
   requestAnimationFrame(() => document.getElementById('q-card').style.animation = '');
 }
 
-function selectOpt(i, q, btn) {
+function selectOpt(i, correctIdx, q, btn, optsEl) {
   if (answered) return;
   answered = true;
-  const btns = document.querySelectorAll('.option-btn');
+  const btns = optsEl.querySelectorAll('.option-btn');
   btns.forEach(b => b.disabled = true);
 
-  const correct = i === q.ans;
+  const correct = i === correctIdx;
   if (correct) {
     btn.classList.add('correct');
     score++; totalScore++;
   } else {
     btn.classList.add('wrong');
-    btns[q.ans].classList.add('correct');
+    btns[correctIdx].classList.add('correct');
   }
   totalAnswered++;
 
@@ -1610,6 +2019,7 @@ function restartQuiz() {
 }
 
 function showResult() {
+  stopExamTimer();
   const pct = Math.round((score / questions.length) * 100);
   const msgs = [
     [0, 49, '😔 Нужно повторить материал'],
@@ -1655,6 +2065,16 @@ function showResult() {
 
   updateGlobal();
   buildModGrid();
+
+  // XP
+  const gained = grantXP(score, questions.length, isWeakSession);
+  const lvlNow = currentLevel(loadXP());
+  const xpEl = document.createElement('div');
+  xpEl.style.cssText = 'margin-top:14px;font-family:\'IBM Plex Mono\',monospace;font-size:13px;color:var(--accent);animation:fadeUp 0.4s ease';
+  xpEl.textContent = isWeakSession
+    ? '🔴 Тренировка слабых · XP не начисляется'
+    : '+' + gained + ' XP · ' + lvlNow.emoji + ' ' + lvlNow.name;
+  document.querySelector('.result-card').appendChild(xpEl);
 }
 
 function saveHistory(entry) {
@@ -2146,6 +2566,487 @@ function deleteQuestion(idx) {
   persistModules();
 }
 
+// ---- EXAM TIMER ----
+let examMode = false;
+let examTimerInterval = null;
+let examSecondsLeft = 0;
+const EXAM_SECONDS_PER_Q = 90; // 1.5 мин на вопрос
+
+function toggleExamMode() {
+  examMode = !examMode;
+  const btn = document.getElementById('exam-toggle');
+  if (btn) {
+    btn.textContent = examMode ? '⏱ ВКЛ' : '⏱ Режим экзамена';
+    btn.classList.toggle('on', examMode);
+  }
+  // Если тест уже идёт — запустить/остановить таймер
+  if (examMode && questions.length > 0 && qIndex < questions.length) {
+    startExamTimer(questions.length - qIndex);
+  } else if (!examMode) {
+    stopExamTimer();
+    document.getElementById('timer-val').textContent = '--:--';
+    document.getElementById('timer-label').textContent = 'ТАЙМЕР ВЫКЛ';
+  }
+}
+
+function startExamTimer(questionCount) {
+  stopExamTimer();
+  if (!examMode) return;
+  examSecondsLeft = questionCount * EXAM_SECONDS_PER_Q;
+  updateTimerDisplay();
+  examTimerInterval = setInterval(() => {
+    examSecondsLeft--;
+    updateTimerDisplay();
+    if (examSecondsLeft <= 0) {
+      stopExamTimer();
+      showResult();
+    }
+  }, 1000);
+}
+
+function stopExamTimer() {
+  if (examTimerInterval) { clearInterval(examTimerInterval); examTimerInterval = null; }
+}
+
+function updateTimerDisplay() {
+  const val = document.getElementById('timer-val');
+  const lbl = document.getElementById('timer-label');
+  if (!val) return;
+  const m = Math.floor(examSecondsLeft / 60);
+  const s = examSecondsLeft % 60;
+  val.textContent = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  val.classList.toggle('warning', examSecondsLeft <= 60);
+  if (lbl) lbl.textContent = examSecondsLeft <= 60 ? '⚠ ОСТАЛОСЬ МАЛО ВРЕМЕНИ' : 'РЕЖИМ ЭКЗАМЕНА';
+}
+
+// ---- LEVEL SYSTEM ----
+const LEVELS = [
+  { emoji:'👶', name:'Я сам пациент',         quote:'Гуглю симптомы у себя',               xp:0    },
+  { emoji:'😬', name:'Первый живой больной',   quote:'Он дышит. Я тоже. Уже хорошо',        xp:50   },
+  { emoji:'🫣', name:'Не навреди',             quote:'Главное — ничего не сломать',          xp:150  },
+  { emoji:'🤝', name:'Я помогаю',              quote:'Держу зонд. Уверенно',                xp:350  },
+  { emoji:'💪', name:'Я лечу',                 quote:'Назначаю. Иногда правильно',          xp:700  },
+  { emoji:'🧘', name:'Пациент сам выздоровел', quote:'...но я рядом стоял',                 xp:1200 },
+  { emoji:'🏆', name:'Пропедевт',              quote:'Вижу диагноз по походке в коридоре',  xp:2000 },
+];
+const XP_KEY = 'propedeutika_xp_v1';
+function loadXP() { try { return parseInt(localStorage.getItem(XP_KEY)||'0'); } catch(e){ return 0; } }
+function saveXP(v) { localStorage.setItem(XP_KEY, String(v)); }
+function currentLevel(xp) { let l=LEVELS[0]; for(const x of LEVELS){ if(xp>=x.xp) l=x; else break; } return l; }
+function nextLevel(xp)    { return LEVELS.find(x=>x.xp>xp)||null; }
+
+function grantXP(correct, total, isWeak) {
+  if (isWeak) return 0; // за тренировку слабых XP не начисляем
+  const wrong = total - correct;
+  let xp = correct * 0.5;
+  if (wrong > 3) xp -= (wrong - 3) * 0.5;
+  const gained = Math.max(0, Math.round(xp * 10) / 10); // округляем до 0.1
+  saveXP(Math.max(0, loadXP() + gained));
+  return gained;
+}
+
+function renderLevel() {
+  document.getElementById('level-wrap').classList.add('visible');
+  const xp  = loadXP();
+  const lvl = currentLevel(xp);
+  const nxt = nextLevel(xp);
+  const idx = LEVELS.indexOf(lvl);
+  const xpInLvl  = xp - lvl.xp;
+  const xpNeeded = nxt ? nxt.xp - lvl.xp : 1;
+  const pct = nxt ? Math.min(100, Math.round(xpInLvl/xpNeeded*100)) : 100;
+
+  const sr = loadSR();
+  let strong=0, weak=0;
+  MODULES.forEach(mod => mod.qs.forEach(q => {
+    const d = getQData(sr, mod.id, q);
+    if(d.rating===3) strong++;
+    if(d.rating===1 && (d.errors||0)>=2) weak++;
+  }));
+
+  document.getElementById('level-hero').innerHTML =
+    '<span class="level-emoji">'+lvl.emoji+'</span>'+
+    '<div class="level-title">'+lvl.name+'</div>'+
+    '<div class="level-quote">'+lvl.quote+'</div>'+
+    '<div class="level-xp-row"><span>XP: '+xp+'</span><span>'+(nxt?'До «'+nxt.name+'»: '+(nxt.xp-xp)+' XP':'🏆 Максимум!')+'</span></div>'+
+    '<div class="level-bar"><div class="level-bar-fill" style="width:'+pct+'%"></div></div>'+
+    '<div class="level-stats">'+
+      '<div class="level-stat-box"><div class="level-stat-val">'+xp+'</div><div class="level-stat-lbl">XP</div></div>'+
+      '<div class="level-stat-box"><div class="level-stat-val" style="color:var(--accent3)">'+strong+'</div><div class="level-stat-lbl">Сильных</div></div>'+
+      '<div class="level-stat-box"><div class="level-stat-val" style="color:var(--danger)">'+weak+'</div><div class="level-stat-lbl">Слабых</div></div>'+
+    '</div>';
+
+  document.getElementById('level-ladder').innerHTML = LEVELS.map((l,i)=>{
+    const cls = i<idx?'done' : i===idx?'current' : '';
+    return '<div class="level-rung '+cls+'">'+
+      '<span class="level-rung-icon">'+l.emoji+'</span>'+
+      '<div class="level-rung-body">'+
+        '<div class="level-rung-name">'+l.name+'</div>'+
+        '<div class="level-rung-sub">'+l.quote+'</div>'+
+      '</div>'+
+      '<span class="level-rung-xp">'+l.xp+' XP</span>'+
+    '</div>';
+  }).join('');
+}
+
+// ---- WEAK SPOTS ----
+function renderWeak() {
+  document.getElementById('weak-wrap').classList.add('visible');
+  const sr = loadSR();
+  const sections = MODULES.map(mod => ({
+    mod,
+    qs: mod.qs.filter(q => {
+      const d = getQData(sr, mod.id, q);
+      return d.rating === 1 && (d.errors || 0) >= 2;
+    })
+  })).filter(s => s.qs.length > 0);
+
+  const list = document.getElementById('weak-list');
+  if (sections.length === 0) {
+    list.innerHTML = '<div class="weak-empty">🎉 Слабых вопросов нет!<br>Они появятся после первой ошибки в тесте</div>';
+    return;
+  }
+  const total = sections.reduce((a,s)=>a+s.qs.length,0);
+  list.innerHTML =
+    '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:12px;color:var(--muted);margin-bottom:18px">'+
+      'Найдено <span style="color:var(--danger);font-weight:600">'+total+'</span> слабых вопросов'+
+    '</div>'+
+    sections.map(({mod,qs})=>
+      '<div class="weak-section">'+
+        '<div class="weak-section-title">'+mod.icon+' '+mod.name+
+          ' <span class="weak-badge">'+qs.length+'</span></div>'+
+        qs.map(q=>'<div class="weak-item">🔴 '+q.q+'</div>').join('')+
+      '</div>'
+    ).join('');
+}
+
+function startWeakQuiz() {
+  const sr = loadSR();
+  const all = [];
+  MODULES.forEach(mod => mod.qs.forEach(q => {
+    const d = getQData(sr, mod.id, q);
+    if(d.rating===1 && (d.errors||0)>=2)
+      all.push({...q, _modId:mod.id, _modIcon:mod.icon, _modName:mod.name});
+  }));
+  if(all.length===0){ alert('Слабых вопросов нет — пройдите тесты!'); return; }
+  isComplex = true;
+  isWeakSession = true;
+  currentMod = null;
+  questions = shuffle(all);
+  qIndex=0; score=0; answered=false;
+  buildModGrid();
+  document.getElementById('weak-wrap').classList.remove('visible');
+  document.getElementById('result-screen').classList.remove('visible');
+  document.getElementById('quiz-wrap').classList.add('visible');
+  document.getElementById('mod-grid').style.display='none';
+  mode='test';
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',i===0));
+  showQ();
+}
+
+// ---- SYNC ----
+const SYNC_REPO_KEY     = 'propedeutika_repo';
+const SYNC_LAST_KEY     = 'propedeutika_last_sync';
+const SYNC_BRANCH       = 'main';
+const SYNC_REPO_DEFAULT = 'zajkovFE/propedeutika_exam';
+const SYNC_DATA_PATH    = 'data';
+
+const SYNC_CATALOG = [
+  {
+    id: 'propedeutika', icon: '🩺', name: 'Пропедевтика внутренних болезней',
+    modules: [
+      { id: 'blood',  icon: '🩸', name: 'Кроветворная система',         file: 'data/propedeutika/blood.json'  },
+      { id: 'kidney', icon: '🫘', name: 'Мочевыводящая система',         file: 'data/propedeutika/kidney.json' },
+      { id: 'resp',   icon: '🫁', name: 'Дыхательная система',           file: 'data/propedeutika/resp.json'   },
+      { id: 'cardio', icon: '❤️', name: 'Сердечно-сосудистая система',   file: 'data/propedeutika/cardio.json' },
+      { id: 'endo',   icon: '🦋', name: 'Эндокринная система',           file: 'data/propedeutika/endo.json'   },
+    ]
+  }
+  // Добавляйте новые циклы сюда:
+  // { id: 'surgery', icon: '🔪', name: 'Хирургия', modules: [...] }
+];
+
+const syncSelected = new Set();
+
+function syncRawUrl(repo, path) {
+  return `https://raw.githubusercontent.com/${repo}/${SYNC_BRANCH}/${path}?t=${Date.now()}`;
+}
+function syncApiUrl(repo, path) {
+  return `https://api.github.com/repos/${repo}/contents/${path}`;
+}
+function syncGetRepo() {
+  return document.getElementById('sync-repo-input').value.trim() || SYNC_REPO_DEFAULT;
+}
+
+function renderSync() {
+  document.getElementById('sync-wrap').classList.add('visible');
+  const saved = localStorage.getItem(SYNC_REPO_KEY) || SYNC_REPO_DEFAULT;
+  document.getElementById('sync-repo-input').value = saved;
+  const last = localStorage.getItem(SYNC_LAST_KEY);
+  document.getElementById('sync-last-info').textContent =
+    last ? 'Последняя синхронизация: ' + last : 'Последняя синхронизация: никогда';
+  syncRenderStats();
+  syncRenderCatalog();
+  syncRenderLocalList();
+  syncUpdateSelCount();
+}
+
+function syncSaveRepo() {
+  localStorage.setItem(SYNC_REPO_KEY, syncGetRepo());
+  const st = document.getElementById('sync-repo-badge');
+  st.textContent = '💾 Сохранён'; st.className = 'sync-repo-badge ok';
+  setTimeout(() => { st.textContent = '✅ Сохранён'; }, 1000);
+}
+
+async function syncCheckRepo() {
+  const repo = syncGetRepo();
+  const st = document.getElementById('sync-repo-badge');
+  st.textContent = '⏳ Проверка...'; st.className = 'sync-repo-badge idle';
+  try {
+    const r = await fetch(syncApiUrl(repo, SYNC_DATA_PATH));
+    if (r.ok) { st.textContent = '✅ Репозиторий найден'; st.className = 'sync-repo-badge ok'; }
+    else       { st.textContent = '❌ Не найден (' + r.status + ')'; st.className = 'sync-repo-badge err'; }
+  } catch(e) { st.textContent = '❌ Ошибка сети'; st.className = 'sync-repo-badge err'; }
+}
+
+function syncRenderStats() {
+  const totalQ  = MODULES.reduce((a, m) => a + m.qs.length, 0);
+  const totalFC = MODULES.reduce((a, m) => a + m.fc.length, 0);
+  const synced  = MODULES.filter(m => m._synced).length;
+  document.getElementById('sync-stats-grid').innerHTML = `
+    <div class="sync-stat-card"><div class="sync-stat-val">${MODULES.length}</div><div class="sync-stat-lbl">Модулей</div></div>
+    <div class="sync-stat-card"><div class="sync-stat-val">${totalQ}</div><div class="sync-stat-lbl">Вопросов</div></div>
+    <div class="sync-stat-card"><div class="sync-stat-val">${totalFC}</div><div class="sync-stat-lbl">Карточек</div></div>
+    <div class="sync-stat-card"><div class="sync-stat-val">${synced}</div><div class="sync-stat-lbl">Синхронизировано</div></div>
+  `;
+}
+
+function syncRenderCatalog() {
+  const grid = document.getElementById('sync-catalog-grid');
+  grid.innerHTML = SYNC_CATALOG.map(cycle => {
+    const allSel = cycle.modules.every(m => syncSelected.has(m.id));
+    const mods = cycle.modules.map(m => {
+      const local = MODULES.find(x => x.id === m.id);
+      const cnt = local ? local.qs.length : '?';
+      const sel = syncSelected.has(m.id);
+      return `<label class="sync-mod-pill${sel?' selected':''}" id="mpill-${m.id}">
+        <input type="checkbox" ${sel?'checked':''} onchange="syncToggleMod('${m.id}',this.checked)" />
+        ${m.icon} ${m.name}
+        <span class="sync-mod-count">${cnt} вопр.</span>
+      </label>`;
+    }).join('');
+    return `<div class="sync-cycle-card${allSel?' selected':''}" id="scycle-${cycle.id}">
+      <div class="sync-cycle-hdr" onclick="syncToggleCycle('${cycle.id}')">
+        <input type="checkbox" class="sync-cycle-check" id="sccheck-${cycle.id}" ${allSel?'checked':''}
+          onclick="event.stopPropagation(); syncToggleCycleAll('${cycle.id}',this.checked)" />
+        <span class="sync-cycle-icon">${cycle.icon}</span>
+        <span class="sync-cycle-name">${cycle.name}</span>
+        <span class="sync-cycle-meta">${cycle.modules.length} модулей</span>
+        <span class="sync-cycle-arrow open" id="scarrow-${cycle.id}">▾</span>
+      </div>
+      <div class="sync-cycle-mods open" id="scmods-${cycle.id}">${mods}</div>
+    </div>`;
+  }).join('');
+}
+
+function syncToggleCycle(id) {
+  const el  = document.getElementById('scmods-' + id);
+  const arr = document.getElementById('scarrow-' + id);
+  const open = !el.classList.contains('open');
+  el.classList.toggle('open', open);
+  arr.classList.toggle('open', open);
+  document.getElementById('scycle-' + id).classList.toggle('selected', open);
+}
+
+function syncToggleCycleAll(cycleId, checked) {
+  const cycle = SYNC_CATALOG.find(c => c.id === cycleId);
+  if (!cycle) return;
+  document.getElementById('scmods-' + cycleId).classList.toggle('open', checked);
+  document.getElementById('scarrow-' + cycleId).classList.toggle('open', checked);
+  cycle.modules.forEach(m => {
+    const cb = document.querySelector('#mpill-' + m.id + ' input');
+    if (cb) { cb.checked = checked; syncToggleMod(m.id, checked); }
+  });
+}
+
+function syncToggleMod(id, checked) {
+  if (checked) syncSelected.add(id); else syncSelected.delete(id);
+  document.getElementById('mpill-' + id)?.classList.toggle('selected', checked);
+  syncUpdateSelCount();
+}
+
+function syncSelectAll(val) {
+  SYNC_CATALOG.forEach(cycle => {
+    const cb = document.getElementById('sccheck-' + cycle.id);
+    if (cb) cb.checked = val;
+    syncToggleCycleAll(cycle.id, val);
+  });
+}
+
+function syncUpdateSelCount() {
+  let totalQ = 0;
+  syncSelected.forEach(id => {
+    const local = MODULES.find(m => m.id === id);
+    if (local) totalQ += local.qs.length;
+  });
+  const n = syncSelected.size;
+  document.getElementById('sync-sel-info').textContent =
+    n + ' модул' + (n===1?'ь':n>=2&&n<=4?'я':'ей') +
+    (totalQ > 0 ? ' · ~' + totalQ + ' вопр. локально' : '');
+}
+
+function syncLogMsg(msg, type) {
+  const log = document.getElementById('sync-log');
+  const line = document.createElement('div');
+  if (type) line.className = type;
+  line.textContent = msg;
+  log.appendChild(line);
+  log.scrollTop = log.scrollHeight;
+}
+
+async function runSync() {
+  if (syncSelected.size === 0) { alert('Выберите хотя бы один модуль'); return; }
+  const repo = syncGetRepo();
+
+  const btn = document.getElementById('sync-run-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="sync-spinner"></span>Загрузка...';
+
+  const prog = document.getElementById('sync-progress');
+  const fill = document.getElementById('sync-bar-fill');
+  const log  = document.getElementById('sync-log');
+  prog.classList.add('active');
+  log.innerHTML = '';
+
+  const ids = [...syncSelected];
+  let done = 0, totalAdded = 0, totalSkipped = 0;
+
+  for (const modId of ids) {
+    let modMeta = null;
+    for (const cycle of SYNC_CATALOG) {
+      modMeta = cycle.modules.find(m => m.id === modId);
+      if (modMeta) break;
+    }
+    if (!modMeta) { syncLogMsg('⚠ Модуль ' + modId + ' не найден в каталоге', 'warn'); done++; continue; }
+
+    syncLogMsg('⟳ Загружаю ' + modMeta.icon + ' ' + modMeta.name + '...', '');
+    fill.style.width = Math.round((done / ids.length) * 100) + '%';
+
+    try {
+      const url = syncRawUrl(repo, modMeta.file);
+      const r = await fetch(url);
+      if (!r.ok) {
+        syncLogMsg('✗ Ошибка ' + r.status + ': ' + modMeta.name, 'err');
+        done++; continue;
+      }
+      const data = await r.json();
+      if (!Array.isArray(data)) {
+        syncLogMsg('✗ Неверный формат: ' + modMeta.name, 'err');
+        done++; continue;
+      }
+
+      let localMod = MODULES.find(m => m.id === modId);
+      if (!localMod) {
+        localMod = { id: modId, icon: modMeta.icon, name: modMeta.name, qs: [], fc: [], _synced: false };
+        MODULES.push(localMod);
+      }
+
+      const { added, skipped } = syncMerge(localMod, data);
+      localMod._synced = true;
+      totalAdded   += added;
+      totalSkipped += skipped;
+
+      syncLogMsg(
+        '✓ ' + modMeta.name + ': +' + added + ' новых' + (skipped > 0 ? ', ' + skipped + ' дублей пропущено' : ''),
+        'ok'
+      );
+    } catch(e) {
+      syncLogMsg('✗ Сетевая ошибка: ' + modMeta.name, 'err');
+    }
+
+    done++;
+    fill.style.width = Math.round((done / ids.length) * 100) + '%';
+    await new Promise(r => setTimeout(r, 120));
+  }
+
+  fill.style.width = '100%';
+  persistModules();
+  buildModGrid();
+  updateStats();
+
+  const now = new Date().toLocaleString('ru-RU', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+  localStorage.setItem(SYNC_LAST_KEY, now);
+  document.getElementById('sync-last-info').textContent = 'Последняя синхронизация: ' + now;
+
+  syncLogMsg('', '');
+  syncLogMsg('═══════════════════════════════════════', '');
+  syncLogMsg('Готово · +' + totalAdded + ' вопросов добавлено · ' + totalSkipped + ' дублей пропущено', 'ok');
+
+  btn.disabled = false;
+  btn.textContent = '✓ Готово';
+  setTimeout(() => { btn.textContent = '⟳ Синхронизировать'; }, 3000);
+
+  syncRenderStats();
+  syncRenderLocalList();
+  syncRenderCatalog();
+}
+
+function syncMerge(localMod, incoming) {
+  let added = 0, skipped = 0;
+  const normStr = s => s.trim().toLowerCase().replace(/\s+/g,' ');
+
+  const qs = incoming.filter(x => x.q && Array.isArray(x.opts) && typeof x.ans === 'number');
+  const existQs = new Set(localMod.qs.map(q => normStr(q.q)));
+  qs.forEach(q => {
+    if (existQs.has(normStr(q.q))) { skipped++; return; }
+    localMod.qs.push(q); existQs.add(normStr(q.q)); added++;
+  });
+
+  const fcs = incoming.filter(x => x.q && x.a && !x.opts);
+  const existFc = new Set(localMod.fc.map(f => normStr(f.q)));
+  fcs.forEach(f => {
+    if (existFc.has(normStr(f.q))) { skipped++; return; }
+    localMod.fc.push(f); existFc.add(normStr(f.q)); added++;
+  });
+
+  return { added, skipped };
+}
+
+function syncRenderLocalList() {
+  const list = document.getElementById('sync-local-list');
+  if (!MODULES.length) {
+    list.innerHTML = '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:13px;color:var(--muted);padding:24px 0;text-align:center">Нет локальных модулей</div>';
+    return;
+  }
+  list.innerHTML = MODULES.map(m => {
+    const badge = m._synced
+      ? '<span class="sync-badge badge-synced">✓ Синхр.</span>'
+      : m.id.startsWith('custom_')
+        ? '<span class="sync-badge badge-local">Локальный</span>'
+        : '<span class="sync-badge badge-builtin">Встроенный</span>';
+    return `<div class="sync-local-item">
+      <span class="sync-local-icon">${m.icon || '📂'}</span>
+      <span class="sync-local-name">${m.name}</span>
+      <div class="sync-local-counts">${m.qs.length} вопр. · ${m.fc.length} карт.<br>${badge}</div>
+    </div>`;
+  }).join('');
+}
+
+// Живое обновление если синхронизация прошла в другой вкладке
+window.addEventListener('storage', function(e) {
+  if (e.key === 'propedeutika_modules_persist' && e.newValue) {
+    try {
+      const parsed = JSON.parse(e.newValue);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        MODULES.length = 0;
+        parsed.forEach(m => MODULES.push(m));
+        buildModGrid();
+        updateStats();
+        if (mode === 'sync') { syncRenderStats(); syncRenderLocalList(); syncRenderCatalog(); }
+      }
+    } catch(e2) {}
+  }
+});
+
 init();
 </script>
 <!-- 🟢 УНИВЕРСАЛЬНОЕ АВТОСОХРАНЕНИЕ (без правки основного кода) -->
@@ -2169,8 +3070,8 @@ init();
 
   function applyState(saved) {
     STATE_KEYS.forEach(k => { if (saved[k] !== undefined) window[k] = saved[k]; });
-    // Пытаемся обновить интерфейс, если в коде есть стандартные функции рендера
-    ['render','updateUI','refresh','draw','show','init'].forEach(fn => {
+    // Обновляем интерфейс — но НЕ вызываем init() так как он перезапишет MODULES
+    ['render','updateUI','refresh','draw','show'].forEach(fn => {
       if (typeof window[fn] === 'function') try { window[fn](); } catch(e){}
     });
   }
