@@ -1188,6 +1188,31 @@
   }
   .exam-toggle:hover { color: var(--text); border-color: var(--muted); }
   .exam-toggle.on { color: var(--accent); border-color: var(--accent); }
+  .nav-links {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  text-decoration: none;
+  letter-spacing: 1px;
+  transition: all 0.2s;
+}
+.nav-link:hover {
+  border-color: var(--accent2);
+  color: var(--accent2);
+}
 </style>
 </head>
 <body>
@@ -1201,6 +1226,9 @@
       <div class="stat">Тестов: <strong id="total-q">0</strong></div>
       <div class="stat">Карточек: <strong id="total-fc">0</strong></div>
       <div id="global-score" class="score-badge" style="display:none">🏆 Правильных: <span id="gs-val">0</span></div>
+    </div>
+     <div class="nav-links">
+      <a class="nav-link" href="converter_index-1.html" target="_blank">⚙️ Конвертер вопросов</a>
     </div>
   </header>
 
