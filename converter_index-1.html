@@ -312,6 +312,7 @@ h1 span { color: var(--accent); }
   <span class="repo-lbl">РЕПОЗИТОРИЙ</span>
   <input class="input" id="repo-input" style="flex:1;min-width:200px;font-family:'IBM Plex Mono',monospace;font-size:12px" placeholder="username/repo-name" />
   <button class="btn btn-ghost" style="font-size:11px;padding:8px 12px" onclick="saveRepo()">💾 Сохранить</button>
+  <button class="btn btn-ghost" style="font-size:11px;padding:8px 12px;color:var(--accent2);border-color:var(--accent2)" onclick="refreshCatalogFromRepo()">🔄 Обновить каталог</button>
 </div>
 
 <!-- MODE TABS -->
@@ -462,7 +463,8 @@ const BRANCH     = 'main';
 const DATA_PATH  = 'data';
 
 // Каталог циклов — расширяйте по мере роста базы
-const CATALOG = [
+// Базовый каталог — всегда присутствует
+const CATALOG_BASE = [
   {
     id: 'propedeutika', name: 'Пропедевтика внутренних болезней 🩺',
     modules: [
@@ -474,6 +476,76 @@ const CATALOG = [
     ]
   }
 ];
+
+// Рабочий каталог — объединение базового + из репозитория
+let CATALOG = CATALOG_BASE.map(c => ({ ...c, modules: [...c.modules] }));
+
+// Иконки по ключевым словам
+function guessIcon(name) {
+  const n = name.toLowerCase();
+  if (n.includes('blood') || n.includes('krov'))   return '🩸';
+  if (n.includes('kidney') || n.includes('moch'))  return '🫘';
+  if (n.includes('resp') || n.includes('dykh'))    return '🫁';
+  if (n.includes('cardio') || n.includes('serd'))  return '❤️';
+  if (n.includes('endo'))                           return '🦋';
+  if (n.includes('neuro') || n.includes('nervn'))  return '🧠';
+  if (n.includes('surg') || n.includes('khir'))    return '🔪';
+  if (n.includes('lor') || n.includes('sms'))      return '👂';
+  if (n.includes('ped') || n.includes('det'))      return '👶';
+  return '📂';
+}
+
+// Загружает структуру из репозитория и дополняет CATALOG
+async function refreshCatalogFromRepo() {
+  const repo = document.getElementById('repo-input')?.value.trim();
+  if (!repo || repo.includes('YOUR_')) return;
+
+  try {
+    const r = await fetch(`https://api.github.com/repos/${repo}/contents/data`);
+    if (!r.ok) return;
+    const folders = (await r.json()).filter(x => x.type === 'dir');
+
+    // Сброс до базового
+    CATALOG = CATALOG_BASE.map(c => ({ ...c, modules: [...c.modules] }));
+
+    for (const folder of folders) {
+      const modR = await fetch(`https://api.github.com/repos/${repo}/contents/${folder.path}`);
+      if (!modR.ok) continue;
+      const files = (await modR.json()).filter(x => x.type === 'file' && x.name.endsWith('.json'));
+
+      // Находим или создаём цикл в каталоге
+      let cycle = CATALOG.find(c => c.id === folder.name);
+      if (!cycle) {
+        cycle = {
+          id: folder.name,
+          name: folder.name.charAt(0).toUpperCase() + folder.name.slice(1).replace(/_/g,' ') + ' ' + guessIcon(folder.name),
+          modules: []
+        };
+        CATALOG.push(cycle);
+      }
+
+      // Добавляем модули которых ещё нет
+      for (const file of files) {
+        const modId = file.name.replace('.json','');
+        const exists = cycle.modules.find(m => m.id === modId);
+        if (!exists) {
+          cycle.modules.push({
+            id: modId,
+            name: modId.charAt(0).toUpperCase() + modId.slice(1).replace(/_/g,' ') + ' ' + guessIcon(modId),
+            file: file.path
+          });
+        }
+      }
+    }
+
+    // Перестраиваем селекты
+    buildCycleSelect();
+    showPushStatus('✅ Каталог обновлён из репозитория', 'ok');
+  } catch(e) {
+    // Тихая ошибка — базовый каталог остаётся
+    console.warn('Каталог из репо недоступен:', e.message);
+  }
+}
 
 // ============================================================
 // STATE
@@ -606,6 +678,7 @@ window.addEventListener('DOMContentLoaded', () => {
   const pat = localStorage.getItem(PAT_KEY);
   if (pat) document.getElementById('pat-input').value = pat;
   buildCycleSelect();
+  refreshCatalogFromRepo(); // дополняем из репозитория
   addManualQ(); // первый пустой вопрос
 });
 
@@ -616,6 +689,7 @@ function goBack() {
 function saveRepo() {
   localStorage.setItem(REPO_KEY, document.getElementById('repo-input').value.trim());
   showPushStatus('💾 Репозиторий сохранён', 'ok');
+  refreshCatalogFromRepo();
 }
 function savePAT() {
   localStorage.setItem(PAT_KEY, document.getElementById('pat-input').value.trim());
@@ -925,7 +999,7 @@ function validateJSON() {
     const fcs = data.filter(x => x.q && x.a && !x.opts);
     const bad = data.length - qs.length - fcs.length;
 
-    parsedQs = qs; // используем как источник
+    parsedQs = [...qs, ...fcs]; // храним и вопросы и карточки
     statsEl.style.display = 'flex';
     statsEl.innerHTML = `
       <div class="json-stat">Вопросов теста: <strong>${qs.length}</strong></div>
@@ -960,18 +1034,25 @@ function showJSONError(msg) {
 // READY COUNT
 // ============================================================
 function getReadyQs() {
-  if (currentMode === 'parse') return parsedQs;
-  if (currentMode === 'json')  return parsedQs;
-  if (currentMode === 'manual') return collectManualQs();
-  return [];
+  const all = currentMode === 'manual' ? collectManualQs() : parsedQs;
+  return all.filter(x => x.q && Array.isArray(x.opts));
+}
+
+function getReadyFcs() {
+  const all = currentMode === 'manual' ? collectManualQs() : parsedQs;
+  return all.filter(x => x.q && x.a && !x.opts);
 }
 
 function updateReadyCount() {
-  const qs = getReadyQs();
-  const el = document.getElementById('q-ready-count');
-  if (qs.length > 0) {
+  const qs  = getReadyQs();
+  const fcs = getReadyFcs();
+  const el  = document.getElementById('q-ready-count');
+  const parts = [];
+  if (qs.length  > 0) parts.push(qs.length  + ' вопросов');
+  if (fcs.length > 0) parts.push(fcs.length + ' карточек');
+  if (parts.length > 0) {
     el.style.display = '';
-    el.textContent = '→ ' + qs.length + ' вопросов готово к отправке';
+    el.textContent = '→ ' + parts.join(' + ') + ' готово к отправке';
   } else {
     el.style.display = 'none';
   }
@@ -1027,8 +1108,9 @@ function utf8ToBase64(str) {
 }
 
 async function pushToGitHub() {
-  const qs = getReadyQs();
-  if (qs.length === 0) { showPushStatus('⚠ Нет вопросов для отправки. Сначала распознайте или введите вопросы.', 'err'); return; }
+  const qs  = getReadyQs();
+  const fcs = getReadyFcs();
+  if (qs.length === 0 && fcs.length === 0) { showPushStatus('⚠ Нет данных для отправки. Сначала распознайте вопросы или карточки.', 'err'); return; }
 
   const repo = document.getElementById('repo-input').value.trim();
   if (!repo || repo.includes('YOUR_')) { showPushStatus('⚠ Укажите реальный репозиторий в поле выше', 'err'); return; }
@@ -1055,51 +1137,52 @@ async function pushToGitHub() {
     // 1. Проверяем существует ли файл (нужен sha для обновления)
     let existingSha = null;
     let existingQs  = [];
+    let existingFcs = [];
     const checkR = await fetch(apiBase, { headers });
 
     if (checkR.ok) {
       const existing = await checkR.json();
       existingSha = existing.sha;
-      // Декодируем base64
       try {
-        const rawBytes = Uint8Array.from(
-  atob(existing.content.replace(/\n/g,'')),
-  c => c.charCodeAt(0)
-);
-
-const decoded = new TextDecoder('utf-8').decode(rawBytes);
-existingQs = JSON.parse(decoded);
-        showPushStatus('📂 Файл найден · ' + existingQs.length + ' вопросов уже есть · Выполняю дедупликацию...', 'info');
-      } catch(e) { existingQs = []; }
+        const rawBytes = Uint8Array.from(atob(existing.content.replace(/\n/g,'')), c => c.charCodeAt(0));
+        const decoded  = new TextDecoder('utf-8').decode(rawBytes);
+        const parsed   = JSON.parse(decoded);
+        existingQs  = parsed.filter(x => x.q && Array.isArray(x.opts));
+        existingFcs = parsed.filter(x => x.q && x.a && !x.opts);
+        showPushStatus('📂 Файл найден · ' + existingQs.length + ' вопр. + ' + existingFcs.length + ' карт. · Дедупликация...', 'info');
+      } catch(e) { existingQs = []; existingFcs = []; }
     } else if (checkR.status === 404) {
       showPushStatus('📄 Файл не существует · Создаю новый...', 'info');
     } else {
       throw new Error('GitHub API error: ' + checkR.status);
     }
 
-    // 2. Дедупликация
-    const existingSet = new Set(existingQs.map(q => norm(q.q)));
-    const newQs = qs.filter(q => !existingSet.has(norm(q.q)));
-    const skipped = qs.length - newQs.length;
-    const merged = [...existingQs, ...newQs];
+    // 2. Дедупликация вопросов и карточек
+    const existingQSet  = new Set(existingQs.map(q => norm(q.q)));
+    const existingFcSet = new Set(existingFcs.map(f => norm(f.q)));
+    const newQs  = qs.filter(q => !existingQSet.has(norm(q.q)));
+    const newFcs = fcs.filter(f => !existingFcSet.has(norm(f.q)));
+    const skipped = (qs.length - newQs.length) + (fcs.length - newFcs.length);
+    const merged  = [...existingQs, ...newQs, ...existingFcs, ...newFcs];
 
-    if (newQs.length === 0) {
-      showPushStatus('ℹ Все ' + skipped + ' вопросов уже есть в репозитории — дубли не добавлены.', 'info');
+    if (newQs.length === 0 && newFcs.length === 0) {
+      showPushStatus('ℹ Все элементы уже есть в репозитории — дубли не добавлены.', 'info');
       btn.disabled = false; btn.textContent = '⬆ Отправить в репозиторий';
       return;
     }
 
     // 3. Кодируем и отправляем
+    const addedMsg = [newQs.length > 0 ? '+' + newQs.length + ' вопр.' : '', newFcs.length > 0 ? '+' + newFcs.length + ' карт.' : ''].filter(Boolean).join(', ');
     const jsonStr = JSON.stringify(merged, null, 2);
     const content = utf8ToBase64(jsonStr);
     const payload = {
-      message: `Добавлено ${newQs.length} вопросов в ${filePath}`,
+      message: 'Добавлено ' + addedMsg + ' в ' + filePath,
       content,
       branch: BRANCH
     };
     if (existingSha) payload.sha = existingSha;
 
-    showPushStatus('⬆ Отправляю ' + newQs.length + ' новых вопросов...', 'info');
+    showPushStatus('⬆ Отправляю ' + addedMsg + '...', 'info');
 
     const pushR = await fetch(apiBase, {
       method: 'PUT',
@@ -1110,7 +1193,7 @@ existingQs = JSON.parse(decoded);
     if (pushR.ok) {
       const skipMsg = skipped > 0 ? ` · ${skipped} дублей пропущено` : '';
       showPushStatus(
-        `✅ Готово!\n+${newQs.length} вопросов добавлено в ${filePath}${skipMsg}\nИтого в файле: ${merged.length} вопросов`,
+        `✅ Готово!\n${addedMsg} добавлено в ${filePath}${skipMsg}\nИтого в файле: ${merged.length} элементов`,
         'ok'
       );
     } else {
