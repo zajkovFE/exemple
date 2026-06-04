@@ -1189,56 +1189,471 @@
   .exam-toggle:hover { color: var(--text); border-color: var(--muted); }
   .exam-toggle.on { color: var(--accent); border-color: var(--accent); }
   .nav-links {
-  display: flex;
-  gap: 10px;
-  margin-top: 16px;
-  flex-wrap: wrap;
-}
-.nav-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 7px 14px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 100px;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 11px;
-  color: var(--muted);
-  text-decoration: none;
-  letter-spacing: 1px;
-  transition: all 0.2s;
-}
-.nav-link:hover {
-  border-color: var(--accent2);
-  color: var(--accent2);
-}
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+  .nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    text-decoration: none;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+  }
+  .nav-link:hover {
+    border-color: var(--accent2);
+    color: var(--accent2);
+  }
+
+  /* ===== HAMBURGER MENU ===== */
+  .hamburger-btn {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 1000;
+    width: 48px;
+    height: 48px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    transition: all 0.2s;
+  }
+  .hamburger-btn:hover { border-color: var(--accent); }
+  .hamburger-btn .bar {
+    width: 20px; height: 2px;
+    background: var(--muted);
+    border-radius: 2px;
+    transition: all 0.25s;
+  }
+  .hamburger-btn.open .bar { background: var(--accent); }
+  .hamburger-btn.open .bar:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .hamburger-btn.open .bar:nth-child(2) { opacity: 0; transform: scaleX(0); }
+  .hamburger-btn.open .bar:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+  .hamburger-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 900;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s;
+  }
+  .hamburger-overlay.open { opacity: 1; pointer-events: all; }
+
+  .hamburger-panel {
+    position: fixed;
+    bottom: 84px;
+    right: 24px;
+    z-index: 950;
+    width: 260px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    overflow: hidden;
+    transform: scale(0.9) translateY(10px);
+    transform-origin: bottom right;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.22s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .hamburger-panel.open { transform: scale(1) translateY(0); opacity: 1; pointer-events: all; }
+
+  .hm-section-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 14px 16px 6px;
+  }
+  .hm-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: background 0.15s;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 13px;
+    color: var(--text);
+    border: none;
+    background: transparent;
+    width: 100%;
+    text-align: left;
+  }
+  .hm-item:hover { background: rgba(255,255,255,0.04); }
+  .hm-item .hm-icon { font-size: 16px; width: 20px; text-align: center; }
+  .hm-item.danger { color: var(--danger); }
+  .hm-divider { height: 1px; background: var(--border); margin: 4px 0; }
+
+  /* ===== PROFILE MODAL ===== */
+  .profile-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.65);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .profile-overlay.open { opacity: 1; pointer-events: all; }
+
+  .profile-modal {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    width: 100%;
+    max-width: 420px;
+    max-height: 90vh;
+    overflow-y: auto;
+    transform: translateY(20px);
+    transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .profile-overlay.open .profile-modal { transform: translateY(0); }
+
+  .profile-header {
+    padding: 24px 24px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .profile-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .profile-close {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-size: 20px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 4px;
+    transition: color 0.15s;
+  }
+  .profile-close:hover { color: var(--text); }
+
+  .profile-avatar-section {
+    padding: 20px 24px;
+    text-align: center;
+  }
+  .profile-avatar-display {
+    font-size: 64px;
+    line-height: 1;
+    margin-bottom: 10px;
+    filter: drop-shadow(0 0 16px rgba(232,201,122,0.3));
+    cursor: pointer;
+    transition: transform 0.2s;
+    display: inline-block;
+  }
+  .profile-avatar-display:hover { transform: scale(1.1); }
+
+  .profile-name-input {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    text-align: center;
+    outline: none;
+    width: 100%;
+    max-width: 220px;
+    transition: border-color 0.15s;
+    margin-bottom: 6px;
+  }
+  .profile-name-input:focus { border-color: var(--accent); }
+
+  .profile-level-badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+  .profile-level-badge span { color: var(--accent); }
+
+  .avatar-picker {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 8px;
+    padding: 0 24px 16px;
+  }
+  .avatar-opt {
+    font-size: 26px;
+    text-align: center;
+    padding: 6px;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.15s;
+    background: var(--surface);
+  }
+  .avatar-opt:hover { border-color: var(--muted); transform: scale(1.1); }
+  .avatar-opt.selected { border-color: var(--accent); background: rgba(232,201,122,0.1); }
+
+  .profile-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    padding: 0 24px 20px;
+  }
+  .profile-stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 8px;
+    text-align: center;
+  }
+  .profile-stat-val {
+    font-family: 'Playfair Display', serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--accent2);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .profile-stat-lbl {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    line-height: 1.4;
+  }
+
+  .profile-modules-list {
+    padding: 0 24px 24px;
+  }
+  .profile-mod-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    color: var(--text);
+  }
+  .profile-mod-row:last-child { border-bottom: none; }
+  .profile-mod-icon { font-size: 18px; }
+  .profile-mod-name { flex: 1; }
+  .profile-mod-counts {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    text-align: right;
+  }
+
+  /* Streak indicator in header */
+  .streak-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    background: rgba(232,201,122,0.1);
+    border: 1px solid rgba(232,201,122,0.25);
+    border-radius: 100px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .streak-badge:hover { background: rgba(232,201,122,0.18); }
+
+  /* ===== PROFILE PROGRESS BARS ===== */
+  .profile-progress-section {
+    padding: 0 24px 24px;
+  }
+  .profile-progress-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0 0 10px;
+  }
+  .profile-prog-row {
+    margin-bottom: 12px;
+  }
+  .profile-prog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+    font-size: 12px;
+  }
+  .profile-prog-name {
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .profile-prog-pct {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .profile-prog-track {
+    height: 5px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .profile-prog-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+  }
+  .profile-prog-meta {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    margin-top: 3px;
+    text-align: right;
+  }
 </style>
 </head>
 <body>
+
+<!-- ===== HAMBURGER BUTTON ===== -->
+<button class="hamburger-btn" id="hm-btn">
+  <div class="bar"></div>
+  <div class="bar"></div>
+  <div class="bar"></div>
+</button>
+
+<!-- Overlay to close hamburger -->
+<div class="hamburger-overlay" id="hm-overlay"></div>
+
+<!-- Hamburger panel -->
+<div class="hamburger-panel" id="hm-panel">
+  <div class="hm-section-title">Профиль</div>
+  <button class="hm-item" id="hm-profile-btn">
+    <span class="hm-icon" id="hm-avatar-preview">🐱</span>
+    <span id="hm-user-name">Мой профиль</span>
+  </button>
+  <div class="hm-divider"></div>
+  <div class="hm-section-title">Данные</div>
+  <button class="hm-item" id="hm-save-btn">
+    <span class="hm-icon">💾</span> Сохранить прогресс
+  </button>
+  <button class="hm-item" id="hm-csv-btn">
+    <span class="hm-icon">📊</span> Скачать статистику
+  </button>
+  <div class="hm-divider"></div>
+  <div class="hm-section-title">Сброс</div>
+  <button class="hm-item danger" id="hm-reset-btn">
+    <span class="hm-icon">🔄</span> Сбросить прогресс
+  </button>
+  <button class="hm-item danger" id="hm-modules-btn">
+    <span class="hm-icon">🗑️</span> Сбросить модули
+  </button>
+</div>
+
+
+
+<!-- ===== PROFILE MODAL ===== -->
+<div class="profile-overlay" id="profile-overlay">
+  <div class="profile-modal" id="profile-modal">
+    <div class="profile-header">
+      <div class="profile-title">Мой профиль</div>
+      <button class="profile-close" id="profile-close-btn">×</button>
+    </div>
+
+    <div class="profile-avatar-section">
+      <div class="profile-avatar-display" id="profile-avatar">🐱</div>
+      <br>
+      <input class="profile-name-input" id="profile-name" type="text" placeholder="Ваше имя" maxlength="24" />
+      <div class="profile-level-badge" id="profile-level-badge">Уровень: <span>—</span></div>
+    </div>
+
+    <!-- Avatar picker (hidden by default) -->
+    <div class="avatar-picker" id="avatar-picker" style="display:none">
+    </div>
+
+    <!-- Stats -->
+    <div class="profile-stats-grid">
+      <div class="profile-stat-card">
+        <div class="profile-stat-val" id="ps-total-tests">0</div>
+        <div class="profile-stat-lbl">тестов<br>пройдено</div>
+      </div>
+      <div class="profile-stat-card">
+        <div class="profile-stat-val" id="ps-avg-score">—</div>
+        <div class="profile-stat-lbl">средний<br>результат</div>
+      </div>
+      <div class="profile-stat-card">
+        <div class="profile-stat-val" id="ps-streak">0🔥</div>
+        <div class="profile-stat-lbl">дней<br>подряд</div>
+      </div>
+    </div>
+
+    <!-- Modules list -->
+    <div class="profile-modules-list">
+      <div class="hm-section-title" style="padding: 0 0 10px">Мои модули</div>
+      <div id="profile-mod-list"></div>
+    </div>
+
+    <!-- Progress bars -->
+    <div class="profile-progress-section">
+      <div class="profile-progress-title">Прогресс по модулям</div>
+      <div id="profile-progress-bars"></div>
+    </div>
+  </div>
+</div>
+
 <div class="wrap">
 
   <header>
     <div class="subtitle">Пропедевтика внутренних болезней · 3 курс</div>
     <h1>Подготовка к <span>экзамену</span></h1>
     <div class="stats-row">
-      <div class="stat">Модулей: <strong>5</strong></div>
+      <div class="stat">Модулей: <strong id="total-m">0</strong></div>
       <div class="stat">Тестов: <strong id="total-q">0</strong></div>
       <div class="stat">Карточек: <strong id="total-fc">0</strong></div>
       <div id="global-score" class="score-badge" style="display:none">🏆 Правильных: <span id="gs-val">0</span></div>
+      <div class="streak-badge" id="streak-header-badge" onclick="openProfile()" title="Открыть профиль">🔥 <span id="streak-header-val">0</span> дн.</div>
     </div>
-     <div class="nav-links">
+    <div class="nav-links">
       <a class="nav-link" href="converter_index-1.html" target="_blank">⚙️ Конвертер вопросов</a>
     </div>
   </header>
 
   <!-- TABS -->
   <div class="tabs">
+    <button class="tab active" onclick="launchRandomQuestion()"> Случайный вопрос</button>
     <button class="tab active" onclick="switchMode('test')">📝 Тесты</button>
     <button class="tab" onclick="switchMode('flash')">🃏 Карточки</button>
     <button class="tab" onclick="switchMode('weak')">🔴 Слабые</button>
     <button class="tab" onclick="switchMode('level')">🏆 Уровень</button>
     <button class="tab" onclick="switchMode('history')">📊 История</button>
+<button class="tab" onclick="downloadStatsCSV()"> Скачать(CSV)</button>
     <button class="tab" onclick="switchMode('import')">➕ Добавить</button>
     <button class="tab" onclick="switchMode('editor')">✏️ Редактор</button>
     <button class="tab" onclick="switchMode('sync')">☁️ Синхр.</button>
@@ -1285,7 +1700,7 @@
       <div class="explanation" id="q-exp"></div>
     </div>
     <div class="nav-row">
-      <button class="btn btn-ghost" onclick="restartQuiz()">↺ Сначала</button>
+      <button class="btn btn-ghost" onclick="restartQuiz()">🚩 Сдаться</button>
       <button class="btn btn-primary" id="next-btn" onclick="nextQ()" style="display:none">Следующий →</button>
     </div>
   </div>
@@ -1300,7 +1715,8 @@
       <div class="result-pools" id="res-pools"></div>
     </div>
     <div class="nav-row" style="margin-top:20px; justify-content:center; gap:16px">
-      <button class="btn btn-ghost" onclick="restartQuiz()">↺ Сначала</button>
+      <button class="btn btn-ghost" onclick="restartQuiz()">🚩 Сдаться</button>
+      <button class="btn btn-ghost" id="res-weak-btn" onclick="switchMode('weak')" style="display:none">🔴 Слабые места</button>
       <button class="btn btn-primary" onclick="switchMode('history')">📊 История</button>
     </div>
   </div>
@@ -1652,7 +2068,7 @@ const PERSIST_KEY = 'propedeutika_modules_persist';
         MODULES.length = 0;
         parsed.forEach(m => MODULES.push(m));
         console.log('✅ Модули восстановлены из localStorage');
-      }
+        if (document.getElementById('total-m')) document.getElementById('total-m').textContent = MODULES.length; }
     }
   } catch (e) { console.warn('⚠️ Не удалось загрузить сохранённые модули:', e); }
 })();
@@ -2041,12 +2457,12 @@ function nextQ() {
 }
 
 function restartQuiz() {
+  stopExamTimer();
   document.getElementById('result-screen').classList.remove('visible');
   if (isComplex) { startComplex(); return; }
   const mod = MODULES.find(m => m.id === currentMod);
   if (mod) startQuiz(mod);
 }
-
 function showResult() {
   stopExamTimer();
   const pct = Math.round((score / questions.length) * 100);
@@ -2104,6 +2520,12 @@ function showResult() {
     ? '🔴 Тренировка слабых · XP не начисляется'
     : '+' + gained + ' XP · ' + lvlNow.emoji + ' ' + lvlNow.name;
   document.querySelector('.result-card').appendChild(xpEl);
+    // Кнопка слабых мест
+  const weakBtn = document.getElementById('res-weak-btn');
+
+if (weakBtn) {
+    weakBtn.style.display = '';
+}
 }
 
 function saveHistory(entry) {
@@ -2339,7 +2761,8 @@ function setFeedback(msg, type) {
 }
 
 function updateStats() {
-  document.getElementById('total-q').textContent = MODULES.reduce((a,m) => a + m.qs.length, 0);
+  document.getElementById('total-m').textContent  = MODULES.length;
+  document.getElementById('total-q').textContent  = MODULES.reduce((a,m) => a + m.qs.length, 0);
   document.getElementById('total-fc').textContent = MODULES.reduce((a,m) => a + m.fc.length, 0);
 }
 
@@ -2599,7 +3022,8 @@ function deleteQuestion(idx) {
 let examMode = false;
 let examTimerInterval = null;
 let examSecondsLeft = 0;
-const EXAM_SECONDS_PER_Q = 90; // 1.5 мин на вопрос
+const EXAM_SECONDS_PER_Q = 60; // 1 мин на вопрос
+const EXAM_COMPLEX_SECONDS = 3600; // 60 мин на комплексный // 
 
 function toggleExamMode() {
   examMode = !examMode;
@@ -2621,7 +3045,7 @@ function toggleExamMode() {
 function startExamTimer(questionCount) {
   stopExamTimer();
   if (!examMode) return;
-  examSecondsLeft = questionCount * EXAM_SECONDS_PER_Q;
+  examSecondsLeft = isComplex ? EXAM_COMPLEX_SECONDS : questionCount * EXAM_SECONDS_PER_Q;
   updateTimerDisplay();
   examTimerInterval = setInterval(() => {
     examSecondsLeft--;
@@ -2769,6 +3193,7 @@ function startWeakQuiz() {
   document.getElementById('mod-grid').style.display='none';
   mode='test';
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',i===0));
+  startExamTimer(questions.length);
   showQ();
 }
 
@@ -3136,75 +3561,846 @@ window.addEventListener('storage', function(e) {
 });
 
 init();
-</script>
-<!-- 🟢 УНИВЕРСАЛЬНОЕ АВТОСОХРАНЕНИЕ (без правки основного кода) -->
-<script>
-(function() {
-  const KEY = 'propedeutika_autosave_v1';
-  const STORAGE = window.localStorage;
-  // Список имён, которые чаще всего используют ИИ-генераторы для хранения данных
-  const STATE_KEYS = ['modules','tests','cards','history','questions','results','quizState','appData','state','data','modulesList','testResults','flashcards'];
-
-  function gatherState() {
-    const state = {};
-    STATE_KEYS.forEach(k => {
-      if (window[k] !== undefined) {
-        try { state[k] = JSON.parse(JSON.stringify(window[k])); }
-        catch(e) { state[k] = window[k]; }
-      }
-    });
-    return state;
+window.addEventListener('beforeunload', function(e) {
+  const quizActive = document.getElementById('quiz-wrap')?.classList.contains('visible');
+  if (quizActive && qIndex > 0 && qIndex < questions.length) {
+    e.preventDefault();
+    e.returnValue = '';
   }
-
-  function applyState(saved) {
-    STATE_KEYS.forEach(k => { if (saved[k] !== undefined) window[k] = saved[k]; });
-    // Обновляем интерфейс — но НЕ вызываем init() так как он перезапишет MODULES
-    ['render','updateUI','refresh','draw','show'].forEach(fn => {
-      if (typeof window[fn] === 'function') try { window[fn](); } catch(e){}
-    });
-  }
-
-  function save() {
-    const state = gatherState();
-    if (Object.keys(state).length) {
-      STORAGE.setItem(KEY, JSON.stringify(state));
-      console.log('💾 Данные сохранены локально');
+});
+function launchRandomQuestion() {
+    // 1. Собираем все вопросы из всех модулей
+    let allQuestions = [];
+    // Перебираем все модули, которые хранятся в памяти
+    for (let i = 0; i < MODULES.length; i++) {
+        if (MODULES[i].qs) {
+            allQuestions = allQuestions.concat(MODULES[i].qs);
+        }
     }
-  }
 
-  function load() {
-    try {
-      const raw = STORAGE.getItem(KEY);
-      if (raw) { applyState(JSON.parse(raw)); console.log('✅ Состояние восстановлено'); return true; }
-    } catch(e) { console.warn('⚠️ Ошибка загрузки:', e); }
-    return false;
-  }
+    if (allQuestions.length === 0) {
+        alert('📚 База пуста! Сначала добавьте вопросы.');
+        return;
+    }
 
-  // 1. Восстановление при загрузке
-  window.addEventListener('DOMContentLoaded', () => {
-    setTimeout(load, 300); // даём основному скрипту инициализироваться
+    // 2. Выбираем случайный
+    const randomIndex = Math.floor(Math.random() * allQuestions.length);
+    const q = allQuestions[randomIndex];
+    
+    // 3. Показываем (простое окно)
+    showSingleQuestionModal(q);
+}
+
+function showSingleQuestionModal(question) {
+    // Создаем красивый оверлей поверх экрана
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:1000;display:flex;justify-content:center;align-items:center;';
+    
+    const card = document.createElement('div');
+    card.style.cssText = 'background:#1e222d;padding:20px;border-radius:12px;max-width:500px;width:90%;color:#fff;font-family:sans-serif;';
+    
+    let optionsHtml = '';
+    question.opts.forEach((opt, index) => {
+        optionsHtml += `<div style="padding:10px;margin:5px 0;border:1px solid #2a2f3e;cursor:pointer;border-radius:6px;" onclick="checkRandomAnswer(this, ${index}, ${question.ans})">${opt}</div>`;
+    });
+
+    card.innerHTML = `
+        <h3 style="margin-top:0">${question.q}</h3>
+        ${optionsHtml}
+        <button onclick="this.parentElement.parentElement.remove()" style="margin-top:15px;background:#e8c97a;border:none;padding:10px 20px;cursor:pointer;border-radius:6px;color:#000">Закрыть</button>
+    `;
+    
+    overlay.appendChild(card);
+    document.body.appendChild(overlay);
+}
+
+function checkRandomAnswer(element, selected, correct) {
+    if (selected === correct) {
+        element.style.background = '#7ae8b8'; // Зеленый
+        element.style.borderColor = '#7ae8b8';
+    } else {
+        element.style.background = '#e87a7a'; // Красный
+        element.style.borderColor = '#e87a7a';
+    }
+}
+function downloadStatsCSV() {
+    // 1. Берем историю и модули из памяти
+    let historyData = JSON.parse(localStorage.getItem('propedeutika_history') || '[]');
+    let modules = JSON.parse(localStorage.getItem('propedeutika_modules') || '[]');
+    
+    if (historyData.length === 0) {
+        alert('📭 Истории пока нет. Пройдите хотя бы один тест.');
+        return;
+    }
+
+    // 2. Функция для красивого имени модуля
+    function getNiceName(modId) {
+        // Сначала ищем в локальных модулях
+        const found = modules.find(m => m.id === modId);
+        if (found) return found.name || found.id;
+        
+        // Если не нашли — превращаем slug в читаемый текст
+        // "rasstroystva-myshleniya" → "Расстройства мышления"
+        return modId
+            .split('-')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+    }
+
+    // 3. Заголовки с понятными названиями колонок
+    let csvContent = "Дата;Время;Модуль;Результат (%);Правильных;Всего;Статус\n";
+
+    // 4. Формируем строки
+    historyData.forEach(row => {
+        const modName = getNiceName(row.modId || row.module || 'unknown');
+        const date = row.date || '';
+        const time = row.time || '';
+        const pct = row.pct ?? row.result ?? 0;
+        const score = row.score ?? row.correct ?? 0;
+        const total = row.total ?? row.questions ?? 0;
+        
+        // Добавляем статус для быстрого фильтра в Excel
+        let status = '';
+        if (pct >= 85) status = 'Отлично';
+        else if (pct >= 70) status = 'Хорошо';
+        else if (pct >= 50) status = 'Удовл.';
+        else status = 'Нужно повторить';
+        
+        // Экранируем кавычки и используем точку с запятой как разделитель (для Excel РФ)
+        const safeName = modName.replace(/"/g, '""');
+        
+        csvContent += `${date};${time};"${safeName}";${pct};${score};${total};${status}\n`;
+    });
+
+    // 5. Создаем файл с BOM для корректного отображения кириллицы в Excel
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    
+    // Имя файла с датой
+    const today = new Date().toISOString().split('T')[0];
+    link.setAttribute("download", `propedeutika_stats_${today}.csv`);
+    
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+</script>
+<!-- Плавающая панель удалена, заменена гамбургер-меню -->
+<script>
+// ===== AVATARS =====
+const AVATARS = ['🐱','🐶','🦊','🐺','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸','🐧','🦉','🦋','🐙','🦈','🐬','🦄','🐲','🦊','🐰','🐹','🐭','🦝','🦔'];
+
+// ===== FUNNY LEVELS (отдельный массив, не конфликтует с оригинальным LEVELS) =====
+const FUNNY_LEVELS = [
+  { min: 0,   label: '🥴 Первокурсник в панике' },
+  { min: 10,  label: '📖 Читаю, но не понимаю' },
+  { min: 30,  label: '🤔 Что-то начинает проясняться' },
+  { min: 60,  label: '💉 Уже не страшно' },
+  { min: 100, label: '🩺 Смотрит на симптомы осознанно' },
+  { min: 150, label: '📋 Интерн с опытом' },
+  { min: 250, label: '🏥 Настоящий клиницист' },
+  { min: 400, label: '🎓 Профессор одобряет' },
+  { min: 600, label: '🧠 Ходячая энциклопедия' },
+];
+
+function getFunnyLevel(testsCount) {
+  let lv = FUNNY_LEVELS[0];
+  for (const l of FUNNY_LEVELS) { if (testsCount >= l.min) lv = l; }
+  return lv.label;
+}
+
+// ===== PROFILE STORAGE =====
+const PROFILE_KEY = 'propedeutika_profile_v1';
+
+function loadProfileData() {
+  try {
+    return JSON.parse(localStorage.getItem(PROFILE_KEY) || '{}');
+  } catch(e) { return {}; }
+}
+
+function saveProfileData(data) {
+  localStorage.setItem(PROFILE_KEY, JSON.stringify(data));
+}
+
+// ===== STREAK =====
+function calcStreak() {
+  try {
+    const history = JSON.parse(localStorage.getItem('propedeutika_history') || '[]');
+    if (!history.length) return 0;
+    const days = new Set(history.map(h => h.date).filter(Boolean));
+    const today = new Date().toLocaleDateString('ru-RU');
+    if (!days.has(today)) {
+      // Check yesterday
+      const yest = new Date(); yest.setDate(yest.getDate()-1);
+      const yesterdayStr = yest.toLocaleDateString('ru-RU');
+      if (!days.has(yesterdayStr)) return 0;
+    }
+    let streak = 0;
+    const d = new Date();
+    while (true) {
+      const s = d.toLocaleDateString('ru-RU');
+      if (days.has(s)) { streak++; d.setDate(d.getDate()-1); }
+      else break;
+      if (streak > 365) break;
+    }
+    return streak;
+  } catch(e) { return 0; }
+}
+
+// ===== HAMBURGER =====
+function toggleHamburger() {
+  const btn = document.getElementById('hm-btn');
+  const panel = document.getElementById('hm-panel');
+  const overlay = document.getElementById('hm-overlay');
+  const isOpen = panel.classList.contains('open');
+  if (isOpen) { closeHamburger(); } else {
+    btn.classList.add('open');
+    panel.classList.add('open');
+    overlay.classList.add('open');
+    // Update avatar preview in menu
+    const pd = loadProfileData();
+    document.getElementById('hm-avatar-preview').textContent = pd.avatar || '🐱';
+    document.getElementById('hm-user-name').textContent = pd.name || 'Мой профиль';
+  }
+}
+
+function closeHamburger() {
+  document.getElementById('hm-btn').classList.remove('open');
+  document.getElementById('hm-panel').classList.remove('open');
+  document.getElementById('hm-overlay').classList.remove('open');
+}
+
+function hmSaveData() {
+  try {
+    // Modules already auto-persist; just confirm
+    persistModules();
+    const btn = document.getElementById('hm-btn');
+    const orig = btn.innerHTML;
+    btn.innerHTML = '<div style="color:var(--accent3);font-size:18px">✓</div>';
+    setTimeout(() => { btn.innerHTML = orig; }, 1500);
+  } catch(e) { alert('Ошибка сохранения'); }
+}
+
+function hmExportCSV() { downloadStatsCSV(); }
+
+function hmResetProgress() {
+  if (confirm('Сбросить весь прогресс обучения (рейтинги вопросов и историю)?')) {
+    localStorage.removeItem('propedeutika_sr');
+    localStorage.removeItem('propedeutika_history');
+    location.reload();
+  }
+}
+
+function hmResetModules() {
+  if (confirm('Сбросить все модули? Встроенные вернутся к исходным.')) {
+    localStorage.removeItem('propedeutika_modules_persist');
+    location.reload();
+  }
+}
+
+// ===== PROFILE MODAL =====
+function openProfile() {
+  const overlay = document.getElementById('profile-overlay');
+  overlay.classList.add('open');
+  renderProfileModal();
+}
+
+function closeProfile() {
+  document.getElementById('profile-overlay').classList.remove('open');
+}
+
+function profileOverlayClick(e) {
+  if (e.target === document.getElementById('profile-overlay')) closeProfile();
+}
+
+function renderProfileModal() {
+  const pd = loadProfileData();
+  document.getElementById('profile-name').value = pd.name || '';
+  document.getElementById('profile-avatar').textContent = pd.avatar || '🐱';
+
+  // Stats
+  const history = (() => { try { return JSON.parse(localStorage.getItem('propedeutika_history') || '[]'); } catch(e){ return []; } })();
+  const total = history.length;
+  const avg = total > 0 ? Math.round(history.reduce((s,h) => s + (h.pct||0), 0) / total) : null;
+  const streak = calcStreak();
+
+  document.getElementById('ps-total-tests').textContent = total;
+  document.getElementById('ps-avg-score').textContent = avg !== null ? avg + '%' : '—';
+  document.getElementById('ps-streak').textContent = streak + '🔥';
+
+  // Level
+  const lvl = getFunnyLevel(total);
+  document.getElementById('profile-level-badge').innerHTML = 'Уровень: <span>' + lvl + '</span>';
+
+  // Update streak in header
+  document.getElementById('streak-header-val').textContent = streak;
+
+  // Modules list
+  const modList = document.getElementById('profile-mod-list');
+  modList.innerHTML = MODULES.map(m => `
+    <div class="profile-mod-row">
+      <span class="profile-mod-icon">${m.icon || '📂'}</span>
+      <span class="profile-mod-name">${m.name}</span>
+      <div class="profile-mod-counts">${m.qs.length} вопр.<br>${m.fc.length} карт.</div>
+    </div>
+  `).join('');
+
+  // Progress bars
+  renderProfileProgress();
+
+  // Build avatar picker
+  buildAvatarPicker(pd.avatar || '🐱');
+}
+
+function renderProfileProgress() {
+  const container = document.getElementById('profile-progress-bars');
+  if (!container) return;
+
+  const rows = MODULES.filter(m => m.qs.length > 0).map(m => {
+    const stats = getPoolStats(m);
+    const total = m.qs.length;
+    const solved = (stats[2] || 0) + (stats[3] || 0); // средние + сильные = изученные
+    const weak   = stats[1] || 0;
+    const pct    = Math.round((solved / total) * 100);
+
+    // Цвет по прогрессу
+    let color, colorVar;
+    if (pct >= 80)      { color = '#7ae8b8'; colorVar = 'var(--accent3)'; }
+    else if (pct >= 40) { color = '#e8c97a'; colorVar = 'var(--accent)'; }
+    else                { color = '#7a8090'; colorVar = 'var(--muted)'; }
+
+    const weakHint = weak > 0 ? ` · 🔴 ${weak} слабых` : '';
+
+    return `
+      <div class="profile-prog-row">
+        <div class="profile-prog-header">
+          <span class="profile-prog-name">${m.icon || '📂'} ${m.name}</span>
+          <span class="profile-prog-pct" style="color:${color}">${pct}%</span>
+        </div>
+        <div class="profile-prog-track">
+          <div class="profile-prog-fill" style="width:${pct}%; background:${color}"></div>
+        </div>
+        <div class="profile-prog-meta">${solved} из ${total}${weakHint}</div>
+      </div>`;
+  }).join('');
+
+  container.innerHTML = rows || '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:12px;color:var(--muted);padding:12px 0">Пройдите хотя бы один тест — появится прогресс</div>';
+}
+
+function buildAvatarPicker(selected) {
+  const picker = document.getElementById('avatar-picker');
+  picker.innerHTML = AVATARS.map(a => `
+    <div class="avatar-opt${a === selected ? ' selected' : ''}" onclick="selectAvatar('${a}')">${a}</div>
+  `).join('');
+}
+
+function toggleAvatarPicker() {
+  const picker = document.getElementById('avatar-picker');
+  picker.style.display = picker.style.display === 'none' ? 'grid' : 'none';
+}
+
+function selectAvatar(emoji) {
+  document.getElementById('profile-avatar').textContent = emoji;
+  document.getElementById('hm-avatar-preview').textContent = emoji;
+  // Update selected state
+  document.querySelectorAll('.avatar-opt').forEach(el => {
+    el.classList.toggle('selected', el.textContent === emoji);
   });
+  saveProfile();
+}
 
-  // 2. Фоновое сохранение каждые 15 сек + при закрытии вкладки
-  setInterval(save, 15000);
-  window.addEventListener('beforeunload', save);
+function saveProfile() {
+  const pd = loadProfileData();
+  pd.name = document.getElementById('profile-name').value;
+  pd.avatar = document.getElementById('profile-avatar').textContent;
+  saveProfileData(pd);
+  // Update hamburger preview
+  document.getElementById('hm-user-name').textContent = pd.name || 'Мой профиль';
+}
 
-  // 3. Плавающая панель управления
-  const panel = document.createElement('div');
-  panel.style.cssText = 'position:fixed;top:10px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:10px 12px;border-radius:10px;font-family:system-ui;font-size:12px;z-index:99999;display:flex;gap:6px;align-items:center;box-shadow:0 4px 12px rgba(0,0,0,0.3);max-width:95vw;overflow-x:auto;';
-  panel.innerHTML = `
-    <button id="ps_save" style="background:#10b981;color:#fff;border:none;padding:7px 11px;border-radius:7px;cursor:pointer;font-weight:500;">💾 Сохранить</button>
-    <button id="ps_load" style="background:#3b82f6;color:#fff;border:none;padding:7px 11px;border-radius:7px;cursor:pointer;font-weight:500;">🔄 Загрузить</button>
-    <button id="ps_clear" style="background:#ef4444;color:#fff;border:none;padding:7px 11px;border-radius:7px;cursor:pointer;font-weight:500;">🗑 Сброс</button>
-    <button onclick="if(confirm('Сбросить МОДУЛИ?')){localStorage.removeItem('propedeutika_modules_persist');location.reload()}" style="background:#ef4444;color:#fff;border:none;padding:5px 8px;border-radius:6px;cursor:pointer;font-size:11px;margin-left:4px;">🗑 Модули</button>
-  `;
-  document.body.appendChild(panel);
+// ===== INIT ALL EVENTS (скрипт в конце body — DOM уже готов) =====
+(function initHamburgerAndProfile() {
+  // Streak
+  const streakEl = document.getElementById('streak-header-val');
+  if (streakEl) streakEl.textContent = calcStreak();
 
-  document.getElementById('ps_save').onclick = () => { save(); panel.querySelector('span')?.remove(); const m = document.createElement('span'); m.textContent='✅'; m.style.marginLeft='6px'; m.style.color='#4ade80'; panel.appendChild(m); setTimeout(()=>m.remove(),1500); };
-  document.getElementById('ps_load').onclick = () => { if(load()) location.reload(); else alert('❌ Нет сохранённых данных'); };
-  document.getElementById('ps_clear').onclick = () => { if(confirm('🗑 Удалить все сохранённые вопросы и прогресс?')) { STORAGE.removeItem(KEY); location.reload(); } };
+  // Restore profile preview
+  const pd = loadProfileData();
+  if (pd.avatar) { document.getElementById('hm-avatar-preview').textContent = pd.avatar; }
+  if (pd.name)   { document.getElementById('hm-user-name').textContent = pd.name; }
+
+  // Hamburger button
+  document.getElementById('hm-btn').addEventListener('click', function(e) {
+    e.stopPropagation();
+    toggleHamburger();
+  });
+  document.getElementById('hm-overlay').addEventListener('click', closeHamburger);
+  document.getElementById('hm-profile-btn').addEventListener('click', function() { openProfile(); closeHamburger(); });
+  document.getElementById('hm-save-btn').addEventListener('click', function() { hmSaveData(); closeHamburger(); });
+  document.getElementById('hm-csv-btn').addEventListener('click', function() { hmExportCSV(); closeHamburger(); });
+  document.getElementById('hm-reset-btn').addEventListener('click', function() { hmResetProgress(); closeHamburger(); });
+  document.getElementById('hm-modules-btn').addEventListener('click', function() { hmResetModules(); closeHamburger(); });
+
+  // Profile modal
+  document.getElementById('profile-close-btn').addEventListener('click', closeProfile);
+  document.getElementById('profile-overlay').addEventListener('click', function(e) {
+    if (e.target === this) closeProfile();
+  });
+  document.getElementById('profile-avatar').addEventListener('click', toggleAvatarPicker);
+  document.getElementById('profile-name').addEventListener('input', saveProfile);
+
+  // Streak badge
+  var sb = document.getElementById('streak-header-badge');
+  if (sb) sb.addEventListener('click', openProfile);
 })();
 </script>
-<!-- 🔴 КОНЕЦ БЛОКА -->
+
+<!-- ===== GLOSSARY SCREEN ===== -->
+<div id="glossary-screen" style="display:none; position:fixed; inset:0; z-index:3000; background:var(--bg); overflow-y:auto;">
+  <div style="max-width:920px; margin:0 auto; padding:32px 20px 80px;">
+
+    <!-- Header -->
+    <div style="display:flex; align-items:center; gap:16px; margin-bottom:28px;">
+      <button id="glossary-back-btn" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 14px;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px;cursor:pointer;">← Назад</button>
+      <div style="flex:1">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:4px;">Справочник</div>
+        <div style="font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:var(--text);">Медицинские <span style="color:var(--accent)">термины</span></div>
+      </div>
+      <div id="glossary-count-badge" style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);white-space:nowrap;"></div>
+    </div>
+
+    <!-- Tabs: Список / Добавить / JSON -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;background:var(--surface);padding:4px;border-radius:var(--radius);border:1px solid var(--border);margin-bottom:24px;">
+      <button class="gl-tab active" id="gl-tab-list"   onclick="glSwitchTab('list')"  style="padding:9px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--accent);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px;cursor:pointer;">📚 Список</button>
+      <button class="gl-tab"        id="gl-tab-add"    onclick="glSwitchTab('add')"   style="padding:9px;background:transparent;border:none;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px;cursor:pointer;">✏️ Добавить</button>
+      <button class="gl-tab"        id="gl-tab-json"   onclick="glSwitchTab('json')"  style="padding:9px;background:transparent;border:none;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px;cursor:pointer;">{ } JSON</button>
+    </div>
+
+    <!-- TAB: СПИСОК -->
+    <div id="gl-pane-list">
+      <input type="text" id="glossary-search" placeholder="🔍 Поиск термина или определения..."
+        style="width:100%;padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:14px;outline:none;margin-bottom:16px;box-sizing:border-box;"
+        oninput="filterGlossary()">
+      <!-- Фильтр по категориям -->
+      <div id="glossary-cat-filter" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;"></div>
+      <div id="glossary-list" style="display:flex;flex-direction:column;gap:10px;"></div>
+    </div>
+
+    <!-- TAB: ДОБАВИТЬ ВРУЧНУЮ -->
+    <div id="gl-pane-add" style="display:none;">
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">Термин *</div>
+        <input id="gl-new-term" type="text" placeholder="Например: Диспноэ"
+          style="width:100%;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;outline:none;margin-bottom:16px;box-sizing:border-box;font-family:'IBM Plex Sans',sans-serif;">
+
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">Определение *</div>
+        <textarea id="gl-new-def" placeholder="Краткое и точное определение..."
+          style="width:100%;min-height:90px;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;outline:none;resize:vertical;margin-bottom:16px;box-sizing:border-box;font-family:'IBM Plex Sans',sans-serif;"></textarea>
+
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">Категория</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;" id="gl-cat-picker">
+          <button class="gl-cat-btn active" data-cat="Общее"          onclick="glPickCat(this)">Общее</button>
+          <button class="gl-cat-btn"        data-cat="Диагностика"    onclick="glPickCat(this)">Диагностика</button>
+          <button class="gl-cat-btn"        data-cat="Клиника"        onclick="glPickCat(this)">Клиника</button>
+          <button class="gl-cat-btn"        data-cat="Кардиология"    onclick="glPickCat(this)">Кардиология</button>
+          <button class="gl-cat-btn"        data-cat="Эндокринология" onclick="glPickCat(this)">Эндокринология</button>
+          <button class="gl-cat-btn"        data-cat="Пульмонология"  onclick="glPickCat(this)">Пульмонология</button>
+          <button class="gl-cat-btn"        data-cat="Гастро"         onclick="glPickCat(this)">Гастро</button>
+          <button class="gl-cat-btn gl-cat-custom" data-cat="" onclick="glCustomCat(this)">+ Своя</button>
+        </div>
+        <input id="gl-custom-cat-input" type="text" placeholder="Введите свою категорию..."
+          style="display:none;width:100%;padding:8px 12px;background:var(--surface);border:1px solid var(--accent);border-radius:8px;color:var(--text);font-size:13px;outline:none;margin-bottom:16px;box-sizing:border-box;font-family:'IBM Plex Sans',sans-serif;">
+
+        <div id="gl-add-feedback" style="min-height:20px;font-family:'IBM Plex Mono',monospace;font-size:12px;margin-bottom:12px;"></div>
+        <button onclick="glAddTerm()" style="background:var(--accent);color:#0d0f14;border:none;border-radius:8px;padding:11px 24px;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;letter-spacing:1px;cursor:pointer;">+ Добавить термин</button>
+      </div>
+    </div>
+
+    <!-- TAB: JSON ИМПОРТ -->
+    <div id="gl-pane-json" style="display:none;">
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:16px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">Формат JSON</div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--accent3);line-height:1.7;white-space:pre;overflow-x:auto;">[
+  { "term": "Диспноэ", "definition": "Затруднённое дыхание, одышка.", "category": "Пульмонология" },
+  { "term": "Асцит",   "definition": "Скопление жидкости в брюшной полости.", "category": "Гастро" }
+]</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-top:8px;">Поле category — необязательное. Дубликаты по полю term пропускаются.</div>
+      </div>
+      <textarea id="gl-json-input" placeholder="Вставьте JSON сюда..."
+        style="width:100%;min-height:160px;padding:14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:12px;line-height:1.6;resize:vertical;outline:none;box-sizing:border-box;margin-bottom:12px;"></textarea>
+      <div id="gl-json-feedback" style="min-height:20px;font-family:'IBM Plex Mono',monospace;font-size:12px;margin-bottom:12px;"></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button onclick="glImportJSON()" style="background:var(--accent);color:#0d0f14;border:none;border-radius:8px;padding:11px 24px;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;letter-spacing:1px;cursor:pointer;">⬇ Импортировать</button>
+        <button onclick="glExportJSON()" style="background:transparent;color:var(--accent2);border:1px solid var(--accent2);border-radius:8px;padding:11px 20px;font-family:'IBM Plex Mono',monospace;font-size:12px;cursor:pointer;letter-spacing:1px;">⬆ Мои термины</button>
+        <button onclick="glExportAllJSON()" style="background:transparent;color:var(--accent3);border:1px solid var(--accent3);border-radius:8px;padding:11px 20px;font-family:'IBM Plex Mono',monospace;font-size:12px;cursor:pointer;letter-spacing:1px;">⬆ Все термины</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<style>
+.gl-cat-btn {
+  padding: 6px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  color: var(--muted);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.gl-cat-btn:hover { border-color: var(--accent); color: var(--text); }
+.gl-cat-btn.active { background: rgba(232,201,122,0.1); border-color: var(--accent); color: var(--accent); }
+</style>
+
+<!-- ===== GLOSSARY EDIT MODAL ===== -->
+<div id="gl-edit-overlay" style="display:none;position:fixed;inset:0;z-index:4000;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;padding:20px;">
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);width:100%;max-width:460px;padding:28px;">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:20px;">Редактировать термин</div>
+    <input type="hidden" id="gl-edit-term-orig">
+
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">Термин</div>
+    <input id="gl-edit-term" type="text"
+      style="width:100%;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;outline:none;margin-bottom:16px;box-sizing:border-box;font-family:'IBM Plex Sans',sans-serif;">
+
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">Определение</div>
+    <textarea id="gl-edit-def"
+      style="width:100%;min-height:90px;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;outline:none;resize:vertical;margin-bottom:16px;box-sizing:border-box;font-family:'IBM Plex Sans',sans-serif;"></textarea>
+
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">Категория</div>
+    <input id="gl-edit-cat" type="text"
+      style="width:100%;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;outline:none;margin-bottom:6px;box-sizing:border-box;font-family:'IBM Plex Sans',sans-serif;">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:16px;">Редактирование категории доступно для всех терминов, включая встроенные</div>
+
+    <div id="gl-edit-feedback" style="min-height:18px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--danger);margin-bottom:12px;"></div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="glSaveEdit()" style="background:var(--accent);color:#0d0f14;border:none;border-radius:8px;padding:10px 22px;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;cursor:pointer;">✓ Сохранить</button>
+      <button onclick="glCloseEdit()" style="background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:8px;padding:10px 18px;font-family:'IBM Plex Mono',monospace;font-size:12px;cursor:pointer;">Отмена</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== GLOSSARY JS =====
+const GLOSSARY_KEY = 'propedeutika_glossary_v1';
+
+const GLOSSARY_BUILTIN = [
+  { term: 'Анамнез',       definition: 'Сведения о больном, полученные путём расспроса самого пациента или его близких.',       category: 'Диагностика' },
+  { term: 'Аускультация',  definition: 'Метод исследования, основанный на выслушивании звуковых явлений внутри организма.',     category: 'Диагностика' },
+  { term: 'Пальпация',     definition: 'Метод исследования путём ощупывания тела пациента руками.',                             category: 'Диагностика' },
+  { term: 'Перкуссия',     definition: 'Метод исследования, основанный на постукивании по поверхности тела.',                   category: 'Диагностика' },
+  { term: 'Синдром',       definition: 'Совокупность симптомов, объединённых общим патогенезом.',                               category: 'Клиника' },
+  { term: 'Этиология',     definition: 'Учение о причинах и условиях возникновения болезней.',                                  category: 'Общее' },
+  { term: 'Патогенез',     definition: 'Учение о механизмах возникновения, течения и исхода болезней.',                         category: 'Общее' },
+  { term: 'Ортопноэ',      definition: 'Вынужденное положение сидя, облегчающее дыхание при левожелудочковой недостаточности.', category: 'Кардиология' },
+  { term: 'Тахикардия',    definition: 'Увеличение частоты сердечных сокращений свыше 90 в минуту.',                            category: 'Кардиология' },
+  { term: 'Брадикардия',   definition: 'Уменьшение частоты сердечных сокращений менее 60 в минуту.',                            category: 'Кардиология' },
+  { term: 'Полиурия',      definition: 'Увеличение суточного диуреза свыше 2 литров.',                                          category: 'Эндокринология' },
+  { term: 'Полидипсия',    definition: 'Патологическая жажда, потребление больших количеств жидкости.',                         category: 'Эндокринология' },
+  { term: 'Полифагия',     definition: 'Повышенный аппетит, чрезмерное потребление пищи.',                                      category: 'Эндокринология' },
+];
+
+// Загрузка: встроенные + пользовательские из localStorage
+function glLoadAll() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(GLOSSARY_KEY) || '[]');
+    const builtinTerms = new Set(GLOSSARY_BUILTIN.map(i => i.term.toLowerCase()));
+    const custom = saved.filter(i => !builtinTerms.has(i.term.toLowerCase()));
+    return [...GLOSSARY_BUILTIN, ...custom];
+  } catch(e) { return [...GLOSSARY_BUILTIN]; }
+}
+
+// Сохранить только пользовательские
+function glSaveCustom(all) {
+  const builtinTerms = new Set(GLOSSARY_BUILTIN.map(i => i.term.toLowerCase()));
+  const custom = all.filter(i => !builtinTerms.has(i.term.toLowerCase()));
+  localStorage.setItem(GLOSSARY_KEY, JSON.stringify(custom));
+}
+
+let glActiveFilter = '';
+
+function openGlossary() {
+  glActiveFilter = '';
+  document.getElementById('glossary-search').value = '';
+  document.getElementById('glossary-screen').style.display = 'block';
+  glSwitchTab('list');
+}
+
+function closeGlossary() {
+  document.getElementById('glossary-screen').style.display = 'none';
+}
+
+function glSwitchTab(tab) {
+  ['list','add','json'].forEach(t => {
+    document.getElementById('gl-pane-' + t).style.display = t === tab ? 'block' : 'none';
+    const btn = document.getElementById('gl-tab-' + t);
+    if (t === tab) {
+      btn.style.background = 'var(--card)';
+      btn.style.border = '1px solid var(--border)';
+      btn.style.color = 'var(--accent)';
+    } else {
+      btn.style.background = 'transparent';
+      btn.style.border = 'none';
+      btn.style.color = 'var(--muted)';
+    }
+  });
+  if (tab === 'list') glRenderList();
+}
+
+const CAT_COLORS = {
+  'Диагностика':    'var(--accent2)',
+  'Клиника':        'var(--accent3)',
+  'Общее':          'var(--muted)',
+  'Кардиология':    'var(--danger)',
+  'Эндокринология': 'var(--accent)',
+  'Пульмонология':  '#a78bfa',
+  'Гастро':         '#fb923c',
+};
+
+function glGetColor(cat) { return CAT_COLORS[cat] || 'var(--accent2)'; }
+
+function glRenderList() {
+  const all = glLoadAll();
+  const q = (document.getElementById('glossary-search').value || '').toLowerCase().trim();
+
+  // Обновить счётчик
+  document.getElementById('glossary-count-badge').textContent = all.length + ' терминов';
+
+  // Категории-фильтры
+  const cats = [...new Set(all.map(i => i.category).filter(Boolean))].sort();
+  const catFilter = document.getElementById('glossary-cat-filter');
+  catFilter.innerHTML = [
+    `<button onclick="glSetCatFilter('')" style="padding:4px 12px;border-radius:100px;font-family:'IBM Plex Mono',monospace;font-size:10px;cursor:pointer;border:1px solid ${glActiveFilter==='' ? 'var(--accent)' : 'var(--border)'};background:${glActiveFilter==='' ? 'rgba(232,201,122,0.1)' : 'var(--surface)'};color:${glActiveFilter==='' ? 'var(--accent)' : 'var(--muted)'};">Все</button>`
+  ].concat(cats.map(c => {
+    const col = glGetColor(c);
+    const active = glActiveFilter === c;
+    return `<button onclick="glSetCatFilter('${c}')" style="padding:4px 12px;border-radius:100px;font-family:'IBM Plex Mono',monospace;font-size:10px;cursor:pointer;border:1px solid ${active ? col : 'var(--border)'};background:${active ? 'rgba(122,184,232,0.08)' : 'var(--surface)'};color:${active ? col : 'var(--muted)'};">${c}</button>`;
+  })).join('');
+
+  // Фильтрация
+  let terms = all;
+  if (glActiveFilter) terms = terms.filter(i => i.category === glActiveFilter);
+  if (q) terms = terms.filter(i => i.term.toLowerCase().includes(q) || i.definition.toLowerCase().includes(q));
+
+  const list = document.getElementById('glossary-list');
+  if (!terms.length) {
+    list.innerHTML = '<div style="text-align:center;padding:40px;font-family:\'IBM Plex Mono\',monospace;font-size:13px;color:var(--muted);">Ничего не найдено</div>';
+    return;
+  }
+
+  const builtinTerms = new Set(GLOSSARY_BUILTIN.map(i => i.term.toLowerCase()));
+
+  list.innerHTML = terms.map((item, idx) => {
+    const col = glGetColor(item.category);
+    const isCustom = !builtinTerms.has(item.term.toLowerCase());
+    const editBtn = `<button onclick="glOpenEdit('${item.term.replace(/'/g,"\\'")}')" style="background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:2px 4px;line-height:1;" title="Редактировать">✏️</button>`;
+    const deleteBtn = isCustom
+      ? `<button onclick="glDeleteTerm('${item.term.replace(/'/g,"\\'")}') " style="background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:2px 4px;line-height:1;" title="Удалить">🗑</button>`
+      : '';
+    return `<div style="padding:16px 18px;background:var(--card);border:1px solid var(--border);border-radius:10px;" id="glcard-${idx}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:10px;">
+        <div style="font-family:'Playfair Display',serif;font-size:17px;color:var(--accent);font-weight:700;">${item.term}${isCustom ? ' <span style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--accent3);vertical-align:middle;">мой</span>' : ''}</div>
+        <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;padding:3px 9px;border-radius:100px;white-space:nowrap;border:1px solid ${col};color:${col};opacity:0.85;">${item.category || '—'}</span>
+          ${editBtn}${deleteBtn}
+        </div>
+      </div>
+      <div style="color:var(--text);font-size:14px;line-height:1.6;">${item.definition}</div>
+    </div>`;
+  }).join('');
+}
+
+function glSetCatFilter(cat) {
+  glActiveFilter = cat;
+  glRenderList();
+}
+
+function filterGlossary() { glRenderList(); }
+
+// ---- Добавить вручную ----
+let glSelectedCat = 'Общее';
+
+function glPickCat(btn) {
+  document.querySelectorAll('.gl-cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  glSelectedCat = btn.dataset.cat;
+  document.getElementById('gl-custom-cat-input').style.display = 'none';
+}
+
+function glCustomCat(btn) {
+  document.querySelectorAll('.gl-cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const inp = document.getElementById('gl-custom-cat-input');
+  inp.style.display = 'block';
+  inp.focus();
+  inp.oninput = function() { glSelectedCat = this.value.trim() || 'Общее'; };
+}
+
+function glAddTerm() {
+  const term = document.getElementById('gl-new-term').value.trim();
+  const def  = document.getElementById('gl-new-def').value.trim();
+  const cat  = glSelectedCat || 'Общее';
+  const fb   = document.getElementById('gl-add-feedback');
+
+  if (!term || !def) {
+    fb.style.color = 'var(--danger)';
+    fb.textContent = '⚠ Заполните термин и определение';
+    return;
+  }
+
+  const all = glLoadAll();
+  if (all.find(i => i.term.toLowerCase() === term.toLowerCase())) {
+    fb.style.color = 'var(--danger)';
+    fb.textContent = '⚠ Такой термин уже есть';
+    return;
+  }
+
+  const newItem = { term, definition: def, category: cat };
+  all.push(newItem);
+  glSaveCustom(all);
+
+  fb.style.color = 'var(--accent3)';
+  fb.textContent = '✓ Термин «' + term + '» добавлен!';
+  document.getElementById('gl-new-term').value = '';
+  document.getElementById('gl-new-def').value  = '';
+  setTimeout(() => { fb.textContent = ''; }, 2500);
+}
+
+function glDeleteTerm(term) {
+  if (!confirm('Удалить термин «' + term + '»?')) return;
+  const all = glLoadAll();
+  const filtered = all.filter(i => i.term !== term);
+  glSaveCustom(filtered);
+  glRenderList();
+}
+
+// ---- JSON импорт/экспорт ----
+function glImportJSON() {
+  const raw = document.getElementById('gl-json-input').value.trim();
+  const fb  = document.getElementById('gl-json-feedback');
+  let parsed;
+  try {
+    parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) throw new Error('Ожидается массив []');
+  } catch(e) {
+    fb.style.color = 'var(--danger)';
+    fb.textContent = '⚠ Ошибка JSON: ' + e.message;
+    return;
+  }
+
+  const valid = parsed.filter(i => i.term && i.definition);
+  if (!valid.length) {
+    fb.style.color = 'var(--danger)';
+    fb.textContent = '⚠ Не найдено ни одного валидного термина (нужны поля term и definition)';
+    return;
+  }
+
+  const all = glLoadAll();
+  const existing = new Set(all.map(i => i.term.toLowerCase()));
+  let added = 0, skipped = 0;
+  valid.forEach(i => {
+    if (existing.has(i.term.toLowerCase())) { skipped++; return; }
+    all.push({ term: i.term, definition: i.definition, category: i.category || 'Общее' });
+    existing.add(i.term.toLowerCase());
+    added++;
+  });
+  glSaveCustom(all);
+
+  fb.style.color = 'var(--accent3)';
+  fb.textContent = '✓ Добавлено: ' + added + ', пропущено дублей: ' + skipped;
+  document.getElementById('gl-json-input').value = '';
+  setTimeout(() => { fb.textContent = ''; }, 3000);
+}
+
+function glExportJSON() {
+  const all = glLoadAll();
+  const builtinTerms = new Set(GLOSSARY_BUILTIN.map(i => i.term.toLowerCase()));
+  const custom = all.filter(i => !builtinTerms.has(i.term.toLowerCase()));
+  if (!custom.length) {
+    document.getElementById('gl-json-feedback').style.color = 'var(--muted)';
+    document.getElementById('gl-json-feedback').textContent = 'Нет пользовательских терминов для экспорта';
+    return;
+  }
+  const blob = new Blob([JSON.stringify(custom, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'my_glossary.json';
+  a.click();
+}
+
+function glExportAllJSON() {
+  const all = glLoadAll();
+  const blob = new Blob([JSON.stringify(all, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'full_glossary.json';
+  a.click();
+}
+
+// ---- Редактирование ----
+function glOpenEdit(term) {
+  const all = glLoadAll();
+  const item = all.find(i => i.term === term);
+  if (!item) return;
+  document.getElementById('gl-edit-term-orig').value = term;
+  document.getElementById('gl-edit-term').value = item.term;
+  document.getElementById('gl-edit-def').value = item.definition;
+  document.getElementById('gl-edit-cat').value = item.category || 'Общее';
+  document.getElementById('gl-edit-feedback').textContent = '';
+  document.getElementById('gl-edit-overlay').style.display = 'flex';
+}
+
+function glCloseEdit() {
+  document.getElementById('gl-edit-overlay').style.display = 'none';
+}
+
+function glSaveEdit() {
+  const origTerm = document.getElementById('gl-edit-term-orig').value;
+  const newTerm  = document.getElementById('gl-edit-term').value.trim();
+  const newDef   = document.getElementById('gl-edit-def').value.trim();
+  const newCat   = document.getElementById('gl-edit-cat').value.trim() || 'Общее';
+  const fb       = document.getElementById('gl-edit-feedback');
+
+  if (!newTerm || !newDef) {
+    fb.style.color = 'var(--danger)'; fb.textContent = '⚠ Заполните все поля'; return;
+  }
+
+  const all = glLoadAll();
+  const idx = all.findIndex(i => i.term === origTerm);
+  if (idx === -1) { fb.style.color = 'var(--danger)'; fb.textContent = '⚠ Термин не найден'; return; }
+
+  // Проверка дубля (если имя изменилось)
+  if (newTerm.toLowerCase() !== origTerm.toLowerCase() && all.find(i => i.term.toLowerCase() === newTerm.toLowerCase())) {
+    fb.style.color = 'var(--danger)'; fb.textContent = '⚠ Термин с таким именем уже есть'; return;
+  }
+
+  all[idx] = { term: newTerm, definition: newDef, category: newCat };
+  glSaveCustom(all);
+  glCloseEdit();
+  glRenderList();
+}
+
+// Кнопка Назад
+document.getElementById('glossary-back-btn').addEventListener('click', closeGlossary);
+
+// Добавляем кнопку в гамбургер-меню
+document.addEventListener('DOMContentLoaded', function() {
+  setTimeout(function() {
+    var divider = document.querySelector('#hm-panel .hm-divider');
+    if (divider) {
+      var btn = document.createElement('button');
+      btn.className = 'hm-item';
+      btn.innerHTML = '<span class="hm-icon">📖</span> Словарь терминов';
+      btn.addEventListener('click', function() { openGlossary(); closeHamburger(); });
+      divider.parentNode.insertBefore(btn, divider);
+    }
+  }, 600);
+});
+</script>
 </body>
 </html>
