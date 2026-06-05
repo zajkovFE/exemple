@@ -1,0 +1,1176 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Тестирование — Пропедевтика (ДЕМО)</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #e8ecf1;
+  min-height: 100vh;
+  font-size: 17.5px;          /* ← Основной размер шрифта */
+  line-height: 1.65;
+}
+
+  /* === ШАПКА === */
+  .top-bar {
+    background: linear-gradient(180deg, #4a90d9 0%, #357abd 100%);
+    color: white;
+    padding: 0 20px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+  }
+  .top-bar .logo {
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .top-bar .user-info {
+    font-size: 12px;
+    opacity: 0.9;
+  }
+
+  /* === ОСНОВНОЙ LAYOUT === */
+  .layout {
+    display: flex;
+    margin-top: 48px;
+    min-height: calc(100vh - 48px);
+    padding: 16px;
+    gap: 16px;
+  }
+
+  /* === ЛЕВАЯ ПАНЕЛЬ === */
+  .sidebar {
+    width: 260px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .nav-panel {
+    background: white;
+    border-radius: 6px;
+    border: 1px solid #c5cdd8;
+    padding: 14px;
+  }
+  .nav-panel-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #5a6a7a;
+    margin-bottom: 10px;
+    letter-spacing: 0.5px;
+  }
+
+  .nav-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+  }
+  .nav-cell {
+    aspect-ratio: 1;
+    border: 1px solid #c5cdd8;
+    background: #f5f7fa;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: #4a5568;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .nav-cell:hover {
+    border-color: #4a90d9;
+    background: #e8f0fe;
+  }
+  .nav-cell.current {
+    background: #4a90d9;
+    color: white;
+    border-color: #357abd;
+  }
+  .nav-cell.answered {
+    background: #68b868;
+    color: white;
+    border-color: #55a055;
+  }
+  .nav-cell.skipped {
+    background: #e87070;
+    color: white;
+    border-color: #d05555;
+  }
+
+  .legend {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    color: #5a6a7a;
+  }
+  .legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    border: 1px solid rgba(0,0,0,0.15);
+  }
+  .legend-dot.answered { background: #68b868; }
+  .legend-dot.skipped { background: #e87070; }
+  .legend-dot.current { background: #4a90d9; }
+
+  .timer-panel {
+    background: white;
+    border-radius: 6px;
+    border: 1px solid #c5cdd8;
+    padding: 14px;
+    text-align: center;
+  }
+  .timer-label {
+    font-size: 10px;
+    color: #5a6a7a;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+  .timer-value {
+    font-size: 28px;
+    font-weight: 700;
+    font-family: 'Courier New', monospace;
+    color: #2d3748;
+  }
+  .timer-value.warning {
+    color: #e87070;
+    animation: blink 1s infinite;
+  }
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  .btn-finish {
+    width: 100%;
+    padding: 10px;
+    background: #4a90d9;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .btn-finish:hover { background: #357abd; }
+  .btn-finish:disabled { background: #a0aec0; cursor: not-allowed; }
+
+  /* === ЦЕНТРАЛЬНАЯ ОБЛАСТЬ === */
+  .content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .question-panel {
+    background: white;
+    border-radius: 6px;
+    border: 1px solid #c5cdd8;
+    padding: 24px 28px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .question-header {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .question-number {
+    font-size: 16px;
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 12px;
+  }
+  .question-text {
+    font-size: 14px;
+    line-height: 1.7;
+    color: #2d3748;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  .answers-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #5a6a7a;
+    text-align: center;
+    margin-bottom: 14px;
+    padding-top: 14px;
+    border-top: 1px solid #e2e8f0;
+  }
+
+  .answers-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-width: 700px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .answer-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .answer-row:hover { background: #f0f4f8; }
+  .answer-row.selected { background: #e3edfb; }
+
+  .answer-num {
+    font-size: 13px;
+    font-weight: 600;
+    color: #5a6a7a;
+    min-width: 16px;
+    padding-top: 1px;
+  }
+  .answer-radio {
+    margin-top: 2px;
+    width: 16px;
+    height: 16px;
+    accent-color: #4a90d9;
+    cursor: pointer;
+  }
+  .answer-text {
+    font-size: 13px;
+    line-height: 1.5;
+    color: #2d3748;
+    flex: 1;
+  }
+
+  .pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    margin-top: auto;
+    padding-top: 16px;
+    flex-wrap: wrap;
+  }
+  .page-btn {
+    width: 32px;
+    height: 28px;
+    border: 1px solid #c5cdd8;
+    background: white;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    color: #4a5568;
+    transition: all 0.15s;
+  }
+  .page-btn:hover { background: #e8f0fe; border-color: #4a90d9; }
+  .page-btn.current { background: #4a90d9; color: white; border-color: #357abd; }
+  .page-btn.answered { background: #68b868; color: white; border-color: #55a055; }
+  .page-btn.ellipsis {
+    border: none;
+    background: none;
+    cursor: default;
+    color: #a0aec0;
+  }
+
+  /* === ЭКРАН СТАРТА === */
+  .start-screen {
+    max-width: 600px;
+    margin: 40px auto;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #c5cdd8;
+    padding: 32px;
+    text-align: center;
+  }
+  .start-screen h2 {
+    font-size: 22px;
+    color: #2d3748;
+    margin-bottom: 8px;
+  }
+  .start-screen .subtitle {
+    font-size: 13px;
+    color: #718096;
+    margin-bottom: 24px;
+  }
+  .exam-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .exam-info-item {
+    background: #f7fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 12px;
+  }
+  .exam-info-item .label {
+    font-size: 10px;
+    text-transform: uppercase;
+    color: #718096;
+    letter-spacing: 0.5px;
+  }
+  .exam-info-item .value {
+    font-size: 20px;
+    font-weight: 700;
+    color: #2d3748;
+    margin-top: 4px;
+  }
+
+  .module-select-list {
+    text-align: left;
+    margin: 20px 0;
+  }
+  .module-select-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .module-select-item:hover { background: #f7fafc; }
+  .module-select-item input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: #4a90d9;
+  }
+  .module-select-item .mod-name {
+    font-size: 13px;
+    color: #2d3748;
+    flex: 1;
+  }
+  .module-select-item .mod-count {
+    font-size: 11px;
+    color: #718096;
+  }
+
+  .btn-start {
+    padding: 12px 40px;
+    background: #4a90d9;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .btn-start:hover { background: #357abd; }
+
+  /* === ЭКРАН РЕЗУЛЬТАТОВ === */
+  .result-screen {
+    max-width: 600px;
+    margin: 40px auto;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #c5cdd8;
+    padding: 32px;
+    text-align: center;
+  }
+  .result-screen h2 {
+    font-size: 22px;
+    color: #2d3748;
+    margin-bottom: 20px;
+  }
+  .score-display {
+    font-size: 64px;
+    font-weight: 700;
+    margin: 20px 0;
+  }
+  .score-display.pass { color: #68b868; }
+  .score-display.fail { color: #e87070; }
+  .result-grade {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 20px;
+  }
+  .result-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .result-stat {
+    background: #f7fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 12px;
+  }
+  .result-stat .label {
+    font-size: 10px;
+    text-transform: uppercase;
+    color: #718096;
+  }
+  .result-stat .value {
+    font-size: 18px;
+    font-weight: 700;
+    color: #2d3748;
+    margin-top: 4px;
+  }
+  .btn-back {
+    padding: 10px 30px;
+    background: #4a90d9;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    margin: 0 6px;
+  }
+  .btn-back:hover { background: #357abd; }
+  .btn-secondary {
+    padding: 10px 30px;
+    background: white;
+    color: #4a5568;
+    border: 1px solid #c5cdd8;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    margin: 0 6px;
+  }
+  .btn-secondary:hover { background: #f7fafc; }
+
+  /* === АДАПТИВ === */
+  @media (max-width: 768px) {
+    .layout {
+      flex-direction: column;
+      padding: 10px;
+    }
+    .sidebar {
+      width: 100%;
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
+    .nav-panel, .timer-panel {
+      flex: 1;
+      min-width: 140px;
+    }
+    .nav-grid {
+      grid-template-columns: repeat(10, 1fr);
+    }
+    .question-panel {
+      padding: 16px;
+    }
+    .question-text {
+      font-size: 13px;
+    }
+  /* === Увеличение шрифтов === */
+.question-text {
+  font-size: 16.5px !important;
+  line-height: 1.75;
+}
+
+.answer-text {
+  font-size: 15.5px !important;
+  line-height: 1.65;
+}
+
+.question-number {
+  font-size: 17px !important;
+}
+
+.answers-title {
+  font-size: 14.5px !important;
+}
+
+.nav-cell, .page-btn {
+  font-size: 12.5px !important;
+}
+
+.timer-value {
+  font-size: 32px !important;
+}
+
+/* Для мобильных устройств */
+@media (max-width: 768px) {
+  .question-text {
+    font-size: 15.5px !important;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- === ШАПКА === -->
+<div class="top-bar">
+  <div class="logo">🎓 Тестирование</div>
+  <div class="user-info">ДЕМО режим</div>
+</div>
+
+<!-- === ОСНОВНОЙ КОНТЕНТ === -->
+<div class="layout" id="main-layout">
+  <!-- Заполняется динамически -->
+</div>
+
+<script>
+// === КОНФИГУРАЦИЯ ===
+const CONFIG = {
+  totalTime: 60 * 60 * 1000,
+  questionsPerExam: 50,
+  storageKey: 'propedeutika_exam_v2'
+};
+
+// === ДЕМО ДАННЫЕ ===
+const DEMO_QUESTIONS = {
+  "version": "1.0_demo",
+  "modules": [
+    {
+      "id": "gastro",
+      "icon": "🤢",
+      "name": "ЖКТ",
+      "questions": [
+        { "q": "Асцит — это:", "opts": ["Скопление жидкости в брюшной полости", "Скопление жидкости в плевральной полости", "Скопление жидкости в суставной сумке", "Скопление гноя в брюшной полости", "Увеличение селезёнки"], "ans": 0 },
+        { "q": "Положительный симптом Щёткина-Блюмберга указывает на:", "opts": ["Раздражение брюшины", "Спазм привратника", "Дискинезию желчевыводящих путей", "Атрофию слизистой желудка", "Повышение внутричерепного давления"], "ans": 0 },
+        { "q": "При механической желтухе в крови преимущественно повышается:", "opts": ["Прямой (конъюгированный) билирубин", "Непрямой (неконъюгированный) билирубин", "Амилаза", "АЛТ и АСТ в равной степени", "Щелочная фосфатаза только"], "ans": 0 },
+        { "q": "«Голодные» и ночные боли в эпигастрии, уменьшающиеся после приёма пищи, характерны для:", "opts": ["Язвенной болезни 12-перстной кишки", "Язвенной болезни желудка", "Хронического панкреатита", "Холецистита", "Гастрита с пониженной кислотностью"], "ans": 0 },
+        { "q": "Рвота «кофейной гущей» является признаком:", "opts": ["Желудочного кровотечения", "Кишечной непроходимости", "Острого панкреатита", "Цирроза печени", "Язвенного колита"], "ans": 0 },
+        { "q": "Симптом Мерфи используется для диагностики:", "opts": ["Острого холецистита", "Аппендицита", "Прободной язвы", "Панкреатита", "Гепатита"], "ans": 0 },
+        { "q": "Стеаторея в копрограмме указывает на:", "opts": ["Нарушение переваривания жиров", "Нарушение переваривания белков", "Кровотечение из нижних отделов кишечника", "Дисбактериоз", "Глидную инвазию"], "ans": 0 },
+        { "q": "Какое из перечисленных проявлений характерно для синдрома портальной гипертензии?", "opts": ["Расширение вен пищевода и геморроидальных вен", "Желтушность склер", "Асцит только при сердечной недостаточности", "Повышение температуры тела", "Боли в правом подреберье при пальпации"], "ans": 0 },
+        { "q": "Ахилия желудочного сока характеризуется отсутствием:", "opts": ["Соляной кислоты и пепсина", "Слизь и бикарбонатов", "Фактора Касла", "Гастрина", "Соляной кислоты при сохранении пепсина"], "ans": 0 },
+        { "q": "Симптомы «барабанных палочек» и «часовых стёкол» наиболее характерны для:", "opts": ["Цирроза печени и ХОБЛ", "Острого гепатита", "Желчнокаменной болезни", "Язвенного колита", "Панкреатита"], "ans": 0 }
+      ]
+    },
+    {
+      "id": "resp",
+      "icon": "🫁",
+      "name": "Дыхательная система",
+      "questions": [
+        { "q": "Чем крепитация отличается от влажных хрипов?", "opts": ["Возникает только на высоте вдоха, не меняется после кашля", "Слышна на выдохе", "Усиливается после покашливания", "Имеет музыкальный тембр", "Слышна только при форсированном выдохе"], "ans": 0 },
+        { "q": "Бронхиальное дыхание в норме выслушивается:", "opts": ["Над гортанью, трахеей и в межлопаточном пространстве", "На периферии лёгких", "В проекции сердечного толчка", "В надключичных ямках", "В подмышечных областях"], "ans": 0 },
+        { "q": "«Ржавая» мокрота является патогномоничным признаком:", "opts": ["Крупозной пневмонии", "Бронхиальной астмы", "Туберкулёза лёгких", "Бронхита курильщика", "Абсцесса лёгкого"], "ans": 0 },
+        { "q": "При каком синдроме голосовое дрожание усилено?", "opts": ["Уплотнения лёгочной ткани (пневмония)", "Скопления жидкости в плевральной полости", "Эмфиземы лёгких", "Пневмоторакса", "Обтурационного ателектаза"], "ans": 0 },
+        { "q": "Какой перкуторный звук определяется при выпотном плеврите?", "opts": ["Притупление или тупой звук", "Тимпанический", "Коробочный", "Ясный лёгочный", "Металлический"], "ans": 0 },
+        { "q": "Дыхание Чейна-Стокса характеризуется:", "opts": ["Периодическим нарастанием и ослаблением дыхательных движений с паузами", "Постоянным глубоким шумным дыханием", "Поверхностным частым дыханием", "Внезапной остановкой дыхания во сне", "Затруднённым выдохом со свистом"], "ans": 0 },
+        { "q": "Сухие свистящие хрипы на выдохе являются признаком:", "opts": ["Бронхообструктивного синдрома", "Пневмонии", "Плеврита", "Фиброза лёгких", "Бронхоэктатической болезни"], "ans": 0 },
+        { "q": "Инспираторная одышка (затруднён вдох) характерна для:", "opts": ["Стеноза гортани или трахеи", "Бронхиальной астмы", "Эмфиземы лёгких", "Пневмосклероза", "Сердечной недостаточности"], "ans": 0 },
+        { "q": "Амфорическое дыхание выслушивается при:", "opts": ["Наличии большой полости в лёгком, сообщающейся с бронхом", "Пневмонии", "Плеврите", "Эмфиземе", "Ателектазе"], "ans": 0 },
+        { "q": "Лающий кашель характерен для:", "opts": ["Ложного крупа (стенозирующего ларинготрахеита)", "Хронического бронхита", "Туберкулёза", "Рак лёгкого", "Пневмонии"], "ans": 0 }
+      ]
+    },
+    {
+      "id": "cardio",
+      "icon": "❤️",
+      "name": "ССС",
+      "questions": [
+        { "q": "Разлитой, усиленный, смещённый влево верхушечный толчок характерен для:", "opts": ["Гипертрофии и дилатации левого желудочка", "Гипертрофии правого желудочка", "Выпота в перикард", "Эмфиземы лёгких", "Астенического телосложения"], "ans": 0 },
+        { "q": "Протодиастолический ритм галопа указывает на:", "opts": ["Тяжёлую миокардиальную недостаточность", "Норму у молодых людей", "Митральный стеноз", "Перикардит", "Аортальный стеноз"], "ans": 0 },
+        { "q": "Пульсовый дефицит (разница между ЧСС и ЧП) характерен для:", "opts": ["Мерцательной аритмии", "Синусовой тахикардии", "Атриовентрикулярной блокады I степени", "Экстрасистолии", "Синдромом слабости синусового узла"], "ans": 0 },
+        { "q": "Симптом Мюссе (ритмичное покачивание головы в такт пульсу) встречается при:", "opts": ["Недостаточности аортального клапана", "Митральном стенозе", "Трикуспидальной недостаточности", "Стенозе устья аорты", "Перикардите"], "ans": 0 },
+        { "q": "Набухание и пульсация шейных вен на вдохе (симптом Куссмауля) характерно для:", "opts": ["Экссудативного перикардита / правожелудочковой недостаточности", "Левожелудочковой недостаточности", "Гипертонической болезни", "Аортального стеноза", "Нормы"], "ans": 0 },
+        { "q": "Ослабление I тона на верхушке и систолический шум, проводящийся в подмышечную впадину, характерно для:", "opts": ["Недостаточности митрального клапана", "Стеноза митрального клапана", "Недостаточности аортального клапана", "Стеноза устья аорты", "Миокардита"], "ans": 0 },
+        { "q": "Ортопноэ (вынужденное положение сидя с опущенными ногами) является признаком:", "opts": ["Левожелудочковой сердечной недостаточности", "Правожелудочковой сердечной недостаточности", "Бронхиальной астмы", "Пневмонии", "Плеврита"], "ans": 0 },
+        { "q": "Какой признак на ЭКГ указывает на гипертрофию левого желудочка?", "opts": ["Высокий зубец R в V5-V6 и глубокий S в V1-V2", "Элевация сегмента ST в II, III, aVF", "Отрицательный зубец P в I отведении", "Укорочение интервала PQ", "Наличие патологического зубца Q в V1-V3"], "ans": 0 },
+        { "q": "Пульс filiformis (нитевидный) определяется при:", "opts": ["Коллапсе / шоке", "Гипертоническом кризе", "Физической нагрузке", "Лихорадке", "Тиреотоксикозе"], "ans": 0 },
+        { "q": "Расширение границ сердца влево и вниз («бычье сердце») характерно для:", "opts": ["Дилатации левого желудочка", "Гипертрофии правого желудочка", "Выпота в перикард", "Эмфиземы лёгких", "Астенической конституции"], "ans": 0 }
+      ]
+    },
+    {
+      "id": "psych",
+      "icon": "🧠",
+      "name": "Общая психиатрия",
+      "questions": [
+        { "q": "Истинные галлюцинации характеризуются тем, что:", "opts": ["Проецируются во внешнее пространство, обладают яркостью и реальностью", "Возникают в голове пациента, не имеют звуковой оболочки", "Возникают только при засыпании", "Сопровождаются критикой пациента", "Являются следствием иллюзий"], "ans": 0 },
+        { "q": "Основной признак бреда:", "opts": ["Неподверженность коррекции опытом и логическими доводами", "Временный характер переживаний", "Критическое отношение пациента к своим мыслям", "Связь с реальной обстановкой", "Возникновение только в состоянии опьянения"], "ans": 0 },
+        { "q": "Кататонический ступор проявляется:", "opts": ["Обездвиженностью, мутизмом, негативизмом и восковой гибкостью", "Двигательным возбуждением и эхолалией", "Тревогой и страхом", "Зрительными галлюцинациями", "Нарушением сознания"], "ans": 0 },
+        { "q": "Для астенического синдрома характерно:", "opts": ["Повышенная утомляемость, истощаемость, раздражительная слабость", "Бредовые идеи преследования", "Зрительные галлюцинации", "Двигательное возбуждение", "Эйфория"], "ans": 0 },
+        { "q": "Обсессии — это:", "opts": ["Навязчивые мысли, возникающие против воли пациента", "Непреодолимое желание совершать действия", "Убеждения, не поддающиеся разубеждению", "Расстройства восприятия", "Нарушения памяти"], "ans": 0 },
+        { "q": "Делирий характеризуется:", "opts": ["Помрачением сознания с преобладанием зрительных галлюцинаций и возбуждением", "Полным отсутствием реакции на внешние раздражители", "Глубоким сном с отсутствием сновидений", "Фиксацией на одной мысли", "Стойким снижением настроения"], "ans": 0 },
+        { "q": "Классическая депрессивная триада включает:", "opts": ["Снижение настроения, мышления и двигательной активности", "Повышение настроения, ускорение мышления, возбуждение", "Тревогу, страх, двигательное беспокойство", "Бред, галлюцинации, кататонию", "Астению, апатию, абулию"], "ans": 0 },
+        { "q": "Для маниакального синдрома характерно:", "opts": ["Повышенное настроение, ускорение ассоциативного процесса, двигательное возбуждение", "Заторможенность, тоска, бред самообвинения", "Неподвижность, негативизм, мутизм", "Навязчивые страхи и сомнения", "Помрачение сознания"], "ans": 0 },
+        { "q": "Параноидный синдром характеризуется преобладанием:", "opts": ["Систематизированного бреда преследования, воздействия или величия", "Кататонических расстройств", "Аффективных колебаний", "Галлюцинаторных переживаний без бреда", "Астенических явлений"], "ans": 0 },
+        { "q": "Синдром психического автоматизма включает:", "opts": ["Чувство сделанности мыслей, действий и чувств, псевдогаллюцинации и бред воздействия", "Только зрительные галлюцинации", "Только двигательное возбуждение", "Только снижение настроения", "Только навязчивые мысли"], "ans": 0 }
+      ]
+    },
+    {
+      "id": "urinary",
+      "icon": "🫘",
+      "name": "МВС",
+      "questions": [
+        { "q": "Нефротический синдром характеризуется:", "opts": ["Массивной протеинурией (>3,5 г/сут), гипопротеинемией, отёками, гиперлипидемией", "Гематурией, лейкоцитурией, бактериурией", "Артериальной гипертензией и азотемией", "Полиурией и полидипсией", "Олигурией и анурией"], "ans": 0 },
+        { "q": "Остронефритический синдром включает:", "opts": ["Гематурию, отёки, артериальную гипертензию, умеренную протеинурию", "Массивную протеинурию и гипопротеинемию", "Лейкоцитурию и бактериурию", "Полиурию и никтурию", "Кристаллурию"], "ans": 0 },
+        { "q": "Дизурия — это:", "opts": ["Расстройство мочеиспускания (боль, рези, затруднение)", "Учащённое мочеиспускание", "Увеличение суточного диуреза", "Уменьшение суточного диуреза", "Отсутствие мочи"], "ans": 0 },
+        { "q": "Положительный симптом Пастернацкого (поколачивания) указывает на:", "opts": ["Заболевание почек (пиелонефрит, мочекаменная болезнь)", "Заболевание мочевого пузыря", "Заболевание уретры", "Простатит", "Норму"], "ans": 0 },
+        { "q": "Ортостатическая (юношеская) протеинурия отличается тем, что:", "opts": ["Исчезает в горизонтальном положении и после сна", "Сочетается с отёками", "Сопровождается гематурией", "Является признаком ХПН", "Не зависит от положения тела"], "ans": 0 },
+        { "q": "Макрогематурия в конце мочеиспускания (терминальная) характерна для патологии:", "opts": ["Шейки мочевого пузыря и простаты", "Почечной лоханки", "Мочеточника", "Верхних отделов уретры", "Коркового вещества почки"], "ans": 0 },
+        { "q": "Анурией считается выделение мочи:", "opts": ["Менее 50 мл в сутки", "Менее 500 мл в сутки", "Более 2 л в сутки", "Более 3 л в сутки", "Нормальное количество"], "ans": 0 },
+        { "q": "Диагностически значимой бактериурией при ИМП считается:", "opts": ["Более 10^5 КОЕ/мл", "Более 10^3 КОЕ/мл", "Более 10^2 КОЕ/мл", "Любое количество бактерий", "Отсутствие бактерий"], "ans": 0 },
+        { "q": "Наличие гиалиновых цилиндров в моче в небольшом количестве:", "opts": ["Может быть вариантом нормы или признаком лёгкого поражения канальцев", "Указывает на острый гломерулонефрит", "Указывает на пиелонефрит", "Указывает на нефролитиаз", "Указывает на опухоль почки"], "ans": 0 },
+        { "q": "Почечные отёки отличаются от сердечных тем, что они:", "opts": ["Мягкие, подвижные, появляются утром на лице (особенно веках)", "Плотные, синюшные, появляются вечером на ногах", "Сопровождаются набуханием шейных вен", "Локализуются только в брюшной полости", "Возникают только при нефротическом синдроме"], "ans": 0 }
+      ]
+    }
+  ]
+};
+
+// === СОСТОЯНИЕ ===
+let state = {
+  questions: [],
+  currentIndex: 0,
+  answers: {},
+  startTime: null,
+  timeRemaining: CONFIG.totalTime,
+  isStarted: false,
+  isFinished: false,
+  timerInterval: null
+};
+
+// === ИНИЦИАЛИЗАЦИЯ ===
+function init() {
+// Загружаем кэш GitHub если есть
+const ghCache = localStorage.getItem('exam_gh_cache');
+if (ghCache) {
+  try {
+    const cached = JSON.parse(ghCache);
+    if (cached.modules) {
+      cached.modules.forEach(ghMod => {
+        const existing = DEMO_QUESTIONS.modules.find(m => m.id === ghMod.id);
+        if (existing) {
+          const qs = new Set(existing.questions.map(q => q.q));
+          ghMod.questions.forEach(q => { if (!qs.has(q.q)) existing.questions.push(q); });
+        } else {
+          DEMO_QUESTIONS.modules.push(ghMod);
+        }
+      });
+    }
+  } catch(e) {}
+}
+  const saved = localStorage.getItem(CONFIG.storageKey);
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      if (parsed.isStarted && !parsed.isFinished && parsed.questions?.length) {
+        state = parsed;
+        const elapsed = Date.now() - state.startTime;
+        state.timeRemaining = Math.max(0, CONFIG.totalTime - elapsed);
+        if (state.timeRemaining <= 0) {
+          finishExam(true);
+          return;
+        }
+        renderExam();
+        startTimer();
+        return;
+      }
+    } catch(e) {
+      localStorage.removeItem(CONFIG.storageKey);
+    }
+  }
+  renderStartScreen();
+}
+
+// === ЭКРАН СТАРТА ===
+function renderStartScreen() {
+  const layout = document.getElementById('main-layout');
+  const modules = DEMO_QUESTIONS.modules;
+
+  layout.innerHTML = `
+    <div class="start-screen" style="width:100%">
+      <h2>🎓 Экзаменационный режим (ДЕМО)</h2>
+      <p class="subtitle">Пропедевтика внутренних болезней — 3 курс</p>
+      
+      <div class="exam-info">
+        <div class="exam-info-item">
+          <div class="label">Время</div>
+          <div class="value">60:00</div>
+        </div>
+        <div class="exam-info-item">
+          <div class="label">Вопросов</div>
+          <div class="value">${CONFIG.questionsPerExam}</div>
+        </div>
+      </div>
+
+      <div class="module-select-list">
+        <div style="font-size:13px;font-weight:600;color:#2d3748;margin-bottom:10px">Выберите модули:</div>
+        ${modules.map(m => `
+          <label class="module-select-item">
+            <input type="checkbox" value="${m.id}" checked>
+            <span class="mod-name">${m.icon} ${m.name}</span>
+            <span class="mod-count">${m.questions?.length || 0} вопр.</span>
+          </label>
+        `).join('')}
+      </div>
+
+      <button class="btn-start" onclick="startExam()">▶ Начать экзамен</button>
+      
+      <p style="margin-top:20px;font-size:12px;color:#a0aec0">
+         Прогресс сохраняется автоматически
+      </p>
+    </div>
+  `;
+}
+
+// === НАЧАЛО ЭКЗАМЕНА ===
+function startExam() {
+  const checkboxes = document.querySelectorAll('.module-select-list input[type="checkbox"]');
+  const selected = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
+  
+  if (selected.length === 0) {
+    alert('Выберите хотя бы один модуль');
+    return;
+  }
+
+  let pool = [];
+  DEMO_QUESTIONS.modules.forEach(mod => {
+    if (selected.includes(mod.id)) {
+      mod.questions.forEach(q => {
+        pool.push({
+          ...q,
+          _modId: mod.id,
+          _modName: mod.name,
+          _modIcon: mod.icon
+        });
+      });
+    }
+  });
+
+  pool = shuffle(pool);
+ const examQuestions = pool.slice(0, CONFIG.questionsPerExam).map(q => {
+  const indices = q.opts.map((_, i) => i);
+  for (let i = indices.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [indices[i], indices[j]] = [indices[j], indices[i]];
+  }
+  return {
+    ...q,
+    opts: indices.map(i => q.opts[i]),
+    ans: indices.indexOf(q.ans)
+  };
+});
+  state = {
+    questions: examQuestions,
+    currentIndex: 0,
+    answers: {},
+    startTime: Date.now(),
+    timeRemaining: CONFIG.totalTime,
+    isStarted: true,
+    isFinished: false,
+    timerInterval: null
+  };
+
+  saveState();
+  renderExam();
+  startTimer();
+}
+
+// === РЕНДЕР ЭКЗАМЕНА ===
+function renderExam() {
+  const layout = document.getElementById('main-layout');
+  const q = state.questions[state.currentIndex];
+
+  const pagination = buildPagination();
+
+  // Вычисляем текущее время для отображения сразу
+  const min = Math.floor(state.timeRemaining / 60000);
+  const sec = Math.floor((state.timeRemaining % 60000) / 1000);
+  const currentTimeStr = `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+
+  layout.innerHTML = `
+    <div class="sidebar">
+      <div class="nav-panel">
+        <div class="nav-panel-title">Навигация по вопросам</div>
+        <div class="nav-grid">
+          ${state.questions.map((_, i) => {
+            let cls = 'nav-cell';
+            if (i === state.currentIndex) cls += ' current';
+            else if (state.answers[i] !== undefined) cls += ' answered';
+            else if (i < state.currentIndex) cls += ' skipped';   // красный при пропуске
+            return `<button class="${cls}" onclick="goTo(${i})">${i+1}</button>`;
+          }).join('')}
+        </div>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot answered"></div>Отвечен</div>
+          <div class="legend-item"><div class="legend-dot current"></div>Текущий</div>
+          <div class="legend-item"><div class="legend-dot skipped"></div>Пропущен</div>
+        </div>
+      </div>
+
+      <div class="timer-panel">
+        <div class="timer-label">До завершения теста осталось</div>
+        <div class="timer-value" id="timer-display">${currentTimeStr}</div>
+      </div>
+
+      <button class="btn-finish" onclick="confirmFinish()">Завершить тест</button>
+    </div>
+
+    <div class="content">
+      <div class="question-panel">
+        <div class="question-header">
+          <div class="question-number">Вопрос №${state.currentIndex + 1} / ${state.questions.length}</div>
+          <div class="question-text">${q.q}</div>
+        </div>
+
+        <div class="answers-title">Ответы (один ответ)</div>
+
+        <div class="answers-list">
+          ${q.opts.map((opt, i) => `
+            <label class="answer-row ${state.answers[state.currentIndex] === i ? 'selected' : ''}" 
+                   onclick="pickAnswer(${i})">
+              <span class="answer-num">${i + 1}</span>
+              <input type="radio" name="exam-answer" class="answer-radio" 
+                     ${state.answers[state.currentIndex] === i ? 'checked' : ''}>
+              <span class="answer-text">${opt}</span>
+            </label>
+          `).join('')}
+        </div>
+
+        <div class="pagination">${pagination}</div>
+      </div>
+    </div>
+  `;
+
+  // Обновляем предупреждение о времени
+  const timerEl = document.getElementById('timer-display');
+  if (state.timeRemaining <= 300000) {
+    timerEl.classList.add('warning');
+  }
+}
+function buildPagination() {
+  const total = state.questions.length;
+  const current = state.currentIndex;
+  const pages = [];
+  const range = 4;
+  let start = Math.max(0, current - range);
+  let end = Math.min(total - 1, current + range);
+  
+  if (start > 0) {
+    pages.push(pageBtn(0));
+    if (start > 1) pages.push(ellipsisBtn());
+  }
+  
+  for (let i = start; i <= end; i++) {
+    pages.push(pageBtn(i));
+  }
+  
+  if (end < total - 1) {
+    if (end < total - 2) pages.push(ellipsisBtn());
+    pages.push(pageBtn(total - 1));
+  }
+  
+  return pages.join('');
+}
+
+function pageBtn(idx) {
+  let cls = 'page-btn';
+  if (idx === state.currentIndex) cls += ' current';
+  else if (state.answers[idx] !== undefined) cls += ' answered';
+  return `<button class="${cls}" onclick="goTo(${idx})">${idx + 1}</button>`;
+}
+
+function ellipsisBtn() {
+  return `<span class="page-btn ellipsis">...</span>`;
+}
+
+function goTo(idx) {
+  if (idx >= 0 && idx < state.questions.length) {
+    state.currentIndex = idx;
+    saveState();
+    renderExam();           // ← не запускаем таймер заново
+  }
+}
+
+function pickAnswer(idx) {
+  state.answers[state.currentIndex] = idx;
+  saveState();
+  renderExam();
+}
+
+// Таймер должен запускаться ТОЛЬКО один раз
+function startTimer() {
+  if (state.timerInterval) clearInterval(state.timerInterval);
+  updateTimerDisplay();
+  state.timerInterval = setInterval(() => {
+    state.timeRemaining -= 1000;
+    updateTimerDisplay();
+    if (state.timeRemaining <= 0) {
+      clearInterval(state.timerInterval);
+      finishExam(true);
+    }
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  const el = document.getElementById('timer-display');
+  if (!el) return;
+  const min = Math.floor(state.timeRemaining / 60000);
+  const sec = Math.floor((state.timeRemaining % 60000) / 1000);
+  el.textContent = `${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+  if (state.timeRemaining <= 300000) el.classList.add('warning');
+}
+
+function confirmFinish() {
+  const answered = Object.keys(state.answers).length;
+  const total = state.questions.length;
+  if (confirm(`Завершить тест?\nОтвечено: ${answered} из ${total}`)) {
+    finishExam(false);
+  }
+}
+
+function finishExam(timeOut = false) {
+  clearInterval(state.timerInterval);
+  state.isFinished = true;
+  localStorage.removeItem(CONFIG.storageKey);
+
+  let correct = 0;
+  state.questions.forEach((q, i) => {
+    if (state.answers[i] === q.ans) correct++;
+  });
+
+  const pct = Math.round((correct / state.questions.length) * 100);
+  const timeSpent = Math.round((CONFIG.totalTime - state.timeRemaining) / 60000);
+  const passed = pct >= 70;
+examHistorySave(pct, correct, state.questions.length, timeSpent);
+
+  renderResults(pct, correct, timeSpent, passed);
+}
+
+function renderResults(pct, correct, minutes, passed) {
+  const layout = document.getElementById('main-layout');
+  layout.innerHTML = `
+    <div class="result-screen" style="width:100%">
+      <h2>Результаты экзамена</h2>
+      <div class="score-display ${passed ? 'pass' : 'fail'}">${pct}%</div>
+      <div class="result-grade" style="color:${passed ? '#68b868' : '#e87070'}">
+        ${passed ? '✅ Зачёт' : '❌ Незачёт'}
+      </div>
+      <div class="result-stats">
+        <div class="result-stat">
+          <div class="label">Правильных</div>
+          <div class="value">${correct}/${state.questions.length}</div>
+        </div>
+        <div class="result-stat">
+          <div class="label">Время</div>
+          <div class="value">${minutes} мин</div>
+        </div>
+        <div class="result-stat">
+          <div class="label">Процент</div>
+          <div class="value">${pct}%</div>
+        </div>
+      </div>
+<button class="btn-back" onclick="showReview()">📋 Посмотреть ответы</button>
+      <button class="btn-secondary" onclick="location.reload()">🔄 Новый экзамен</button>
+    </div>
+  `;
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function saveState() {
+  localStorage.setItem(CONFIG.storageKey, JSON.stringify(state));
+}
+function showReview() {
+  const layout = document.getElementById('main-layout');
+  let html = `<div style="max-width:900px;margin:40px auto;background:white;padding:30px;border-radius:8px;border:1px solid #c5cdd8;">`;
+  html += `<h2 style="text-align:center;margin-bottom:30px;">Разбор ответов</h2>`;
+
+  state.questions.forEach((q, i) => {
+    const user = state.answers[i];
+    const correct = q.ans;
+    const isRight = user === correct;
+
+    html += `
+      <div style="padding:16px;margin-bottom:12px;border:1px solid ${isRight?'#86efac':'#f87171'};border-radius:6px;background:${isRight?'#f0fdf4':'#fef2f2'};">
+        <strong>№${i+1}:</strong> ${q.q}<br><br>
+        <strong>Ваш ответ:</strong> <span style="color:${isRight?'green':'red'}">
+          ${user !== undefined ? q.opts[user] : '— не отвечен'}
+        </span><br>
+        <strong>Правильный:</strong> <span style="color:green">${q.opts[correct]}</span>
+      </div>`;
+  });
+
+  html += `<button class="btn-secondary" onclick="location.reload()" style="margin-top:20px;">Новый экзамен</button>`;
+  html += `</div>`;
+  layout.innerHTML = html;
+}
+
+// === ИСТОРИЯ ЭКЗАМЕНОВ ===
+const EXAM_HISTORY_KEY = 'propedeutika_exam_history_v1';
+
+function examHistorySave(pct, correct, total, minutes) {
+  const history = examHistoryLoad();
+  history.unshift({
+    id: Date.now(),
+    pct, correct, total, minutes,
+    date: new Date().toLocaleDateString('ru-RU'),
+    time: new Date().toLocaleTimeString('ru-RU', {hour:'2-digit',minute:'2-digit'})
+  });
+  localStorage.setItem(EXAM_HISTORY_KEY, JSON.stringify(history.slice(0, 50)));
+}
+
+function examHistoryLoad() {
+  try { return JSON.parse(localStorage.getItem(EXAM_HISTORY_KEY) || '[]'); } catch(e) { return []; }
+}
+
+function examHistoryDelete(id) {
+  const h = examHistoryLoad().filter(x => x.id !== id);
+  localStorage.setItem(EXAM_HISTORY_KEY, JSON.stringify(h));
+  examRenderHistory();
+}
+
+function examHistoryRename(id) {
+  const h = examHistoryLoad();
+  const item = h.find(x => x.id === id);
+  if (!item) return;
+  const name = prompt('Название попытки:', item.label || '');
+  if (name === null) return;
+  item.label = name.trim();
+  localStorage.setItem(EXAM_HISTORY_KEY, JSON.stringify(h));
+  examRenderHistory();
+}
+
+function examRenderHistory() {
+  const container = document.getElementById('exam-history-list');
+  if (!container) return;
+  const history = examHistoryLoad();
+  if (!history.length) {
+    container.innerHTML = '<div style="font-size:12px;color:#a0aec0;padding:8px 0;">Нет завершённых экзаменов</div>';
+    return;
+  }
+  container.innerHTML = history.map(h => `
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #e2e8f0;">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:12px;font-weight:600;color:${h.pct>=70?'#68b868':'#e87070'};">${h.pct}% — ${h.pct>=70?'Зачёт':'Незачёт'}</div>
+        <div style="font-size:10px;color:#a0aec0;">${h.label || (h.date+' '+h.time)} · ${h.correct}/${h.total} · ${h.minutes} мин</div>
+      </div>
+      <button onclick="examHistoryRename(${h.id})" title="Переименовать" style="background:none;border:none;cursor:pointer;font-size:13px;padding:2px 4px;">✏️</button>
+      <button onclick="examHistoryDelete(${h.id})" title="Удалить" style="background:none;border:none;cursor:pointer;font-size:13px;padding:2px 4px;color:#e87070;">🗑</button>
+    </div>
+  `).join('');
+}
+
+// === GITHUB ЗАГРУЗКА ===
+const GH_RAW_BASE = 'https://raw.githubusercontent.com/zajkovFE/exemple/main/data/propedeutika/';
+const GH_MODULES_MAP = [
+  { file: 'blood.json',  id: 'blood',  icon: '🩸', name: 'Кроветворная система' },
+  { file: 'cardio.json', id: 'cardio', icon: '❤️', name: 'Сердечно-сосудистая система' },
+  { file: 'endo.json',   id: 'endo',   icon: '🦋', name: 'Эндокринная система' },
+  { file: 'kidney.json', id: 'kidney', icon: '🫘', name: 'Мочевыводящая система' },
+  { file: 'lor.json',    id: 'lor',    icon: '👂', name: 'ЛОР' },
+  { file: 'ps.json',     id: 'ps',     icon: '🧠', name: 'Психиатрия' },
+  { file: 'rs.json',     id: 'rs',     icon: '🫁', name: 'Дыхательная система' },
+  { file: 'sms.json',    id: 'sms',    icon: '💊', name: 'Общие синдромы' },
+];
+
+async function examGhSync(btn) {
+  const orig = btn.innerHTML;
+  btn.innerHTML = '⏳ Загрузка...';
+  btn.disabled = true;
+  const status = document.getElementById('exam-gh-status');
+  try {
+    let added = 0;
+    for (const m of GH_MODULES_MAP) {
+      const res = await fetch(GH_RAW_BASE + m.file);
+      if (!res.ok) continue;
+      const questions = await res.json();
+      let mod = DEMO_QUESTIONS.modules.find(x => x.id === m.id);
+      if (!mod) {
+        mod = { id: m.id, icon: m.icon, name: m.name, questions: [] };
+        DEMO_QUESTIONS.modules.push(mod);
+      }
+      const existing = new Set(mod.questions.map(q => q.q));
+      questions.forEach(q => {
+        if (q.q && q.opts && !existing.has(q.q)) {
+          mod.questions.push(q); existing.add(q.q); added++;
+        }
+      });
+    }
+    localStorage.setItem('exam_gh_cache', JSON.stringify(DEMO_QUESTIONS));
+    if (status) { status.style.color='#68b868'; status.textContent = `✓ Добавлено ${added} новых вопросов`; }
+    btn.innerHTML = '✓ Готово';
+    setTimeout(() => { btn.innerHTML = orig; btn.disabled = false; location.reload(); }, 1500);
+  } catch(e) {
+    if (status) { status.style.color='#e87070'; status.textContent = '⚠ Ошибка: ' + e.message; }
+    btn.innerHTML = orig; btn.disabled = false;
+  }
+}
+
+// === ГАМБУРГЕР ЭКЗАМЕНА ===
+function examHmToggle() {
+  const panel = document.getElementById('exam-hm-panel');
+  const overlay = document.getElementById('exam-hm-overlay');
+  const isOpen = panel.style.display === 'block';
+  panel.style.display = isOpen ? 'none' : 'block';
+  overlay.style.display = isOpen ? 'none' : 'block';
+  if (!isOpen) examRenderHistory();
+}
+function examHmClose() {
+  document.getElementById('exam-hm-panel').style.display = 'none';
+  document.getElementById('exam-hm-overlay').style.display = 'none';
+}
+
+// === ЗАПУСК ===
+init();
+</script>
+
+<!-- === ГАМБУРГЕР ЭКЗАМЕНА === -->
+<button id="exam-hm-btn" onclick="examHmToggle()" style="position:fixed;bottom:20px;right:20px;z-index:2000;width:44px;height:44px;background:white;border:1px solid #c5cdd8;border-radius:12px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;box-shadow:0 2px 10px rgba(0,0,0,0.15);">
+  <div style="width:18px;height:2px;background:#4a5568;border-radius:1px;"></div>
+  <div style="width:18px;height:2px;background:#4a5568;border-radius:1px;"></div>
+  <div style="width:18px;height:2px;background:#4a5568;border-radius:1px;"></div>
+</button>
+
+<div id="exam-hm-overlay" onclick="examHmClose()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:1500;"></div>
+
+<div id="exam-hm-panel" style="display:none;position:fixed;bottom:74px;right:20px;z-index:1600;width:280px;background:white;border:1px solid #c5cdd8;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.15);overflow:hidden;">
+  <!-- Профиль-заглушка -->
+  <div style="padding:14px 16px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;gap:10px;">
+    <div id="exam-hm-avatar" style="font-size:28px;">🎓</div>
+    <div>
+      <div id="exam-hm-name" style="font-size:13px;font-weight:600;color:#2d3748;">Студент</div>
+      <div id="exam-hm-level" style="font-size:10px;color:#a0aec0;">—</div>
+    </div>
+  </div>
+  <!-- GitHub синхронизация -->
+  <div style="padding:12px 16px;border-bottom:1px solid #e2e8f0;">
+    <div style="font-size:10px;font-weight:700;color:#a0aec0;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Вопросы</div>
+    <button id="exam-gh-btn" onclick="examGhSync(this)" style="width:100%;padding:8px 12px;background:#ebf5ff;border:1px solid #90cdf4;border-radius:6px;font-size:12px;font-weight:600;color:#2b6cb0;cursor:pointer;text-align:left;">☁️ Синхронизировать с GitHub</button>
+    <div id="exam-gh-status" style="font-size:11px;min-height:16px;margin-top:6px;color:#718096;"></div>
+  </div>
+  <!-- История -->
+  <div style="padding:12px 16px;max-height:280px;overflow-y:auto;">
+    <div style="font-size:10px;font-weight:700;color:#a0aec0;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">История экзаменов</div>
+    <div id="exam-history-list"></div>
+  </div>
+</div>
+
+</body>
+</html>
