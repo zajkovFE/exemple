@@ -4048,7 +4048,7 @@ const APP_VERSION = 'v3.0';
 const DEV_EMAIL   = 'your@email.com';
 
 // ===== GITHUB FORUM =====
-const GH_TOKEN    = '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';
+const GH_TOKEN = localStorage.getItem('propedeutika_gh_token') || '';
 const GH_REPO_ID  = 'R_kgDOQx97Ig';
 const GH_CAT_ID   = 'DIC_kwDOQx97Is4C-fEh'; // General
 
@@ -4265,8 +4265,52 @@ async function ghGraphQL(query, variables) {
   });
   return res.json();
 }
+function forumShowTokenForm() {
+  const list = document.getElementById('forum-list');
+  list.innerHTML = `
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:10px;">🔐 Форум — только для своих</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.6;">Для участия в форуме нужен токен доступа.<br>Обратитесь к разработчику.</div>
+      <input id="forum-token-input" type="password" placeholder="Введите токен..."
+        style="width:100%;padding:9px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none;margin-bottom:10px;box-sizing:border-box;font-family:'IBM Plex Mono',monospace;">
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button onclick="forumSaveToken()" style="background:var(--accent);color:#0d0f14;border:none;border-radius:8px;padding:9px 18px;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;cursor:pointer;">Войти</button>
+        <div id="forum-token-status" style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);"></div>
+      </div>
+    </div>`;
+}
 
+async function forumSaveToken() {
+  const val = document.getElementById('forum-token-input').value.trim();
+  const status = document.getElementById('forum-token-status');
+  if (!val) return;
+  status.textContent = '⏳ Проверка...';
+  // Проверяем токен реальным запросом
+  try {
+    const res = await fetch('https://api.github.com/graphql', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + val, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: '{ viewer { login } }' })
+    });
+    const data = await res.json();
+    if (data?.data?.viewer?.login) {
+      localStorage.setItem('propedeutika_gh_token', val);
+      // Обновляем переменную без перезагрузки
+      Object.defineProperty(window, 'GH_TOKEN', { value: val, writable: true });
+      status.style.color = 'var(--accent3)';
+      status.textContent = '✓ Добро пожаловать, ' + data.data.viewer.login + '!';
+      setTimeout(() => forumLoad(), 1000);
+    } else {
+      status.style.color = 'var(--danger)';
+      status.textContent = '⚠ Неверный токен';
+    }
+  } catch(e) {
+    status.style.color = 'var(--danger)';
+    status.textContent = '⚠ Ошибка проверки';
+  }
+}
 async function forumLoad() {
+  if (!GH_TOKEN) { forumShowTokenForm(); return; }
   const list = document.getElementById('forum-list');
   list.innerHTML = '<div style="text-align:center;padding:30px;font-family:\'IBM Plex Mono\',monospace;font-size:12px;color:var(--muted);">⏳ Загрузка...</div>';
   try {
@@ -4413,6 +4457,7 @@ async function forumReply(number) {
 }
 
 async function forumPost() {
+  if (!GH_TOKEN) { forumShowTokenForm(); return; }
   const title  = document.getElementById('forum-title').value.trim();
   const body   = document.getElementById('forum-body').value.trim();
   const author = document.getElementById('forum-author').value.trim();
