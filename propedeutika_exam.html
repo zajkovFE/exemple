@@ -1564,6 +1564,10 @@
   <button class="hm-item" id="hm-save-btn">
     <span class="hm-icon">💾</span> Сохранить прогресс
   </button>
+<div class="hm-section-title">Экзамен</div>
+  <button class="hm-item" onclick="window.open('exam_fixed.html', '_blank')">
+    <span class="hm-icon">🎓</span> Открыть экзамен
+  </button>
   <button class="hm-item" id="hm-csv-btn">
     <span class="hm-icon">📊</span> Скачать статистику
   </button>
@@ -1625,8 +1629,126 @@
       <div class="profile-progress-title">Прогресс по модулям</div>
       <div id="profile-progress-bars"></div>
     </div>
+
+    <!-- About / Dev button -->
+    <div style="padding: 0 24px 24px;">
+      <button id="profile-about-btn" style="width:100%;padding:11px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px;cursor:pointer;transition:all 0.15s;text-align:left;display:flex;align-items:center;gap:10px;">
+        <span style="font-size:16px;">🛠</span> О приложении · Обновления · Связь
+        <span style="margin-left:auto;">→</span>
+      </button>
+    </div>
   </div>
 </div>
+
+<!-- ===== ABOUT / DEV SCREEN ===== -->
+<div id="about-screen" style="display:none;position:fixed;inset:0;z-index:3500;background:var(--bg);overflow-y:auto;">
+  <div style="max-width:680px;margin:0 auto;padding:32px 20px 80px;">
+
+    <!-- Header -->
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:32px;">
+      <button id="about-back-btn" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 14px;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px;cursor:pointer;">← Назад</button>
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:4px;">Разработка</div>
+        <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--text);">О приложении</div>
+      </div>
+      <div style="margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);" id="about-version-badge"></div>
+    </div>
+
+    <!-- Tabs -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:4px;background:var(--surface);padding:4px;border-radius:var(--radius);border:1px solid var(--border);margin-bottom:28px;">
+      <button class="about-tab active" id="about-tab-changelog" onclick="aboutSwitchTab('changelog')" style="padding:9px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--accent);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px;cursor:pointer;">📋 Changelog</button>
+      <button class="about-tab" id="about-tab-roadmap"    onclick="aboutSwitchTab('roadmap')"   style="padding:9px;background:transparent;border:none;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px;cursor:pointer;">🗺 Roadmap</button>
+      <button class="about-tab" id="about-tab-forum"      onclick="aboutSwitchTab('forum')"     style="padding:9px;background:transparent;border:none;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px;cursor:pointer;">💬 Форум</button>
+      <button class="about-tab" id="about-tab-feedback"   onclick="aboutSwitchTab('feedback')"  style="padding:9px;background:transparent;border:none;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px;cursor:pointer;">✉️ Связь</button>
+    </div>
+
+    <!-- CHANGELOG -->
+    <div id="about-pane-changelog">
+      <div id="about-changelog-list"></div>
+    </div>
+
+    <!-- ROADMAP -->
+    <div id="about-pane-roadmap" style="display:none;">
+      <div id="about-roadmap-list"></div>
+    </div>
+
+    <!-- FORUM -->
+    <div id="about-pane-forum" style="display:none;">
+      <!-- New post form -->
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:14px;">Написать сообщение</div>
+        <input id="forum-author" type="text" placeholder="Ваше имя (необязательно)"
+          style="width:100%;padding:9px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none;margin-bottom:10px;box-sizing:border-box;font-family:'IBM Plex Sans',sans-serif;">
+        <input id="forum-title" type="text" placeholder="Заголовок *"
+          style="width:100%;padding:9px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none;margin-bottom:10px;box-sizing:border-box;font-family:'IBM Plex Sans',sans-serif;">
+        <textarea id="forum-body" placeholder="Ваше сообщение *"
+          style="width:100%;min-height:90px;padding:9px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none;resize:vertical;margin-bottom:12px;box-sizing:border-box;font-family:'IBM Plex Sans',sans-serif;"></textarea>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <button onclick="forumPost()" style="background:var(--accent);color:#0d0f14;border:none;border-radius:8px;padding:10px 22px;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;cursor:pointer;">→ Отправить</button>
+          <div id="forum-post-status" style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);"></div>
+        </div>
+      </div>
+      <!-- Threads list -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);">Обсуждения</div>
+        <button onclick="forumLoad()" style="background:transparent;border:1px solid var(--border);border-radius:8px;padding:5px 12px;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:10px;cursor:pointer;">↻ Обновить</button>
+      </div>
+      <div id="forum-list"><div style="text-align:center;padding:30px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);">Загрузка...</div></div>
+    </div>
+
+    <!-- FEEDBACK -->
+    <div id="about-pane-feedback" style="display:none;">
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:16px;">Написать разработчику</div>
+
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">Тема</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;" id="feedback-type-picker">
+          <button class="fb-type-btn active" data-type="🐛 Баг" onclick="fbPickType(this)">🐛 Баг</button>
+          <button class="fb-type-btn" data-type="💡 Идея" onclick="fbPickType(this)">💡 Идея</button>
+          <button class="fb-type-btn" data-type="❓ Вопрос" onclick="fbPickType(this)">❓ Вопрос</button>
+          <button class="fb-type-btn" data-type="🙏 Благодарность" onclick="fbPickType(this)">🙏 Благодарность</button>
+        </div>
+
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">Имя (необязательно)</div>
+        <input id="fb-name" type="text" placeholder="Как вас зовут?"
+          style="width:100%;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;outline:none;margin-bottom:16px;box-sizing:border-box;font-family:'IBM Plex Sans',sans-serif;">
+
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">Сообщение *</div>
+        <textarea id="fb-message" placeholder="Опишите подробно..."
+          style="width:100%;min-height:110px;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;outline:none;resize:vertical;margin-bottom:20px;box-sizing:border-box;font-family:'IBM Plex Sans',sans-serif;"></textarea>
+
+        <div style="display:flex;gap:10px;align-items:center;">
+          <button onclick="fbSend()" style="background:var(--accent);color:#0d0f14;border:none;border-radius:8px;padding:11px 24px;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;letter-spacing:1px;cursor:pointer;">✉️ Отправить</button>
+          <div id="fb-hint" style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);line-height:1.5;">Откроется ваш почтовый<br>клиент с готовым письмом</div>
+        </div>
+      </div>
+
+      <!-- Saved drafts -->
+      <div style="margin-top:20px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;">Сохранённые обращения</div>
+        <div id="fb-history-list"></div>
+        <div id="fb-history-empty" style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);">Нет отправленных обращений</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<style>
+.fb-type-btn {
+  padding: 6px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  color: var(--muted);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.fb-type-btn:hover { border-color: var(--accent); color: var(--text); }
+.fb-type-btn.active { background: rgba(232,201,122,0.1); border-color: var(--accent); color: var(--accent); }
+</style>
 
 <div class="wrap">
 
@@ -3921,6 +4043,599 @@ function saveProfile() {
   document.getElementById('hm-user-name').textContent = pd.name || 'Мой профиль';
 }
 
+// ===== ABOUT SCREEN DATA =====
+const APP_VERSION = 'v3.0';
+const DEV_EMAIL   = 'your@email.com';
+
+// ===== GITHUB FORUM =====
+const GH_TOKEN    = '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';
+const GH_REPO_ID  = 'R_kgDOQx97Ig';
+const GH_CAT_ID   = 'DIC_kwDOQx97Is4C-fEh'; // General
+
+const CHANGELOG = [
+  {
+    version: 'v3.0', date: '04.06.2026', type: 'major',
+    title: 'Профиль, словарь и гамбургер-меню',
+    changes: [
+      '🎉 Добавлен профиль пользователя с аватарами и уровнями',
+      '🍔 Гамбургер-меню заменило плавающую панель',
+      '📖 Полноценный словарь терминов с редактором и JSON-импортом',
+      '📊 Прогресс-бары по модулям в профиле',
+      '🔥 Streak — счётчик дней подряд',
+      '🛠 Экран «О приложении» с changelog и обратной связью',
+    ]
+  },
+  {
+    version: 'v2.0', date: '01.06.2026', type: 'minor',
+    title: 'Система SR и история',
+    changes: [
+      '🧠 Spaced repetition — умный подбор вопросов',
+      '📊 История прохождений с графиком',
+      '🔴 Режим слабых вопросов',
+      '🏆 Уровень и XP',
+      '☁️ Синхронизация через JSON',
+    ]
+  },
+  {
+    version: 'v1.0', date: '15.05.2026', type: 'initial',
+    title: 'Первый запуск',
+    changes: [
+      '✅ Тесты по 13 модулям',
+      '🃏 Флеш-карточки',
+      '➕ Импорт вопросов',
+      '📥 Экспорт статистики CSV',
+    ]
+  },
+];
+
+const ROADMAP = [
+  { id: 'r1', status: 'planned',     emoji: '🎨', title: 'Настройка внешнего вида',      desc: 'Смена цветовой схемы, размера шрифта, расположения элементов' },
+  { id: 'r2', status: 'planned',     emoji: '🔔', title: 'Напоминания',                   desc: 'Уведомления о повторении слабых вопросов' },
+  { id: 'r3', status: 'in-progress', emoji: '📱', title: 'Мобильная оптимизация',        desc: 'Улучшенный интерфейс для телефонов' },
+  { id: 'r4', status: 'planned',     emoji: '👥', title: 'Мультипользователь',            desc: 'Несколько профилей на одном устройстве' },
+  { id: 'r5', status: 'planned',     emoji: '🤖', title: 'AI-объяснения',                desc: 'Объяснение правильного ответа через ИИ' },
+  { id: 'r6', status: 'planned',     emoji: '📤', title: 'Экспорт в Anki',               desc: 'Выгрузка карточек в формат Anki' },
+  { id: 'r7', status: 'considering', emoji: '🌐', title: 'Онлайн-версия',               desc: 'Веб-приложение с облачным хранением' },
+  { id: 'r8', status: 'considering', emoji: '🏆', title: 'Соревновательный режим',       desc: 'Сравнение результатов с другими студентами' },
+];
+
+const VOTES_KEY = 'propedeutika_votes_v1';
+
+function aboutLoadVotes() {
+  try { return JSON.parse(localStorage.getItem(VOTES_KEY) || '{}'); } catch(e) { return {}; }
+}
+function aboutSaveVotes(v) { localStorage.setItem(VOTES_KEY, JSON.stringify(v)); }
+
+function openAbout() {
+  document.getElementById('about-version-badge').textContent = APP_VERSION;
+  document.getElementById('about-screen').style.display = 'block';
+  aboutSwitchTab('changelog');
+}
+function closeAbout() {
+  document.getElementById('about-screen').style.display = 'none';
+}
+
+function aboutSwitchTab(tab) {
+  ['changelog','roadmap','forum','feedback'].forEach(t => {
+    document.getElementById('about-pane-' + t).style.display = t === tab ? 'block' : 'none';
+    const btn = document.getElementById('about-tab-' + t);
+    if (t === tab) {
+      btn.style.background = 'var(--card)'; btn.style.border = '1px solid var(--border)'; btn.style.color = 'var(--accent)';
+    } else {
+      btn.style.background = 'transparent'; btn.style.border = 'none'; btn.style.color = 'var(--muted)';
+    }
+  });
+  if (tab === 'changelog')  renderChangelog();
+  if (tab === 'roadmap')    renderRoadmap();
+  if (tab === 'forum')      forumLoad();
+  if (tab === 'feedback')   renderFbHistory();
+}
+
+function renderChangelog() {
+  // Загружаем дополнительные записи из localStorage
+  const extra = (() => { try { return JSON.parse(localStorage.getItem('propedeutika_changelog_extra') || '[]'); } catch(e){ return []; } })();
+  const existingVers = new Set(CHANGELOG.map(v => v.version));
+  extra.forEach(v => { if (!existingVers.has(v.version)) { CHANGELOG.unshift(v); existingVers.add(v.version); } });
+
+  const typeColors = { major: 'var(--accent)', minor: 'var(--accent2)', initial: 'var(--accent3)', done: 'var(--accent3)' };
+  const typeLabels = { major: 'MAJOR', minor: 'MINOR', initial: 'INIT', done: 'DONE' };
+  document.getElementById('about-changelog-list').innerHTML = `
+    <div style="display:flex;justify-content:flex-end;margin-bottom:12px;">
+      <button onclick="devAddChangelog()" style="background:transparent;border:1px solid var(--border);border-radius:8px;padding:7px 14px;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all 0.15s;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">+ Добавить версию</button>
+    </div>
+    ${CHANGELOG.map(v => `
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:14px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+        <span style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--accent);">${v.version}</span>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;padding:3px 8px;border-radius:100px;border:1px solid ${typeColors[v.type]||'var(--muted)'};color:${typeColors[v.type]||'var(--muted)'};">${typeLabels[v.type]||v.type}</span>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-left:auto;">${v.date}</span>
+      </div>
+      <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:10px;">${v.title}</div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        ${v.changes.map(c => `<div style="font-size:13px;color:var(--muted);line-height:1.5;">${c}</div>`).join('')}
+      </div>
+    </div>`).join('')}`;
+}
+
+function renderRoadmap() {
+  // Загружаем дополнительные фичи из localStorage
+  const extra = (() => { try { return JSON.parse(localStorage.getItem('propedeutika_roadmap_extra') || '[]'); } catch(e){ return []; } })();
+  const existingIds = new Set(ROADMAP.map(r => r.id));
+  extra.forEach(r => { if (!existingIds.has(r.id)) { ROADMAP.push(r); existingIds.add(r.id); } });
+
+  const votes = aboutLoadVotes();
+  const statusLabel = {
+    'in-progress': ['🔨 В работе',      'var(--accent3)'],
+    'planned':     ['📋 Запланировано',  'var(--accent2)'],
+    'considering': ['💭 Обсуждается',    'var(--muted)'],
+    'done':        ['✅ Готово',          '#4ade80'],
+  };
+  document.getElementById('about-roadmap-list').innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);">Голосуйте за фичи — это помогает расставить приоритеты</div>
+      <button onclick="devAddRoadmap()" style="background:transparent;border:1px solid var(--border);border-radius:8px;padding:7px 14px;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px;cursor:pointer;white-space:nowrap;margin-left:10px;transition:all 0.15s;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">+ Добавить</button>
+    </div>
+    ${ROADMAP.map(item => {
+      const [slabel, scol] = statusLabel[item.status] || ['—', 'var(--muted)'];
+      const myVote = votes[item.id];
+      const voteCount = votes['_count_' + item.id] || 0;
+      return `<div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin-bottom:10px;display:flex;align-items:flex-start;gap:14px;">
+        <span style="font-size:24px;flex-shrink:0;margin-top:2px;">${item.emoji}</span>
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap;">
+            <div style="font-size:14px;font-weight:600;color:var(--text);">${item.title}</div>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;padding:2px 8px;border-radius:100px;border:1px solid ${scol};color:${scol};">${slabel}</span>
+          </div>
+          <div style="font-size:13px;color:var(--muted);line-height:1.5;word-break:break-word;">${item.desc}</div>
+        </div>
+        <button onclick="aboutVote('${item.id}')" style="flex-shrink:0;background:${myVote ? 'rgba(232,201,122,0.15)' : 'var(--surface)'};border:1px solid ${myVote ? 'var(--accent)' : 'var(--border)'};border-radius:8px;padding:8px 12px;cursor:pointer;text-align:center;transition:all 0.15s;min-width:44px;">
+          <div style="font-size:16px;">👍</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:${myVote ? 'var(--accent)' : 'var(--muted)'};" id="vote-count-${item.id}">${voteCount}</div>
+        </button>
+      </div>`;
+    }).join('')}`;
+}
+
+function aboutVote(id) {
+  const votes = aboutLoadVotes();
+  if (votes[id]) {
+    delete votes[id];
+    votes['_count_' + id] = Math.max(0, (votes['_count_' + id] || 1) - 1);
+  } else {
+    votes[id] = true;
+    votes['_count_' + id] = (votes['_count_' + id] || 0) + 1;
+  }
+  aboutSaveVotes(votes);
+  renderRoadmap();
+}
+
+// ===== FEEDBACK =====
+const FB_KEY = 'propedeutika_feedback_v1';
+let fbSelectedType = '🐛 Баг';
+
+function fbPickType(btn) {
+  document.querySelectorAll('.fb-type-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  fbSelectedType = btn.dataset.type;
+}
+
+function fbSend() {
+  const msg  = document.getElementById('fb-message').value.trim();
+  const name = document.getElementById('fb-name').value.trim();
+  if (!msg) {
+    document.getElementById('fb-hint').style.color = 'var(--danger)';
+    document.getElementById('fb-hint').textContent = '⚠ Напишите сообщение';
+    setTimeout(() => {
+      document.getElementById('fb-hint').style.color = 'var(--muted)';
+      document.getElementById('fb-hint').innerHTML = 'Откроется ваш почтовый<br>клиент с готовым письмом';
+    }, 2000);
+    return;
+  }
+
+  const subject = encodeURIComponent('[Пропедевтика] ' + fbSelectedType);
+  const pd = loadProfileData();
+  const senderName = name || pd.name || 'Аноним';
+  const body = encodeURIComponent(
+    'Тип: ' + fbSelectedType + '\n' +
+    'От: ' + senderName + '\n' +
+    'Версия: ' + APP_VERSION + '\n\n' +
+    msg
+  );
+  window.location.href = 'mailto:' + DEV_EMAIL + '?subject=' + subject + '&body=' + body;
+
+  // Сохраняем в историю
+  const history = (() => { try { return JSON.parse(localStorage.getItem(FB_KEY) || '[]'); } catch(e) { return []; } })();
+  history.unshift({ type: fbSelectedType, name: senderName, msg, date: new Date().toLocaleDateString('ru-RU'), version: APP_VERSION });
+  localStorage.setItem(FB_KEY, JSON.stringify(history.slice(0, 20)));
+
+  document.getElementById('fb-message').value = '';
+  document.getElementById('fb-name').value = '';
+  renderFbHistory();
+}
+
+// ===== FORUM =====
+async function ghGraphQL(query, variables) {
+  const res = await fetch('https://api.github.com/graphql', {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Bearer ' + GH_TOKEN,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ query, variables })
+  });
+  return res.json();
+}
+
+async function forumLoad() {
+  const list = document.getElementById('forum-list');
+  list.innerHTML = '<div style="text-align:center;padding:30px;font-family:\'IBM Plex Mono\',monospace;font-size:12px;color:var(--muted);">⏳ Загрузка...</div>';
+  try {
+    const data = await ghGraphQL(`
+      query($repoId: ID!, $catId: ID!) {
+        node(id: $repoId) {
+          ... on Repository {
+            discussions(first: 20, categoryId: $catId, orderBy: {field: CREATED_AT, direction: DESC}) {
+              nodes {
+                id number title bodyText createdAt
+                author { login }
+                comments { totalCount }
+                upvoteCount
+              }
+            }
+          }
+        }
+      }`, { repoId: GH_REPO_ID, catId: GH_CAT_ID });
+
+    const threads = data?.data?.node?.discussions?.nodes || [];
+    if (!threads.length) {
+      list.innerHTML = '<div style="text-align:center;padding:40px;font-family:\'IBM Plex Mono\',monospace;font-size:12px;color:var(--muted);">Пока нет сообщений. Будьте первым!</div>';
+      return;
+    }
+    list.innerHTML = threads.map(t => {
+      const date = new Date(t.createdAt).toLocaleDateString('ru-RU');
+      const author = t.author?.login || 'Аноним';
+      const preview = t.bodyText?.substring(0, 160) + (t.bodyText?.length > 160 ? '…' : '');
+      return `<div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin-bottom:10px;cursor:pointer;transition:border-color 0.15s;"
+        onmouseover="this.style.borderColor='var(--accent2)'" onmouseout="this.style.borderColor='var(--border)'"
+        onclick="forumOpenThread('${t.number}', ${JSON.stringify(t.title)})">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px;">
+          <div style="font-size:14px;font-weight:600;color:var(--text);line-height:1.4;">${t.title}</div>
+          <div style="flex-shrink:0;display:flex;gap:10px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);">
+            <span>💬 ${t.comments.totalCount}</span>
+            <span>👍 ${t.upvoteCount}</span>
+          </div>
+        </div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:10px;">${preview}</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);">@${author} · ${date}</div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    list.innerHTML = '<div style="text-align:center;padding:30px;font-family:\'IBM Plex Mono\',monospace;font-size:12px;color:var(--danger);">⚠ Ошибка загрузки. Проверьте соединение.</div>';
+  }
+}
+
+async function forumOpenThread(number, title) {
+  const overlay = document.createElement('div');
+  overlay.id = 'forum-thread-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,0.7);display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;';
+  overlay.innerHTML = `
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);width:100%;max-width:640px;margin:auto;overflow:hidden;">
+      <div style="padding:20px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:12px;">
+        <div style="font-size:15px;font-weight:600;color:var(--text);line-height:1.4;">${title}</div>
+        <button onclick="document.getElementById('forum-thread-overlay').remove()" style="background:transparent;border:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1;flex-shrink:0;">×</button>
+      </div>
+      <div id="forum-thread-body" style="padding:20px 24px;max-height:60vh;overflow-y:auto;">
+        <div style="text-align:center;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);padding:20px;">⏳ Загрузка...</div>
+      </div>
+      <div style="padding:16px 24px;border-top:1px solid var(--border);">
+        <textarea id="forum-reply-text" placeholder="Ваш ответ..."
+          style="width:100%;min-height:70px;padding:9px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none;resize:vertical;box-sizing:border-box;font-family:'IBM Plex Sans',sans-serif;margin-bottom:10px;"></textarea>
+        <div style="display:flex;gap:10px;align-items:center;">
+          <button onclick="forumReply('${number}')" style="background:var(--accent);color:#0d0f14;border:none;border-radius:8px;padding:9px 20px;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;cursor:pointer;">→ Ответить</button>
+          <div id="forum-reply-status" style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);"></div>
+        </div>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+
+  // Load thread comments
+  try {
+    const data = await ghGraphQL(`
+      query($owner: String!, $name: String!, $number: Int!) {
+        repository(owner: $owner, name: $name) {
+          discussion(number: $number) {
+            bodyText createdAt author { login }
+            comments(first: 50) {
+              nodes { bodyText createdAt author { login } upvoteCount }
+            }
+          }
+        }
+      }`, { owner: 'zajkovFE', name: 'exemple', number: parseInt(number) });
+
+    const d = data?.data?.repository?.discussion;
+    const comments = d?.comments?.nodes || [];
+    const mainDate = new Date(d.createdAt).toLocaleDateString('ru-RU');
+    const mainAuthor = d.author?.login || 'Аноним';
+
+    document.getElementById('forum-thread-body').innerHTML = `
+      <div style="padding-bottom:16px;margin-bottom:16px;border-bottom:1px solid var(--border);">
+        <div style="font-size:14px;color:var(--text);line-height:1.7;white-space:pre-wrap;word-break:break-word;">${d.bodyText}</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-top:10px;">@${mainAuthor} · ${mainDate}</div>
+      </div>
+      ${comments.length ? comments.map(c => {
+        const cDate = new Date(c.createdAt).toLocaleDateString('ru-RU');
+        const cAuthor = c.author?.login || 'Аноним';
+        return `<div style="padding:12px 0;border-bottom:1px solid var(--border);">
+          <div style="font-size:13px;color:var(--text);line-height:1.6;white-space:pre-wrap;word-break:break-word;">${c.bodyText}</div>
+          <div style="display:flex;justify-content:space-between;margin-top:6px;">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);">@${cAuthor} · ${cDate}</span>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);">👍 ${c.upvoteCount}</span>
+          </div>
+        </div>`;
+      }).join('') : '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:12px;color:var(--muted);text-align:center;padding:16px;">Комментариев пока нет</div>'}`;
+  } catch(e) {
+    document.getElementById('forum-thread-body').innerHTML = '<div style="color:var(--danger);font-family:\'IBM Plex Mono\',monospace;font-size:12px;padding:16px;">⚠ Ошибка загрузки треда</div>';
+  }
+}
+
+async function forumReply(number) {
+  const text = document.getElementById('forum-reply-text').value.trim();
+  const status = document.getElementById('forum-reply-status');
+  if (!text) { status.style.color = 'var(--danger)'; status.textContent = '⚠ Напишите ответ'; return; }
+
+  status.style.color = 'var(--muted)'; status.textContent = '⏳ Отправка...';
+
+  // Get discussion node ID first
+  try {
+    const data = await ghGraphQL(`
+      query($owner: String!, $name: String!, $number: Int!) {
+        repository(owner: $owner, name: $name) { discussion(number: $number) { id } }
+      }`, { owner: 'zajkovFE', name: 'exemple', number: parseInt(number) });
+
+    const discussionId = data?.data?.repository?.discussion?.id;
+    const pd = loadProfileData();
+    const bodyWithAuthor = (pd.name ? `**${pd.name}:**\n` : '') + text;
+
+    await ghGraphQL(`
+      mutation($discussionId: ID!, $body: String!) {
+        addDiscussionComment(input: { discussionId: $discussionId, body: $body }) {
+          comment { id }
+        }
+      }`, { discussionId, body: bodyWithAuthor });
+
+    status.style.color = 'var(--accent3)'; status.textContent = '✓ Ответ отправлен!';
+    document.getElementById('forum-reply-text').value = '';
+    setTimeout(() => forumOpenThread(number, ''), 1000);
+  } catch(e) {
+    status.style.color = 'var(--danger)'; status.textContent = '⚠ Ошибка отправки';
+  }
+}
+
+async function forumPost() {
+  const title  = document.getElementById('forum-title').value.trim();
+  const body   = document.getElementById('forum-body').value.trim();
+  const author = document.getElementById('forum-author').value.trim();
+  const status = document.getElementById('forum-post-status');
+
+  if (!title || !body) { status.style.color = 'var(--danger)'; status.textContent = '⚠ Заполните заголовок и текст'; return; }
+
+  status.style.color = 'var(--muted)'; status.textContent = '⏳ Отправка...';
+
+  const pd = loadProfileData();
+  const senderName = author || pd.name || 'Аноним';
+  const fullBody = `**${senderName}:**\n\n${body}`;
+
+  try {
+    await ghGraphQL(`
+      mutation($repoId: ID!, $catId: ID!, $title: String!, $body: String!) {
+        createDiscussion(input: { repositoryId: $repoId, categoryId: $catId, title: $title, body: $body }) {
+          discussion { id number }
+        }
+      }`, { repoId: GH_REPO_ID, catId: GH_CAT_ID, title, body: fullBody });
+
+    status.style.color = 'var(--accent3)'; status.textContent = '✓ Опубликовано!';
+    document.getElementById('forum-title').value = '';
+    document.getElementById('forum-body').value = '';
+    document.getElementById('forum-author').value = '';
+    setTimeout(() => { status.textContent = ''; forumLoad(); }, 1200);
+  } catch(e) {
+    status.style.color = 'var(--danger)'; status.textContent = '⚠ Ошибка. Попробуйте ещё раз.';
+  }
+}
+
+function renderFbHistory() {
+  const history = (() => { try { return JSON.parse(localStorage.getItem(FB_KEY) || '[]'); } catch(e) { return []; } })();
+  const list = document.getElementById('fb-history-list');
+  const empty = document.getElementById('fb-history-empty');
+  if (!history.length) { list.innerHTML = ''; empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+  // Фикс: показываем полный текст с раскрытием
+  list.innerHTML = history.map((h, idx) => `
+    <div style="padding:12px 0;border-bottom:1px solid var(--border);">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px;gap:8px;flex-wrap:wrap;">
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--accent);">${h.type}</span>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);">${h.date} · ${h.version}</span>
+      </div>
+      <div style="font-size:13px;color:var(--text);line-height:1.6;white-space:pre-wrap;word-break:break-word;">${h.msg}</div>
+    </div>
+  `).join('');
+}
+
+// ===== DEV AUTH =====
+const DEV_HASH = '908c6aeffc7c06050146add1fdddbf36e1c65b24e4423723ebf9dd9b242cb8a3';
+const DEV_SESSION_KEY = 'propedeutika_dev_session';
+
+async function devCheckAuth() {
+  // Проверяем сессию (действительна 2 часа)
+  try {
+    const s = JSON.parse(localStorage.getItem(DEV_SESSION_KEY) || '{}');
+    if (s.expires && Date.now() < s.expires) return true;
+  } catch(e) {}
+  return false;
+}
+
+async function devLogin() {
+  return new Promise(resolve => {
+    // Создаём модальное окно логина
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;padding:20px;';
+    overlay.innerHTML = `
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:28px;width:100%;max-width:360px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:20px;">🔐 Режим разработчика</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:6px;">ЛОГИН</div>
+        <input id="dev-login-inp" type="text" autocomplete="off"
+          style="width:100%;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;outline:none;margin-bottom:12px;box-sizing:border-box;font-family:'IBM Plex Mono',monospace;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:6px;">ПАРОЛЬ</div>
+        <input id="dev-pass-inp" type="password" autocomplete="off"
+          style="width:100%;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;outline:none;margin-bottom:16px;box-sizing:border-box;font-family:'IBM Plex Mono',monospace;">
+        <div id="dev-login-err" style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--danger);min-height:16px;margin-bottom:12px;"></div>
+        <div style="display:flex;gap:10px;">
+          <button id="dev-login-ok" style="background:var(--accent);color:#0d0f14;border:none;border-radius:8px;padding:10px 20px;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;cursor:pointer;">Войти</button>
+          <button id="dev-login-cancel" style="background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:8px;padding:10px 16px;font-family:'IBM Plex Mono',monospace;font-size:12px;cursor:pointer;">Отмена</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    document.getElementById('dev-login-inp').focus();
+
+    async function tryLogin() {
+      const login = document.getElementById('dev-login-inp').value.trim();
+      const pass  = document.getElementById('dev-pass-inp').value;
+      const combined = login + ':' + pass;
+      // SHA-256 через Web Crypto
+      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(combined));
+      const hash = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+      if (hash === DEV_HASH) {
+        localStorage.setItem(DEV_SESSION_KEY, JSON.stringify({ expires: Date.now() + 2*60*60*1000 }));
+        document.body.removeChild(overlay);
+        resolve(true);
+      } else {
+        document.getElementById('dev-login-err').textContent = '⚠ Неверный логин или пароль';
+        document.getElementById('dev-pass-inp').value = '';
+      }
+    }
+
+    document.getElementById('dev-login-ok').onclick = tryLogin;
+    document.getElementById('dev-pass-inp').onkeydown = e => { if (e.key === 'Enter') tryLogin(); };
+    document.getElementById('dev-login-cancel').onclick = () => { document.body.removeChild(overlay); resolve(false); };
+  });
+}
+
+async function devRequireAuth(callback) {
+  if (await devCheckAuth()) { callback(); return; }
+  const ok = await devLogin();
+  if (ok) callback();
+}
+
+// ===== DEV: ДОБАВИТЬ ЗАПИСЬ В CHANGELOG =====
+async function devAddChangelog() {
+  await devRequireAuth(() => {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto;';
+    overlay.innerHTML = `
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:28px;width:100%;max-width:500px;margin:auto;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:20px;">+ Новая версия в Changelog</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px;">
+          <div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:4px;">ВЕРСИЯ</div>
+            <input id="cl-ver" type="text" placeholder="v4.0" style="width:100%;padding:8px 10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none;box-sizing:border-box;font-family:'IBM Plex Mono',monospace;">
+          </div>
+          <div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:4px;">ДАТА</div>
+            <input id="cl-date" type="text" placeholder="dd.mm.yyyy" value="${new Date().toLocaleDateString('ru-RU')}" style="width:100%;padding:8px 10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none;box-sizing:border-box;font-family:'IBM Plex Mono',monospace;">
+          </div>
+          <div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:4px;">ТИП</div>
+            <select id="cl-type" style="width:100%;padding:8px 10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none;box-sizing:border-box;font-family:'IBM Plex Mono',monospace;">
+              <option value="major">MAJOR</option><option value="minor">MINOR</option><option value="initial">INIT</option>
+            </select>
+          </div>
+        </div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:4px;">ЗАГОЛОВОК</div>
+        <input id="cl-title" type="text" placeholder="Что нового в этой версии"
+          style="width:100%;padding:8px 10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none;margin-bottom:12px;box-sizing:border-box;font-family:'IBM Plex Sans',sans-serif;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:4px;">ИЗМЕНЕНИЯ (каждое с новой строки)</div>
+        <textarea id="cl-changes" placeholder="✅ Добавлена тёмная тема&#10;🐛 Исправлен баг с таймером"
+          style="width:100%;min-height:100px;padding:8px 10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none;resize:vertical;margin-bottom:16px;box-sizing:border-box;font-family:'IBM Plex Sans',sans-serif;"></textarea>
+        <div style="display:flex;gap:10px;">
+          <button onclick="devSaveChangelog()" style="background:var(--accent);color:#0d0f14;border:none;border-radius:8px;padding:10px 20px;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;cursor:pointer;">✓ Добавить</button>
+          <button onclick="this.closest('[style*=fixed]').remove()" style="background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:8px;padding:10px 16px;font-family:'IBM Plex Mono',monospace;font-size:12px;cursor:pointer;">Отмена</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+  });
+}
+
+function devSaveChangelog() {
+  const ver     = document.getElementById('cl-ver').value.trim();
+  const date    = document.getElementById('cl-date').value.trim();
+  const type    = document.getElementById('cl-type').value;
+  const title   = document.getElementById('cl-title').value.trim();
+  const changes = document.getElementById('cl-changes').value.split('\n').map(s=>s.trim()).filter(Boolean);
+  if (!ver || !title || !changes.length) { alert('Заполните все поля'); return; }
+  CHANGELOG.unshift({ version: ver, date, type, title, changes });
+  // Сохраняем расширения в localStorage
+  const saved = (() => { try { return JSON.parse(localStorage.getItem('propedeutika_changelog_extra') || '[]'); } catch(e){ return []; } })();
+  saved.unshift({ version: ver, date, type, title, changes });
+  localStorage.setItem('propedeutika_changelog_extra', JSON.stringify(saved));
+  document.querySelector('[style*="fixed"][style*="9999"]').remove();
+  renderChangelog();
+}
+
+// ===== DEV: ДОБАВИТЬ ФИЧУ В ROADMAP =====
+async function devAddRoadmap() {
+  await devRequireAuth(() => {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;padding:20px;';
+    overlay.innerHTML = `
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:28px;width:100%;max-width:460px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:20px;">+ Новая фича в Roadmap</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+          <div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:4px;">ЭМОДЗИ</div>
+            <input id="rm-emoji" type="text" placeholder="🚀" maxlength="2"
+              style="width:100%;padding:8px 10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:20px;outline:none;box-sizing:border-box;text-align:center;">
+          </div>
+          <div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:4px;">СТАТУС</div>
+            <select id="rm-status" style="width:100%;padding:8px 10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none;box-sizing:border-box;font-family:'IBM Plex Mono',monospace;">
+              <option value="planned">📋 Запланировано</option>
+              <option value="in-progress">🔨 В работе</option>
+              <option value="considering">💭 Обсуждается</option>
+              <option value="done">✅ Готово</option>
+            </select>
+          </div>
+        </div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:4px;">НАЗВАНИЕ</div>
+        <input id="rm-title" type="text" placeholder="Название фичи"
+          style="width:100%;padding:8px 10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none;margin-bottom:12px;box-sizing:border-box;font-family:'IBM Plex Sans',sans-serif;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:4px;">ОПИСАНИЕ</div>
+        <textarea id="rm-desc" placeholder="Подробное описание фичи..."
+          style="width:100%;min-height:70px;padding:8px 10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none;resize:vertical;margin-bottom:16px;box-sizing:border-box;font-family:'IBM Plex Sans',sans-serif;"></textarea>
+        <div style="display:flex;gap:10px;">
+          <button onclick="devSaveRoadmap()" style="background:var(--accent);color:#0d0f14;border:none;border-radius:8px;padding:10px 20px;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;cursor:pointer;">✓ Добавить</button>
+          <button onclick="this.closest('[style*=fixed]').remove()" style="background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:8px;padding:10px 16px;font-family:'IBM Plex Mono',monospace;font-size:12px;cursor:pointer;">Отмена</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+  });
+}
+
+function devSaveRoadmap() {
+  const emoji  = document.getElementById('rm-emoji').value.trim() || '📌';
+  const status = document.getElementById('rm-status').value;
+  const title  = document.getElementById('rm-title').value.trim();
+  const desc   = document.getElementById('rm-desc').value.trim();
+  if (!title || !desc) { alert('Заполните название и описание'); return; }
+  const id = 'r' + Date.now();
+  ROADMAP.push({ id, status, emoji, title, desc });
+  const saved = (() => { try { return JSON.parse(localStorage.getItem('propedeutika_roadmap_extra') || '[]'); } catch(e){ return []; } })();
+  saved.push({ id, status, emoji, title, desc });
+  localStorage.setItem('propedeutika_roadmap_extra', JSON.stringify(saved));
+  document.querySelector('[style*="fixed"][style*="9999"]').remove();
+  renderRoadmap();
+}
+
 // ===== INIT ALL EVENTS (скрипт в конце body — DOM уже готов) =====
 (function initHamburgerAndProfile() {
   // Streak
@@ -3955,6 +4670,10 @@ function saveProfile() {
   // Streak badge
   var sb = document.getElementById('streak-header-badge');
   if (sb) sb.addEventListener('click', openProfile);
+
+  // About screen
+  document.getElementById('profile-about-btn').addEventListener('click', function() { closeProfile(); openAbout(); });
+  document.getElementById('about-back-btn').addEventListener('click', closeAbout);
 })();
 </script>
 
