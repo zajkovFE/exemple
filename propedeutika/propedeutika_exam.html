@@ -117,6 +117,7 @@
   }
 
   /* MODULE SELECTOR */
+  
   .module-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -1780,7 +1781,24 @@
     <button class="tab" onclick="switchMode('editor')">✏️ Редактор</button>
     <button class="tab" onclick="switchMode('sync')">☁️ Синхр.</button>
   </div>
+  <!-- MODULE SELECT 1 -->
+<div id="modules-screen" class="screen active">
+  <div class="screen-title-sub">РЕЖИМ ТЕСТИРОВАНИЯ</div>
+  <div class="screen-title">Выберите модуль для подготовки</div>
 
+  <div style="margin-bottom: 20px; background: var(--surface); padding: 12px 16px; border-radius: var(--radius); border: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted);">Количество вопросов:</div>
+    <div style="display: flex; gap: 4px; background: var(--bg); padding: 3px; border-radius: 8px; border: 1px solid var(--border);">
+      <button class="limit-btn active" data-limit="20" style="padding: 6px 12px; background: var(--card); border: 1px solid var(--border); border-radius: 6px; color: var(--accent); font-family: 'IBM Plex Mono', monospace; font-size: 11px; cursor: pointer; transition: all 0.15s;" onclick="changeQuestionsLimit(this, 20)">20</button>
+      <button class="limit-btn" data-limit="30" style="padding: 6px 12px; background: transparent; border: none; border-radius: 6px; color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 11px; cursor: pointer; transition: all 0.15s;" onclick="changeQuestionsLimit(this, 30)">30</button>
+      <button class="limit-btn" data-limit="50" style="padding: 6px 12px; background: transparent; border: none; border-radius: 6px; color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 11px; cursor: pointer; transition: all 0.15s;" onclick="changeQuestionsLimit(this, 50)">50</button>
+      <button class="limit-btn" data-limit="0" style="padding: 6px 12px; background: transparent; border: none; border-radius: 6px; color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 11px; cursor: pointer; transition: all 0.15s;" onclick="changeQuestionsLimit(this, 0)">Все</button>
+    </div>
+  </div>
+
+  <div class="module-grid">
+    </div>
+</div>
   <!-- MODULE SELECT -->
   <div id="complex-btn-wrap">
     <div class="complex-panel" id="complex-panel">
@@ -3808,6 +3826,25 @@ function downloadStatsCSV() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+}
+  // Переменная для хранения лимита (по умолчанию 20, как и активная кнопка)
+let globalQuestionsLimit = 20;
+
+// Функция для обработки кликов по кнопкам лимита
+function changeQuestionsLimit(btnElement, limit) {
+  globalQuestionsLimit = limit;
+  
+  // Сбрасываем стили у всех кнопок лимита, делая их прозрачными
+  document.querySelectorAll('.limit-btn').forEach(btn => {
+    btn.style.background = 'transparent';
+    btn.style.border = 'none';
+    btn.style.color = 'var(--muted)';
+  });
+  
+  // Выделяем активную кнопку цветом
+  btnElement.style.background = 'var(--card)';
+  btnElement.style.border = '1px solid var(--border)';
+  btnElement.style.color = 'var(--accent)';
 }
 </script>
 <!-- Плавающая панель удалена, заменена гамбургер-меню -->
