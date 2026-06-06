@@ -4359,10 +4359,8 @@ async function forumLoad() {
 }
 
 async function forumOpenThread(number, title) {
-  // Проверяем: если окно уже открыто, не создаем его заново, а просто запоминаем
   let overlay = document.getElementById('forum-thread-overlay');
   
-  // Если заголовка нет (при повторном обновлении), попробуем вытащить его из памяти или старого окна
   if (!title && overlay) {
     const titleEl = overlay.querySelector('.thread-title-text');
     if (titleEl) title = titleEl.textContent;
@@ -4370,7 +4368,6 @@ async function forumOpenThread(number, title) {
   if (!title) title = 'Обсуждение #' + number;
 
   if (!overlay) {
-    // Создаем окно только если его еще нет на экране
     overlay = document.createElement('div');
     overlay.id = 'forum-thread-overlay';
     overlay.style.cssText = 'position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,0.7);display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;';
@@ -4395,11 +4392,9 @@ async function forumOpenThread(number, title) {
     document.body.appendChild(overlay);
     overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
   } else {
-    // Если окно уже было, просто пишем "Загрузка..." в область ответов перед обновлением данных
     document.getElementById('forum-thread-body').innerHTML = '<div style="text-align:center;font-family:\'IBM Plex Mono\',monospace;font-size:12px;color:var(--muted);padding:20px;">⏳ Обновление...</div>';
   }
 
-  // Загружаем комментарии с Гитхаба
   try {
     const data = await ghGraphQL(`
       query($owner: String!, $name: String!, $number: Int!) {
@@ -4416,7 +4411,6 @@ async function forumOpenThread(number, title) {
     const d = data?.data?.repository?.discussion;
     if (!d) throw new Error("Тред не найден");
     
-    // Сохраняем внутренний ID обсуждения в память окна, чтобы функция ответа знала, куда писать
     overlay.setAttribute('data-discussion-id', d.id);
 
     const comments = d?.comments?.nodes || [];
@@ -4450,7 +4444,6 @@ async function forumReply(number) {
   if (!text) return;
 
   const overlay = document.getElementById('forum-thread-overlay');
-  // Достаем внутренний ID дискуссии, который мы сохранили при загрузке треда
   const discussionId = overlay ? overlay.getAttribute('data-discussion-id') : null;
 
   if (!discussionId) {
@@ -4467,7 +4460,6 @@ async function forumReply(number) {
   const fullBody = `**${senderName}:**\n\n${text}`;
 
   try {
-    // Используем правильную мутацию добавления комментария (addDiscussionComment)
     await ghGraphQL(`
       mutation($discussionId: ID!, $body: String!) {
         addDiscussionComment(input: { discussionId: $discussionId, body: $body }) {
@@ -4480,7 +4472,6 @@ async function forumReply(number) {
     status.textContent = '✓ Ответ отправлен!';
     document.getElementById('forum-reply-text').value = '';
 
-    // Мягко обновляем данные прямо внутри этого же окна через 1 секунду
     setTimeout(() => {
       status.textContent = '';
       forumOpenThread(number, '');
@@ -4525,7 +4516,6 @@ async function forumPost() {
     status.style.color = 'var(--danger)'; status.textContent = '⚠ Ошибка. Попробуйте ещё раз.';
   }
 }
-
 function renderFbHistory() {
   const history = (() => { try { return JSON.parse(localStorage.getItem(FB_KEY) || '[]'); } catch(e) { return []; } })();
   const list = document.getElementById('fb-history-list');
