@@ -2234,7 +2234,26 @@ let totalAnswered = 0;
 
 let flashcards = [];
 let fcIndex = 0;
+// ==========================================
+// ИМПЛАНТИРУЕМ СЮДА ПЕРЕМЕННУЮ И ФУНКЦИЮ ЛИМИТА (Йода одобряет!):
+let globalQuestionsLimit = 20; // по умолчанию 20
 
+function changeQuestionsLimit(btnElement, limit) {
+  globalQuestionsLimit = limit;
+  
+  // Делаем все кнопки лимита прозрачными
+  document.querySelectorAll('.limit-btn').forEach(btn => {
+    btn.style.background = 'transparent';
+    btn.style.border = 'none';
+    btn.style.color = 'var(--muted)';
+  });
+  
+  // Подсвечиваем активную выбранную кнопку
+  btnElement.style.background = 'var(--card)';
+  btnElement.style.border = '1px solid var(--border)';
+  btnElement.style.color = 'var(--accent)';
+}
+// ==========================================
 // ---- SPACED REPETITION (Pools + Weights) ----
 // Рейтинг каждого вопроса хранится в localStorage по ключу: modId + вопрос
 // rating: 0=новый, 1=слабый🔴, 2=средний🟡, 3=сильный🟢
