@@ -3865,25 +3865,7 @@ function downloadStatsCSV() {
     link.click();
     document.body.removeChild(link);
 }
-  // Переменная для хранения лимита (по умолчанию 20, как и активная кнопка)
-let globalQuestionsLimit = 20;
 
-// Функция для обработки кликов по кнопкам лимита
-function changeQuestionsLimit(btnElement, limit) {
-  globalQuestionsLimit = limit;
-  
-  // Сбрасываем стили у всех кнопок лимита, делая их прозрачными
-  document.querySelectorAll('.limit-btn').forEach(btn => {
-    btn.style.background = 'transparent';
-    btn.style.border = 'none';
-    btn.style.color = 'var(--muted)';
-  });
-  
-  // Выделяем активную кнопку цветом
-  btnElement.style.background = 'var(--card)';
-  btnElement.style.border = '1px solid var(--border)';
-  btnElement.style.color = 'var(--accent)';
-}
 </script>
 <!-- Плавающая панель удалена, заменена гамбургер-меню -->
 <script>
