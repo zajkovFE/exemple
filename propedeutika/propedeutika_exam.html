@@ -4265,6 +4265,7 @@ async function ghGraphQL(query, variables) {
   });
   return res.json();
 }
+
 function forumShowTokenForm() {
   const list = document.getElementById('forum-list');
   list.innerHTML = `
@@ -4285,7 +4286,6 @@ async function forumSaveToken() {
   const status = document.getElementById('forum-token-status');
   if (!val) return;
   status.textContent = '⏳ Проверка...';
-  // Проверяем токен реальным запросом
   try {
     const res = await fetch('https://api.github.com/graphql', {
       method: 'POST',
@@ -4295,7 +4295,6 @@ async function forumSaveToken() {
     const data = await res.json();
     if (data?.data?.viewer?.login) {
       localStorage.setItem('propedeutika_gh_token', val);
-      // Обновляем переменную без перезагрузки
       Object.defineProperty(window, 'GH_TOKEN', { value: val, writable: true });
       status.style.color = 'var(--accent3)';
       status.textContent = '✓ Добро пожаловать, ' + data.data.viewer.login + '!';
@@ -4309,6 +4308,7 @@ async function forumSaveToken() {
     status.textContent = '⚠ Ошибка проверки';
   }
 }
+
 async function forumLoad() {
   if (!GH_TOKEN) { forumShowTokenForm(); return; }
   const list = document.getElementById('forum-list');
@@ -4339,9 +4339,10 @@ async function forumLoad() {
       const date = new Date(t.createdAt).toLocaleDateString('ru-RU');
       const author = t.author?.login || 'Аноним';
       const preview = t.bodyText?.substring(0, 160) + (t.bodyText?.length > 160 ? '…' : '');
+      // ФИКС ТУТ: Передаем только числовой номер треда, чтобы кавычки в названиях не ломали синтаксис
       return `<div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin-bottom:10px;cursor:pointer;transition:border-color 0.15s;"
         onmouseover="this.style.borderColor='var(--accent2)'" onmouseout="this.style.borderColor='var(--border)'"
-        onclick="forumOpenThread('${t.number}', ${JSON.stringify(t.title)})">
+        onclick="forumOpenThread('${t.number}')">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px;">
           <div style="font-size:14px;font-weight:600;color:var(--text);line-height:1.4;">${t.title}</div>
           <div style="flex-shrink:0;display:flex;gap:10px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);">
@@ -4365,7 +4366,7 @@ async function forumOpenThread(number, title) {
     const titleEl = overlay.querySelector('.thread-title-text');
     if (titleEl) title = titleEl.textContent;
   }
-  if (!title) title = 'Обсуждение #' + number;
+  if (!title) title = 'Загрузка обсуждения #' + number;
 
   if (!overlay) {
     overlay = document.createElement('div');
@@ -4400,7 +4401,7 @@ async function forumOpenThread(number, title) {
       query($owner: String!, $name: String!, $number: Int!) {
         repository(owner: $owner, name: $name) {
           discussion(number: $number) {
-            id bodyText createdAt author { login }
+            id title bodyText createdAt author { login }
             comments(first: 50) {
               nodes { bodyText createdAt author { login } upvoteCount }
             }
@@ -4412,6 +4413,10 @@ async function forumOpenThread(number, title) {
     if (!d) throw new Error("Тред не найден");
     
     overlay.setAttribute('data-discussion-id', d.id);
+    
+    // Обновляем заголовок окна на реальный чистый текст из базы GitHub
+    const titleEl = overlay.querySelector('.thread-title-text');
+    if (titleEl) titleEl.textContent = d.title;
 
     const comments = d?.comments?.nodes || [];
     const mainDate = new Date(d.createdAt).toLocaleDateString('ru-RU');
@@ -4516,13 +4521,13 @@ async function forumPost() {
     status.style.color = 'var(--danger)'; status.textContent = '⚠ Ошибка. Попробуйте ещё раз.';
   }
 }
+
 function renderFbHistory() {
   const history = (() => { try { return JSON.parse(localStorage.getItem(FB_KEY) || '[]'); } catch(e) { return []; } })();
   const list = document.getElementById('fb-history-list');
   const empty = document.getElementById('fb-history-empty');
   if (!history.length) { list.innerHTML = ''; empty.style.display = 'block'; return; }
   empty.style.display = 'none';
-  // Фикс: показываем полный текст с раскрытием
   list.innerHTML = history.map((h, idx) => `
     <div style="padding:12px 0;border-bottom:1px solid var(--border);">
       <div style="display:flex;justify-content:space-between;margin-bottom:6px;gap:8px;flex-wrap:wrap;">
