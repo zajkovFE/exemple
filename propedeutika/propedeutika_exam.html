@@ -1565,6 +1565,13 @@
   <button class="hm-item" id="hm-save-btn">
     <span class="hm-icon">💾</span> Сохранить прогресс
   </button>
+  <button class="hm-item" id="hm-export-btn">
+    <span class="hm-icon">📤</span> Экспорт прогресса
+  </button>
+  <button class="hm-item" id="hm-import-btn">
+    <span class="hm-icon">📥</span> Импорт прогресса
+  </button>
+  <input type="file" id="hm-import-file" accept=".json" style="display:none;">
 <div class="hm-section-title">Экзамен</div>
   <button class="hm-item" onclick="window.open('exam_fixed.html', '_blank')">
     <span class="hm-icon">🎓</span> Открыть экзамен
@@ -3965,6 +3972,61 @@ function hmSaveData() {
 
 function hmExportCSV() { downloadStatsCSV(); }
 
+function hmExportProgress() {
+  try {
+    const KEYS = [
+      'propedeutika_sr',
+      'propedeutika_history',
+      'propedeutika_profile_v1',
+      'propedeutika_modules',
+      'propedeutika_glossary_custom'
+    ];
+    const snapshot = {};
+    KEYS.forEach(k => {
+      const v = localStorage.getItem(k);
+      if (v !== null) snapshot[k] = v;
+    });
+    if (!Object.keys(snapshot).length) {
+      alert('Нет данных для экспорта'); return;
+    }
+    snapshot.__exported_at = new Date().toISOString();
+    snapshot.__version = 'propedeutika_v1';
+    const blob = new Blob([JSON.stringify(snapshot, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'propedeutika_progress_' + new Date().toISOString().split('T')[0] + '.json';
+    a.click();
+  } catch(e) { alert('Ошибка экспорта: ' + e.message); }
+}
+
+function hmImportProgress(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (data.__version !== 'propedeutika_v1') {
+        alert('⚠ Файл не подходит для этого приложения'); return;
+      }
+      const KEYS = [
+        'propedeutika_sr',
+        'propedeutika_history',
+        'propedeutika_profile_v1',
+        'propedeutika_modules',
+        'propedeutika_glossary_custom'
+      ];
+      KEYS.forEach(k => { if (data[k] !== undefined) localStorage.setItem(k, data[k]); });
+      const btn = document.getElementById('hm-btn');
+      const orig = btn.innerHTML;
+      btn.innerHTML = '<div style="color:var(--accent3);font-size:18px">✓</div>';
+      setTimeout(() => { btn.innerHTML = orig; location.reload(); }, 1200);
+    } catch(err) { alert('⚠ Ошибка чтения файла: ' + err.message); }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
 function hmResetProgress() {
   if (confirm('Сбросить весь прогресс обучения (рейтинги вопросов и историю)?')) {
     localStorage.removeItem('propedeutika_sr');
@@ -4789,6 +4851,9 @@ function devSaveRoadmap() {
   document.getElementById('hm-overlay').addEventListener('click', closeHamburger);
   document.getElementById('hm-profile-btn').addEventListener('click', function() { openProfile(); closeHamburger(); });
   document.getElementById('hm-save-btn').addEventListener('click', function() { hmSaveData(); closeHamburger(); });
+  document.getElementById('hm-export-btn').addEventListener('click', function() { hmExportProgress(); closeHamburger(); });
+  document.getElementById('hm-import-btn').addEventListener('click', function() { closeHamburger(); document.getElementById('hm-import-file').click(); });
+  document.getElementById('hm-import-file').addEventListener('change', function(e) { hmImportProgress(e); });
   document.getElementById('hm-csv-btn').addEventListener('click', function() { hmExportCSV(); closeHamburger(); });
   document.getElementById('hm-reset-btn').addEventListener('click', function() { hmResetProgress(); closeHamburger(); });
   document.getElementById('hm-modules-btn').addEventListener('click', function() { hmResetModules(); closeHamburger(); });
