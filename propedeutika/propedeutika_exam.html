@@ -4359,37 +4359,53 @@ async function forumLoad() {
 }
 
 async function forumOpenThread(number, title) {
-  const overlay = document.createElement('div');
-  overlay.id = 'forum-thread-overlay';
-  overlay.style.cssText = 'position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,0.7);display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;';
-  overlay.innerHTML = `
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);width:100%;max-width:640px;margin:auto;overflow:hidden;">
-      <div style="padding:20px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:12px;">
-        <div style="font-size:15px;font-weight:600;color:var(--text);line-height:1.4;">${title}</div>
-        <button onclick="document.getElementById('forum-thread-overlay').remove()" style="background:transparent;border:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1;flex-shrink:0;">×</button>
-      </div>
-      <div id="forum-thread-body" style="padding:20px 24px;max-height:60vh;overflow-y:auto;">
-        <div style="text-align:center;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);padding:20px;">⏳ Загрузка...</div>
-      </div>
-      <div style="padding:16px 24px;border-top:1px solid var(--border);">
-        <textarea id="forum-reply-text" placeholder="Ваш ответ..."
-          style="width:100%;min-height:70px;padding:9px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none;resize:vertical;box-sizing:border-box;font-family:'IBM Plex Sans',sans-serif;margin-bottom:10px;"></textarea>
-        <div style="display:flex;gap:10px;align-items:center;">
-          <button onclick="forumReply('${number}')" style="background:var(--accent);color:#0d0f14;border:none;border-radius:8px;padding:9px 20px;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;cursor:pointer;">→ Ответить</button>
-          <div id="forum-reply-status" style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);"></div>
-        </div>
-      </div>
-    </div>`;
-  document.body.appendChild(overlay);
-  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  // Проверяем: если окно уже открыто, не создаем его заново, а просто запоминаем
+  let overlay = document.getElementById('forum-thread-overlay');
+  
+  // Если заголовка нет (при повторном обновлении), попробуем вытащить его из памяти или старого окна
+  if (!title && overlay) {
+    const titleEl = overlay.querySelector('.thread-title-text');
+    if (titleEl) title = titleEl.textContent;
+  }
+  if (!title) title = 'Обсуждение #' + number;
 
-  // Load thread comments
+  if (!overlay) {
+    // Создаем окно только если его еще нет на экране
+    overlay = document.createElement('div');
+    overlay.id = 'forum-thread-overlay';
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,0.7);display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;';
+    overlay.innerHTML = `
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);width:100%;max-width:640px;margin:auto;overflow:hidden;">
+        <div style="padding:20px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:12px;">
+          <div class="thread-title-text" style="font-size:15px;font-weight:600;color:var(--text);line-height:1.4;">${title}</div>
+          <button onclick="document.getElementById('forum-thread-overlay').remove()" style="background:transparent;border:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1;flex-shrink:0;">×</button>
+        </div>
+        <div id="forum-thread-body" style="padding:20px 24px;max-height:60vh;overflow-y:auto;">
+          <div style="text-align:center;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);padding:20px;">⏳ Загрузка...</div>
+        </div>
+        <div style="padding:16px 24px;border-top:1px solid var(--border);">
+          <textarea id="forum-reply-text" placeholder="Ваш ответ..."
+            style="width:100%;min-height:70px;padding:9px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none;resize:vertical;box-sizing:border-box;font-family:'IBM Plex Sans',sans-serif;margin-bottom:10px;"></textarea>
+          <div style="display:flex;gap:10px;align-items:center;">
+            <button onclick="forumReply('${number}')" style="background:var(--accent);color:#0d0f14;border:none;border-radius:8px;padding:9px 20px;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;cursor:pointer;">→ Ответить</button>
+            <div id="forum-reply-status" style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);"></div>
+          </div>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  } else {
+    // Если окно уже было, просто пишем "Загрузка..." в область ответов перед обновлением данных
+    document.getElementById('forum-thread-body').innerHTML = '<div style="text-align:center;font-family:\'IBM Plex Mono\',monospace;font-size:12px;color:var(--muted);padding:20px;">⏳ Обновление...</div>';
+  }
+
+  // Загружаем комментарии с Гитхаба
   try {
     const data = await ghGraphQL(`
       query($owner: String!, $name: String!, $number: Int!) {
         repository(owner: $owner, name: $name) {
           discussion(number: $number) {
-            bodyText createdAt author { login }
+            id bodyText createdAt author { login }
             comments(first: 50) {
               nodes { bodyText createdAt author { login } upvoteCount }
             }
@@ -4398,6 +4414,11 @@ async function forumOpenThread(number, title) {
       }`, { owner: 'zajkovFE', name: 'exemple', number: parseInt(number) });
 
     const d = data?.data?.repository?.discussion;
+    if (!d) throw new Error("Тред не найден");
+    
+    // Сохраняем внутренний ID обсуждения в память окна, чтобы функция ответа знала, куда писать
+    overlay.setAttribute('data-discussion-id', d.id);
+
     const comments = d?.comments?.nodes || [];
     const mainDate = new Date(d.createdAt).toLocaleDateString('ru-RU');
     const mainAuthor = d.author?.login || 'Аноним';
@@ -4426,33 +4447,49 @@ async function forumOpenThread(number, title) {
 async function forumReply(number) {
   const text = document.getElementById('forum-reply-text').value.trim();
   const status = document.getElementById('forum-reply-status');
-  if (!text) { status.style.color = 'var(--danger)'; status.textContent = '⚠ Напишите ответ'; return; }
+  if (!text) return;
 
-  status.style.color = 'var(--muted)'; status.textContent = '⏳ Отправка...';
+  const overlay = document.getElementById('forum-thread-overlay');
+  // Достаем внутренний ID дискуссии, который мы сохранили при загрузке треда
+  const discussionId = overlay ? overlay.getAttribute('data-discussion-id') : null;
 
-  // Get discussion node ID first
+  if (!discussionId) {
+    status.style.color = 'var(--danger)';
+    status.textContent = '⚠ Ошибка: структура треда не определена';
+    return;
+  }
+
+  status.style.color = 'var(--muted)';
+  status.textContent = '⏳ Отправка...';
+
+  const pd = loadProfileData();
+  const senderName = pd.name || 'Аноним';
+  const fullBody = `**${senderName}:**\n\n${text}`;
+
   try {
-    const data = await ghGraphQL(`
-      query($owner: String!, $name: String!, $number: Int!) {
-        repository(owner: $owner, name: $name) { discussion(number: $number) { id } }
-      }`, { owner: 'zajkovFE', name: 'exemple', number: parseInt(number) });
-
-    const discussionId = data?.data?.repository?.discussion?.id;
-    const pd = loadProfileData();
-    const bodyWithAuthor = (pd.name ? `**${pd.name}:**\n` : '') + text;
-
+    // Используем правильную мутацию добавления комментария (addDiscussionComment)
     await ghGraphQL(`
       mutation($discussionId: ID!, $body: String!) {
         addDiscussionComment(input: { discussionId: $discussionId, body: $body }) {
           comment { id }
         }
-      }`, { discussionId, body: bodyWithAuthor });
+      }
+    `, { discussionId: discussionId, body: fullBody });
 
-    status.style.color = 'var(--accent3)'; status.textContent = '✓ Ответ отправлен!';
+    status.style.color = 'var(--accent3)';
+    status.textContent = '✓ Ответ отправлен!';
     document.getElementById('forum-reply-text').value = '';
-    setTimeout(() => forumOpenThread(number, ''), 1000);
+
+    // Мягко обновляем данные прямо внутри этого же окна через 1 секунду
+    setTimeout(() => {
+      status.textContent = '';
+      forumOpenThread(number, '');
+    }, 1000);
+
   } catch(e) {
-    status.style.color = 'var(--danger)'; status.textContent = '⚠ Ошибка отправки';
+    console.error(e);
+    status.style.color = 'var(--danger)';
+    status.textContent = '⚠ Ошибка отправки';
   }
 }
 
