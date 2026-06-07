@@ -158,21 +158,36 @@
   .btn-secondary { padding: 10px 30px; background: white; color: #4a5568; border: 1px solid #c5cdd8; border-radius: 4px; font-size: 14px; font-weight: 600; cursor: pointer; margin: 0 6px; }
   .btn-secondary:hover { background: #f7fafc; }
 
-  @media (max-width: 768px) {
-    .layout { flex-direction: column; padding: 10px; }
-    .sidebar { width: 100%; flex-direction: row; flex-wrap: wrap; }
-    .nav-panel, .timer-panel { flex: 1; min-width: 140px; }
-    .nav-grid { grid-template-columns: repeat(10, 1fr); }
-    .question-panel { padding: 16px; }
-    .question-text { font-size: 15.5px !important; }
-  }
-
-  .question-text { font-size: 16.5px !important; line-height: 1.75; }
-  .answer-text { font-size: 15.5px !important; line-height: 1.65; }
-  .question-number { font-size: 17px !important; }
-  .answers-title { font-size: 14.5px !important; }
+  /* ПК — шрифты */
+  .question-text { font-size: 17px !important; line-height: 1.75; }
+  .answer-text { font-size: 16px !important; line-height: 1.65; }
+  .question-number { font-size: 18px !important; }
+  .answers-title { font-size: 15px !important; }
   .nav-cell, .page-btn { font-size: 12.5px !important; }
   .timer-value { font-size: 32px !important; }
+
+  @media (max-width: 768px) {
+    .layout { flex-direction: column; padding: 10px; }
+    /* Sidebar — одна колонка, таймер сверху через order */
+    .sidebar { width: 100%; flex-direction: column; gap: 8px; }
+    .timer-panel { order: -1; }   /* таймер всегда первый */
+    .nav-panel { order: 0; }
+    .btn-finish { order: 1; }
+    /* Таймер компактнее по высоте */
+    .timer-panel { padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; text-align: left; }
+    .timer-label { margin-bottom: 0; font-size: 11px; }
+    .timer-value { font-size: 34px !important; }
+    /* Сетка — авто-заполнение */
+    .nav-grid { grid-template-columns: repeat(auto-fill, minmax(40px, 1fr)); gap: 5px; }
+    .nav-cell { font-size: 13px !important; min-height: 36px; }
+    .question-panel { padding: 16px; }
+    /* Мобильные шрифты крупнее */
+    .question-text { font-size: 18px !important; line-height: 1.8; }
+    .answer-text { font-size: 17px !important; line-height: 1.7; }
+    .question-number { font-size: 19px !important; }
+    .answers-title { font-size: 16px !important; }
+    .page-btn { width: 36px; height: 32px; font-size: 12px !important; }
+  }
 
   /* ====== ГАМБУРГЕР — НОВЫЙ СТИЛЬ ====== */
   #exam-hm-panel {
@@ -383,6 +398,7 @@ function init() {
 }
 
 function renderStartScreen() {
+  setHamburgerVisible(true);
   const layout = document.getElementById('main-layout');
   const modules = DEMO_QUESTIONS.modules;
   layout.innerHTML = `
@@ -440,6 +456,7 @@ function startExam() {
 }
 
 function renderExam() {
+  setHamburgerVisible(false);
   const layout = document.getElementById('main-layout');
   const q = state.questions[state.currentIndex];
   const pagination = buildPagination();
@@ -558,6 +575,7 @@ function finishExam(timeOut = false) {
 }
 
 function renderResults(pct, correct, minutes, passed) {
+  setHamburgerVisible(true);
   const layout = document.getElementById('main-layout');
   layout.innerHTML = `
     <div class="result-screen" style="width:100%">
@@ -576,6 +594,7 @@ function renderResults(pct, correct, minutes, passed) {
 }
 
 function showReview() {
+  setHamburgerVisible(true);
   const layout = document.getElementById('main-layout');
   let html = `<div style="max-width:900px;margin:40px auto;background:white;padding:30px;border-radius:8px;border:1px solid #c5cdd8;">`;
   html += `<h2 style="text-align:center;margin-bottom:30px;">Разбор ответов</h2>`;
@@ -796,6 +815,11 @@ function hmSwitchTab(tab) {
 }
 
 // ====== ОТКРЫТИЕ/ЗАКРЫТИЕ ПАНЕЛИ ======
+
+function setHamburgerVisible(visible) {
+  const btn = document.getElementById('exam-hm-btn');
+  if (btn) btn.style.display = visible ? 'flex' : 'none';
+}
 function examHmToggle() {
   const panel = document.getElementById('exam-hm-panel');
   const overlay = document.getElementById('exam-hm-overlay');
