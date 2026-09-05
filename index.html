@@ -644,6 +644,9 @@ async function aiDirectCreate() {
 }
 
 // 2. Заполнение данных (Клиницист)...да, да, да, от скромности не помрете в общем, делаем буддиста пофигиста версии 2.0
+// v2: заголовки бьются на пачки, чтобы модель не захлёбывалась и не дублировала контент между разделами
+const AI_FILL_BATCH_SIZE = 4;
+
 async function aiDirectFill(event) {
     const context = prompt("Введите данные (препарат, симптомы или детали исследования):");
     if (!context) return;
@@ -651,37 +654,56 @@ async function aiDirectFill(event) {
     // 1. Индикатор загрузки (меняем текст кнопки, на которую нажали)
     const btn = event?.target || document.querySelector('button[onclick*="aiDirectFill"]');
     const oldText = btn.innerText;
-    btn.innerText = "⏳ Заполняю...";
     btn.disabled = true;
 
     try {
         const titles = Array.from(document.querySelectorAll('.box-title')).map(t => t.innerText.trim());
-        const query = `Заполни эти разделы: ${titles.join(', ')}. Контекст: ${context}`;
 
-        const res = await callAI(query, 'editor'); 
-        
-        if (res) {
-            Object.keys(res).forEach(aiKey => {
-                // 2. УМНЫЙ ПОИСК (Буддист-пофигист 2.0)
-                const box = Array.from(document.querySelectorAll('.box')).find(b => {
-                    const pageTitle = b.querySelector('.box-title').innerText.trim().toLowerCase();
-                    const aiTitle = aiKey.trim().toLowerCase();
-                    
-                    // Условие: полное совпадение ИЛИ заголовок страницы содержится в ключе ИИ (и наоборот)
-                    return pageTitle === aiTitle || 
-                           aiTitle.includes(pageTitle) || 
-                           pageTitle.includes(aiTitle);
-                });
-
-                if (box) {
-                    // Используем innerText для сохранения форматирования
-                    box.querySelector('.box-content').innerText = res[aiKey];
-                    console.log(`✅ Наполнен блок: ${aiKey}`);
-                } else {
-                    console.warn(`⚠️ Блок не найден для ключа ИИ: "${aiKey}"`);
-                }
-            });
+        // Делим заголовки на пачки по AI_FILL_BATCH_SIZE, чтобы каждый запрос к editor-роли
+        // оставался в пределах надёжного лимита токенов и не провоцировал дублирование текста
+        const batches = [];
+        for (let i = 0; i < titles.length; i += AI_FILL_BATCH_SIZE) {
+            batches.push(titles.slice(i, i + AI_FILL_BATCH_SIZE));
         }
+
+        const combinedRes = {};
+
+        for (let i = 0; i < batches.length; i++) {
+            btn.innerText = batches.length > 1
+                ? `⏳ Заполняю... ${i + 1}/${batches.length}`
+                : "⏳ Заполняю...";
+
+            const batchTitles = batches[i];
+            const query = `Заполни эти разделы: ${batchTitles.join(', ')}. Контекст: ${context}`;
+
+            const res = await callAI(query, 'editor');
+            if (res) {
+                Object.assign(combinedRes, res);
+            } else {
+                console.warn(`⚠️ Пачка ${i + 1}/${batches.length} не вернула данных, продолжаю со следующей`);
+            }
+        }
+
+        Object.keys(combinedRes).forEach(aiKey => {
+            // 2. УМНЫЙ ПОИСК (Буддист-пофигист 2.0)
+            const box = Array.from(document.querySelectorAll('.box')).find(b => {
+                const pageTitle = b.querySelector('.box-title').innerText.trim().toLowerCase();
+                const aiTitle = aiKey.trim().toLowerCase();
+
+                // Условие: полное совпадение ИЛИ заголовок страницы содержится в ключе ИИ (и наоборот)
+                return pageTitle === aiTitle ||
+                       aiTitle.includes(pageTitle) ||
+                       pageTitle.includes(aiTitle);
+            });
+
+            if (box) {
+                // Используем innerText для сохранения форматирования
+                box.querySelector('.box-content').innerText = combinedRes[aiKey];
+                console.log(`✅ Наполнен блок: ${aiKey}`);
+            } else {
+                console.warn(`⚠️ Блок не найден для ключа ИИ: "${aiKey}"`);
+            }
+        });
     } catch (e) {
         console.error("Ошибка заполнения:", e);
     } finally {
