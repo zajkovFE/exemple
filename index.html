@@ -372,7 +372,11 @@
     <button class="btn-ai" style="width:100%; background:#8e44ad;" onclick="aiDirectFill()">
         ✍️ Заполнить текущую (Клинический редактор)
     </button>
-    
+
+    <button class="btn-ai" style="width:100%; background:#16a085;" onclick="aiDirectCleanup()">
+        ✨ Причесать (сопоставить текст с разделами)
+    </button>
+
     <button onclick="closeModal('ai-gen-modal')" style="background:#ccc; color:black; width:100%; margin-top:10px;">Закрыть</button>
 </div>
 
@@ -676,7 +680,7 @@ async function aiDirectFill(event) {
             const batchTitles = batches[i];
             const query = `Заполни эти разделы: ${batchTitles.join(', ')}. Контекст: ${context}`;
 
-            const res = await callAI(query, 'editor');
+            const res = await callAI(query, 'editor', batchTitles);
             if (res) {
                 Object.assign(combinedRes, res);
             } else {
@@ -710,6 +714,72 @@ async function aiDirectFill(event) {
         // 3. Возвращаем кнопку в исходное состояние
         btn.innerText = oldText;
         btn.disabled = false;
+        closeModal('ai-gen-modal');
+    }
+}
+
+// 3. Причесать (Организатор)...третья кнопка: разбирает уже существующий контент холста
+// и переставляет фрагменты по правильным заголовкам, если что-то попало не туда
+// (например, после сбоя парсинга JSON в предыдущих шагах)
+async function aiDirectCleanup(event) {
+    const btn = event?.target || document.querySelector('button[onclick*="aiDirectCleanup"]');
+    const oldText = btn ? btn.innerText : null;
+    if (btn) {
+        btn.innerText = "✨ Привожу в порядок...";
+        btn.disabled = true;
+    }
+
+    try {
+        const boxes = Array.from(document.querySelectorAll('.box'));
+        if (boxes.length === 0) {
+            alert("На холсте нет блоков для обработки");
+            return;
+        }
+
+        const snapshot = boxes.map(b => ({
+            title: b.querySelector('.box-title').innerText.trim(),
+            content: b.querySelector('.box-content').innerText.trim()
+        }));
+        const titles = snapshot.map(s => s.title);
+
+        const prompt = `Вот текущее содержимое формуляра в виде пар "заголовок — текст". Часть текста могла по ошибке попасть не в свой раздел. Сопоставь заново каждый фрагмент правильному заголовку из списка ниже. Ничего не придумывай и не добавляй новых фактов — только переставь существующий текст по местам, а если один блок содержит текст сразу нескольких разделов, аккуратно раздели его между ними.
+
+Заголовки (строго в этом порядке): ${titles.join(' | ')}
+
+Текущее содержимое:
+${snapshot.map(s => `### ${s.title}\n${s.content || '(пусто)'}`).join('\n\n')}`;
+
+        const res = await callAI(prompt, 'organizer', titles);
+
+        if (res) {
+            let applied = 0;
+            Object.keys(res).forEach(aiKey => {
+                const box = boxes.find(b => {
+                    const pageTitle = b.querySelector('.box-title').innerText.trim().toLowerCase();
+                    const aiTitle = aiKey.trim().toLowerCase();
+                    return pageTitle === aiTitle ||
+                           aiTitle.includes(pageTitle) ||
+                           pageTitle.includes(aiTitle);
+                });
+                if (box) {
+                    box.querySelector('.box-content').innerText = res[aiKey];
+                    applied++;
+                } else {
+                    console.warn(`⚠️ Организатор вернул ключ без пары на холсте: "${aiKey}"`);
+                }
+            });
+            alert(applied > 0 ? `✅ Причёсано: обновлено блоков — ${applied}` : "⚠️ Организатор ответил, но ни один заголовок не совпал с холстом");
+        } else {
+            alert("❌ Организатор не ответил — блоки оставлены без изменений");
+        }
+    } catch (e) {
+        console.error("Ошибка приведения в порядок:", e);
+        alert("❌ Ошибка: " + (e.message || "неизвестная"));
+    } finally {
+        if (btn) {
+            btn.innerText = oldText;
+            btn.disabled = false;
+        }
         closeModal('ai-gen-modal');
     }
 }
@@ -1287,7 +1357,7 @@ function manageApiKey() {
 }
 
 // Модифицируем функцию вызова ИИ, чтобы она брала ключ из хранилища, опен сурс чат гпт
-async function callAI(text, role = 'editor') {
+async function callAI(text, role = 'editor', expectedKeys = []) {
     // 1. Проверяем ключ (используем то имя, под которым сохранили ключ OpenRouter)
     const API_KEY = localStorage.getItem('openrouter_api_key'); 
     
@@ -1299,7 +1369,7 @@ async function callAI(text, role = 'editor') {
     
     try {
         // 2. Вызываем "Часового" часовой приди...часовой приди...часовой приди...ааа оно работает
-        const result = await askSentinel(text, role); 
+        const result = await askSentinel(text, role, '', expectedKeys); 
         
         if (!result) throw new Error("ИИ вернул пустой ответ");
         return result;
