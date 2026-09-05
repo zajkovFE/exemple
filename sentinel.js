@@ -1,14 +1,21 @@
-// SENTINEL AI ENGINE (v2.8) - Qwen OpenRouter Edition (ПОЛНОСТЬЮ ИСПРАВЛЕНО)
+// SENTINEL AI ENGINE (v3.0) - OpenRouter Multi-Model Edition (АТТРАКТОР: авто-переключение моделей)
 
 const SENTINEL_CONFIG = {
-    model: "google/gemma-3-27b-it:free", 
-    apiEndpoint: "https://openrouter.ai/api/v1/chat/completions" // ИСПРАВЛЕНО: убраны пробелы!
+    // ПОРЯДОК ВАЖЕН: первая модель — основная, остальные — автоматический fallback ("аттрактор").
+    // Если модель недоступна, переименована, лимитирована или провайдер лёг — система сама
+    // переходит к следующей в списке без вмешательства пользователя.
+    models: [
+        "z-ai/glm-5.2:free",        // основная: сильная, с честным structured-output/tools
+        "minimax/minimax-m3:free",  // fallback №1: большой контекст, тоже поддерживает tools
+        "openrouter/free"           // fallback №2: мета-роутер, сам подбирает любую доступную бесплатную модель
+    ],
+    apiEndpoint: "https://openrouter.ai/api/v1/chat/completions"
 };
 
 // УНИВЕРСАЛЬНЫЙ ЗАПРОС К ИИ
 async function askSentinel(promptText, role = 'general', context = '') {
     console.log("🚀 Запуск ИИ-запроса:", { role, promptText, context });
-    
+
     const KEY = localStorage.getItem('openrouter_api_key')?.trim();
     if (!KEY || KEY.length < 5) {
         alert("🔑 API ключ OpenRouter не найден или невалиден! Нажмите 'СЕРВИС' → 'Ключ API'");
@@ -16,141 +23,156 @@ async function askSentinel(promptText, role = 'general', context = '') {
     }
 
     // СИСТЕМНЫЕ ИНСТРУКЦИИ ДЛЯ ВСЕХ РОЛЕЙ
-const systemInstructions = {
-    // Просим больше блоков и детализации
-    architect: `Ты — ведущий медицинский методолог. Спроектируй подробную структуру документа. 
+    const systemInstructions = {
+        // Просим больше блоков и детализации
+        architect: `Ты — ведущий медицинский методолог. Спроектируй подробную структуру документа. 
     Верни ТОЛЬКО JSON-массив объектов: [{"t":"Заголовок","w":1}]. 
     Используй w:2 для важных широких разделов. Создай не менее 8-10 логических блоков.`,
-    editor: `Ты — опытный врач-клиницист. Твоя задача — максимально подробно и профессионально заполнить разделы. 
+        editor: `Ты — опытный врач-клиницист. Твоя задача — максимально подробно и профессионально заполнить разделы. 
     Используй медицинскую терминологию, пиши развернуто. Важно: пиши ТОЛЬКО текст для блоков, без вступлений, без заголовков внутри текста и без разметки **ВВЕДЕНИЕ**. Максимум 200 слов на блок.
     Верни ТОЛЬКО JSON-объект: {"Заголовок":"Текст"}.`,
-    general: `Вы — эрудированный эксперт. Отвечайте точно, по делу, с академической строгостью. Поддерживайте научный стиль, но будьте понятны.`,
-    historian: `Вы — историк мирового уровня, специализирующийся на ${context || 'различных эпохах'}. Отвечайте как учёный: с фактами, датами, источниками.`,
-    scientist: `Вы — учёный с PhD в области ${context || 'различных дисциплин'}. Объясняйте сложные концепции ясно, но без упрощений.`,
-    philosopher: `Вы — философ, анализирующий ${context || 'фундаментальные вопросы бытия'}. Рассматривайте разные точки зрения, приводите аргументы.`,
-    safety_engineer: `Вы — инженер по техносферной безопасности. Оценивайте риски объективно, предлагайте конкретные меры защиты.`
-};
+        general: `Вы — эрудированный эксперт. Отвечайте точно, по делу, с академической строгостью. Поддерживайте научный стиль, но будьте понятны.`,
+        historian: `Вы — историк мирового уровня, специализирующийся на ${context || 'различных эпохах'}. Отвечайте как учёный: с фактами, датами, источниками.`,
+        scientist: `Вы — учёный с PhD в области ${context || 'различных дисциплин'}. Объясняйте сложные концепции ясно, но без упрощений.`,
+        philosopher: `Вы — философ, анализирующий ${context || 'фундаментальные вопросы бытия'}. Рассматривайте разные точки зрения, приводите аргументы.`,
+        safety_engineer: `Вы — инженер по техносферной безопасности. Оценивайте риски объективно, предлагайте конкретные меры защиты.`
+    };
 
     // Определяем инструкцию для роли
     let systemInstruction = systemInstructions[role] || systemInstructions.general;
 
-    try {
-        const response = await fetch(SENTINEL_CONFIG.apiEndpoint, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${KEY}`,
-                'Content-Type': 'application/json',
-                'HTTP-Referer': window.location.protocol === 'file:' 
-                    ? 'http://localhost' 
-                    : window.location.href,
-                'X-Title': 'Pharma-Architect'
-            },
-            body: JSON.stringify({
-                model: SENTINEL_CONFIG.model,
+    // Для architect/editor просим у моделей, которые это поддерживают, честный JSON-формат.
+    // Если провайдер конкретной модели его не поддержит — он просто проигнорирует поле,
+    // а старый "костыль" parseStrictJSON всё равно подстрахует на этапе разбора ответа.
+    const wantsJson = (role === 'architect' || role === 'editor');
+
+    let lastError = null;
+
+    // === АТТРАКТОР: перебор моделей по порядку из SENTINEL_CONFIG.models ===
+    for (let i = 0; i < SENTINEL_CONFIG.models.length; i++) {
+        const modelId = SENTINEL_CONFIG.models[i];
+        console.log(`🎯 Попытка ${i + 1}/${SENTINEL_CONFIG.models.length}: модель "${modelId}"`);
+
+        try {
+            const requestBody = {
+                model: modelId,
                 messages: [
-                    { 
-                        role: "system", 
-                        content: systemInstruction
-                    },
-                    { 
-                        role: "user", 
-                        content: promptText
-                    }
+                    { role: "system", content: systemInstruction },
+                    { role: "user", content: promptText }
                 ],
-                // Поменяйте в блоке fetch:
-                temperature: role === 'architect' || role === 'editor' ? 0.4 : 0.7,
-                max_tokens: role === 'architect' || role === 'editor' ? 2000 : 4000
-            })
-        });
+                temperature: wantsJson ? 0.4 : 0.7,
+                max_tokens: wantsJson ? 2000 : 4000
+            };
 
-        const responseText = await response.text();
-        console.log("🔍 Сырой ответ от ИИ (первые 500 символов):", responseText.substring(0, 500) + '...');
-        
-        if (!response.ok) {
-            console.error(`❌ Ошибка API ${response.status}:`, responseText);
-            try {
-                const errorData = JSON.parse(responseText);
-                throw new Error(errorData.error?.message || `HTTP ${response.status}`);
-            } catch (e) {
-                throw new Error(`Сервер вернул ошибку ${response.status}: ${responseText.substring(0, 300)}`);
+            if (wantsJson) {
+                requestBody.response_format = { type: "json_object" };
             }
-        }
 
-        const data = JSON.parse(responseText);
-        console.log("📊 Полная структура ответа:", data);
-        
-        // Попытка найти содержимое в разных форматах ответа
-        let content = null;
-        
-        // Формат OpenAI (стандартный)
-        if (data.choices?.[0]?.message?.content) {
-            content = data.choices[0].message.content.trim();
-        } 
-        // Формат OpenRouter
-        else if (data.data?.choices?.[0]?.message?.content) {
-            content = data.data.choices[0].message.content.trim();
-        }
-        // Формат некоторых других API
-        else if (data.message?.content) {
-            content = data.message.content.trim();
-        }
-        // Еще один возможный формат
-        else if (data.result) {
-            content = data.result.trim();
-        }
-        // Если ничего не сработало, пытаемся найти любой текст
-        else {
-            const stringData = JSON.stringify(data);
-            const textMatch = stringData.match(/"content":"([^"]+)"/);
-            if (textMatch && textMatch[1]) {
-                content = textMatch[1].replace(/\\n/g, '\n').trim();
+            const response = await fetch(SENTINEL_CONFIG.apiEndpoint, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${KEY}`,
+                    'Content-Type': 'application/json',
+                    'HTTP-Referer': window.location.protocol === 'file:'
+                        ? 'http://localhost'
+                        : window.location.href,
+                    'X-Title': 'Pharma-Architect'
+                },
+                body: JSON.stringify(requestBody)
+            });
+
+            const responseText = await response.text();
+            console.log(`🔍 [${modelId}] Сырой ответ (первые 500 символов):`, responseText.substring(0, 500) + '...');
+
+            if (!response.ok) {
+                console.warn(`⚠️ [${modelId}] Ошибка API ${response.status}, переключаюсь на следующую модель...`);
+                try {
+                    const errorData = JSON.parse(responseText);
+                    lastError = new Error(errorData.error?.message || `HTTP ${response.status}`);
+                } catch (e) {
+                    lastError = new Error(`Сервер вернул ошибку ${response.status}: ${responseText.substring(0, 300)}`);
+                }
+                continue; // пробуем следующую модель в списке
             }
-        }
-        
-        if (!content) {
-            throw new Error("Ответ ИИ не содержит данных или имеет неподдерживаемый формат");
-        }
 
-        console.log("📦 Сырой контент ИИ (первые 300 символов):", content.substring(0, 300) + '...');
+            const data = JSON.parse(responseText);
+            console.log(`📊 [${modelId}] Полная структура ответа:`, data);
 
-        // Для медицинских ролей - строгий JSON
-        if (role === 'architect' || role === 'editor') {
-            return parseStrictJSON(content);
+            // Попытка найти содержимое в разных форматах ответа
+            let content = null;
+
+            if (data.choices?.[0]?.message?.content) {
+                content = data.choices[0].message.content.trim();
+            } else if (data.data?.choices?.[0]?.message?.content) {
+                content = data.data.choices[0].message.content.trim();
+            } else if (data.message?.content) {
+                content = data.message.content.trim();
+            } else if (data.result) {
+                content = data.result.trim();
+            } else {
+                const stringData = JSON.stringify(data);
+                const textMatch = stringData.match(/"content":"([^"]+)"/);
+                if (textMatch && textMatch[1]) {
+                    content = textMatch[1].replace(/\\n/g, '\n').trim();
+                }
+            }
+
+            if (!content) {
+                console.warn(`⚠️ [${modelId}] Пустой/нераспознанный ответ, переключаюсь на следующую модель...`);
+                lastError = new Error("Ответ ИИ не содержит данных или имеет неподдерживаемый формат");
+                continue;
+            }
+
+            console.log(`📦 [${modelId}] Сырой контент (первые 300 символов):`, content.substring(0, 300) + '...');
+
+            // Успех — если это была не первая модель в списке, сообщаем об этом мягко (без alert, чтобы не пугать)
+            if (i > 0) {
+                console.log(`✅ Аттрактор сработал: подключился к резервной модели "${modelId}"`);
+            }
+
+            // Для медицинских ролей - строгий JSON (старый "костяк"-парсер остаётся как подстраховка)
+            if (wantsJson) {
+                return parseStrictJSON(content);
+            }
+
+            return content;
+
+        } catch (e) {
+            console.warn(`⚠️ [${modelId}] Исключение при запросе, переключаюсь на следующую модель...`, e);
+            lastError = e;
+            continue; // пробуем следующую модель
         }
-        
-        // Для других ролей - возвращаем текст как есть
-        return content;
-        
-    } catch (e) {
-        console.error("❌ SENTINEL CRITICAL ERROR:", e);
-        alert(`❌ Ошибка ИИ: ${e.message || "Неизвестная ошибка. Проверьте ключ и интернет."}`);
-        
-        // Возвращаем тестовые данные для медицинских ролей
-        if (role === 'architect') {
-            return [
-                {"t": "Тестовая структура", "w": 2},
-                {"t": "Диагноз", "w": 1},
-                {"t": "Лечение", "w": 1}
-            ];
-        }
-        return null;
     }
+
+    // === Если ВСЕ модели из списка не сработали ===
+    console.error("❌ SENTINEL CRITICAL ERROR: все модели из списка недоступны.", lastError);
+    alert(`❌ Ошибка ИИ: ни одна из моделей (${SENTINEL_CONFIG.models.join(', ')}) не ответила.\nПоследняя ошибка: ${lastError?.message || "неизвестная ошибка"}.\nПроверьте ключ и интернет.`);
+
+    // Возвращаем тестовые данные для медицинских ролей (старый "костыль" — оставлен как есть)
+    if (role === 'architect') {
+        return [
+            {"t": "Тестовая структура", "w": 2},
+            {"t": "Диагноз", "w": 1},
+            {"t": "Лечение", "w": 1}
+        ];
+    }
+    return null;
 }
 
-// ВСПОМОГАТЕЛЬНАЯ ФУНКЦИЯ: СТРОГИЙ ПАРСИНГ JSON
+// ВСПОМОГАТЕЛЬНАЯ ФУНКЦИЯ: СТРОГИЙ ПАРСИНГ JSON (без изменений — рабочий костыль остаётся)
 function parseStrictJSON(content) {
     let cleanJson = content.trim();
-    
+
     // 1. Удаляем markdown-обертки
     cleanJson = cleanJson.replace(/```json|```/gi, '').trim();
 
     // 2. ПРОВЕРКА НА ОБРЫВ: Если JSON не закрыт, пробуем закрыть его
     if (cleanJson.startsWith('{') && !cleanJson.endsWith('}')) {
         console.warn("⚠️ Обнаружен оборванный JSON, пытаюсь восстановить...");
-        
+
         // Если текст оборвался на середине слова, добавляем кавычку и скобку
         if (cleanJson.lastIndexOf('"') > cleanJson.lastIndexOf(':')) {
-             cleanJson += '"'; 
+             cleanJson += '"';
         }
         cleanJson += '}';
     }
@@ -170,7 +192,9 @@ function parseStrictJSON(content) {
         throw new Error("Не удалось восстановить JSON: " + e.message);
     }
 }
-console.log("✅ SENTINEL AI ENGINE загружен. Версия: v2.8 (ПОЛНОСТЬЮ ИСПРАВЛЕНО)"); 
+
+console.log("✅ SENTINEL AI ENGINE загружен. Версия: v3.0 (МУЛЬТИМОДЕЛЬНЫЙ АТТРАКТОР)");
+console.log("🎯 Цепочка моделей (по приоритету):", SENTINEL_CONFIG.models.join(" → "));
 console.log("💡 Доступные роли:", Object.keys({
     architect: '',
     editor: '',
