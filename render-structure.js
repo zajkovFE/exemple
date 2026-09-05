@@ -65,6 +65,5 @@ function removeBox(btn) {
     const width = box.style.flex.includes('100%') ? 2 : 1;
     row.dataset.usedWidth = Math.max(0, (parseFloat(row.dataset.usedWidth) || 0) - width);
     box.remove();
-
-  console.log(`✅ Структура отрисована: ${data.length} блоков → ${canvas.querySelectorAll('.form-row').length} строк`);
+    console.log("✅ Блок удалён");
 }
