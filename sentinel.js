@@ -54,6 +54,13 @@ async function askSentinel(promptText, role = 'general', context = '') {
         console.log(`🎯 Попытка ${i + 1}/${SENTINEL_CONFIG.models.length}: модель "${modelId}"`);
 
         try {
+            // editor теперь вызывается пачками по несколько заголовков (см. AI_FILL_BATCH_SIZE
+            // в index.html), поэтому его лимит токенов можно держать выше architect без риска
+            // упереться в потолок и спровоцировать дублирование/обрезание контента
+            let maxTokens = 4000;
+            if (role === 'architect') maxTokens = 2000;
+            if (role === 'editor') maxTokens = 3000;
+
             const requestBody = {
                 model: modelId,
                 messages: [
@@ -61,7 +68,7 @@ async function askSentinel(promptText, role = 'general', context = '') {
                     { role: "user", content: promptText }
                 ],
                 temperature: wantsJson ? 0.4 : 0.7,
-                max_tokens: wantsJson ? 2000 : 4000
+                max_tokens: maxTokens
             };
 
             if (wantsJson) {
