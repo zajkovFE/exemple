@@ -37,6 +37,10 @@
         .workspace { background: white; max-width: 1050px; margin: 0 auto; padding: 40px; border: 2px solid #000; min-height: 1100px; position: relative; box-shadow: 0 0 30px rgba(0,0,0,0.05); }
         .form-row { display: flex; gap: 10px; margin-bottom: 10px; min-height: 60px; }
         .design-mode .form-row { border: 1px dashed #ccc; padding: 5px; }
+        /* Мобильный режим: ручной тумблер, не зависит от ширины экрана — раскладывает
+           блоки в столбец, чтобы не сжимались в нечитаемые узкие колонки */
+        .mobile-stack .form-row { flex-direction: column; }
+        .mobile-stack .box { width: 100% !important; flex: none !important; }
 
         .box { border: 1px solid var(--border-color); padding: 10px; position: relative; background: white; display: flex; flex-direction: column; flex: 1; min-width: 50px; }
         .box-title { font-weight: bold; font-size: 10px; text-transform: uppercase; margin-bottom: 5px; border-bottom: 1px solid #eee; }
@@ -161,6 +165,7 @@
 }
     </style>
 <script src="https://unpkg.com/ai@2.2.35/dist/index.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script src="sentinel.js"></script>
     <script src="render-structure.js"></script>
     <script src="storage.js"></script>
@@ -240,6 +245,7 @@
     <div class="tool-group">
         <h4>🎨 Режим</h4>
         <button id="mode-toggle" class="btn-mode" onclick="toggleDesignMode()">🛠️ КОНСТРУКТОР: ВЫКЛ</button>
+        <button id="mobile-toggle" class="btn-mode" onclick="toggleMobileMode()">📱 МОБИЛЬНЫЙ: ВЫКЛ</button>
     </div>
     <div class="tool-group">
         <h4>🧱 Блоки</h4>
@@ -302,6 +308,15 @@
 <div class="tool-group">
     <h4>⚙️ СЕРВИС</h4>
     <button onclick="manageApiKey()" style="background:#7f8c8d">🔑 Ключ ИИ</button>
+</div>
+<div class="tool-group" style="position: relative;">
+    <h4>🩺 МКБ-10</h4>
+    <input type="text" id="icd10-search" placeholder="Код или название..." autocomplete="off"
+           oninput="renderICD10Results()"
+           style="padding: 8px; border-radius: 8px; border: 1px solid #3498db; width: 180px;">
+    <div id="icd10-results" style="display:none; position:absolute; top:100%; left:0; z-index:50;
+         background:#fff; border:1px solid #ccc; border-radius:6px; max-height:260px; overflow-y:auto;
+         width:320px; box-shadow:0 4px 12px rgba(0,0,0,0.15);"></div>
 </div>
     
 </div>
@@ -369,6 +384,10 @@
         📋 Создать структуру (Архитектор)
     </button>
     
+    <label style="display:flex; align-items:center; gap:6px; font-size:12px; margin-bottom:6px; cursor:pointer;">
+        <input type="checkbox" id="physician-mode-toggle" style="width:auto;">
+        📋 Подробная история болезни (роль «Врач», без лимита слов на блок)
+    </label>
     <button class="btn-ai" style="width:100%; background:#8e44ad;" onclick="aiDirectFill()">
         ✍️ Заполнить текущую (Клинический редактор)
     </button>
@@ -392,6 +411,144 @@
         document.body.classList.toggle('design-mode');
         document.getElementById('mode-toggle').innerText = isDesign ? "👁️ КОНСТРУКТОР: ВКЛ" : "🛠️ КОНСТРУКТОР: ВЫКЛ";
     }
+
+    // Мобильный режим: ручной тумблер (не авто-медиазапрос), складывает блоки в столбец.
+    // Состояние запоминается в localStorage — не нужно включать заново при каждом визите.
+    function toggleMobileMode() {
+        const isMobile = document.body.classList.toggle('mobile-stack');
+        document.getElementById('mobile-toggle').innerText = isMobile ? "💻 МОБИЛЬНЫЙ: ВКЛ" : "📱 МОБИЛЬНЫЙ: ВЫКЛ";
+        localStorage.setItem('pharma_mobile_mode', isMobile ? '1' : '0');
+    }
+
+    // Восстанавливаем состояние мобильного режима при загрузке страницы
+    (function initMobileMode() {
+        if (localStorage.getItem('pharma_mobile_mode') === '1') {
+            document.addEventListener('DOMContentLoaded', () => {
+                document.body.classList.add('mobile-stack');
+                const btn = document.getElementById('mobile-toggle');
+                if (btn) btn.innerText = "💻 МОБИЛЬНЫЙ: ВКЛ";
+            });
+        }
+    })();
+
+    // --- СПРАВОЧНИК МКБ-10 / МКБ-О: локальный поиск, парсинг CSV прямо в браузере ---
+    // Официальные файлы (те же, что в репозитории ak4nv/mkb10), без предварительной конвертации —
+    // при обновлении справочника достаточно просто заменить CSV-файлы в data/, ничего пересобирать не нужно.
+    let ICD10_DATA = [];
+    let icd10LoadError = false;
+
+    function parseCsvFile(path, mapRow, delimiter = ';') {
+        return fetch(path)
+            .then(r => {
+                if (!r.ok) throw new Error(`HTTP ${r.status} (${path})`);
+                return r.text();
+            })
+            .then(text => new Promise((resolve, reject) => {
+                Papa.parse(text, {
+                    header: true,
+                    delimiter: delimiter,
+                    skipEmptyLines: true,
+                    complete: (result) => resolve(result.data.map(mapRow).filter(Boolean)),
+                    error: reject
+                });
+            }));
+    }
+
+    (function loadICD10() {
+        Promise.all([
+            parseCsvFile('data/mkb10.csv', row => {
+                const code = (row.MKB_CODE || '').trim();
+                const name = (row.MKB_NAME || '').trim();
+                if (!name) return null;
+                return { code, name, source: 'МКБ-10' };
+            }),
+            parseCsvFile('data/mkbo.csv', row => {
+                const code = (row.CODE || '').trim();
+                const name = (row.NAME || '').trim();
+                if (!name) return null;
+                return { code, name, source: 'МКБ-О' };
+            }),
+            // ICD-11 MMS от ВОЗ: официальная бесплатная "Simple Tabulation" (icd.who.int),
+            // разделитель запятая (не точка с запятой!), английский язык, отступы в Title — уровень вложенности
+            parseCsvFile('data/icd11_en.csv', row => {
+                const code = (row.Code || '').trim();
+                const name = (row.Title || '').trim();
+                if (!name) return null;
+                return { code, name, source: 'ICD-11 (EN)' };
+            }, ',')
+        ])
+            .then(([mkb10, mkbo, icd11]) => {
+                ICD10_DATA = [...mkb10, ...mkbo, ...icd11];
+                console.log(`✅ Справочник загружен: МКБ-10 — ${mkb10.length}, МКБ-О — ${mkbo.length}, ICD-11 — ${icd11.length}`);
+            })
+            .catch(e => {
+                icd10LoadError = true;
+                console.warn("⚠️ Не удалось загрузить справочник (data/mkb10.csv, data/mkbo.csv, data/icd11_en.csv):", e.message);
+            });
+    })();
+
+    function renderICD10Results() {
+        const input = document.getElementById('icd10-search');
+        const box = document.getElementById('icd10-results');
+        const q = input.value.trim().toLowerCase();
+
+        if (!q || q.length < 2) {
+            box.style.display = 'none';
+            box.innerHTML = '';
+            return;
+        }
+
+        if (icd10LoadError) {
+            box.style.display = 'block';
+            box.innerHTML = '<div style="padding:8px; font-size:12px; color:#c0392b;">Справочник не загружен (проверьте data/mkb10.csv, data/mkbo.csv, data/icd11_en.csv)</div>';
+            return;
+        }
+
+        const matches = ICD10_DATA
+            .filter(e => e.code.toLowerCase().includes(q) || e.name.toLowerCase().includes(q))
+            .slice(0, 30);
+
+        if (matches.length === 0) {
+            box.style.display = 'block';
+            box.innerHTML = '<div style="padding:8px; font-size:12px; color:#7f8c8d;">Ничего не найдено</div>';
+            return;
+        }
+
+        box.innerHTML = matches.map(e => `
+            <div class="icd10-item" style="padding:6px 8px; font-size:12px; cursor:pointer; border-bottom:1px solid #f0f0f0;"
+                 onmouseover="this.style.background='#eef7ff'" onmouseout="this.style.background='#fff'"
+                 onclick='selectICD10(${JSON.stringify(e.code)}, ${JSON.stringify(e.name)})'>
+                <span style="color:#95a5a6; font-size:10px;">${e.source}</span> <b>${e.code}</b> — ${e.name}
+            </div>
+        `).join('');
+        box.style.display = 'block';
+    }
+
+    function selectICD10(code, name) {
+        window.lastSelectedICD10 = { code, name };
+        const text = `${code} — ${name}`;
+
+        // Если курсор сейчас в редактируемом блоке — вставляем прямо туда, иначе просто копируем в буфер
+        const active = document.activeElement;
+        if (active && active.closest && active.closest('.box-content')) {
+            document.execCommand('insertText', false, text);
+        } else if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).catch(() => {});
+        }
+
+        document.getElementById('icd10-search').value = text;
+        document.getElementById('icd10-results').style.display = 'none';
+        console.log(`🩺 Выбран код МКБ-10: ${text}`);
+    }
+
+    // Закрываем список результатов при клике вне поля поиска
+    document.addEventListener('click', (e) => {
+        const group = document.getElementById('icd10-search')?.closest('.tool-group');
+        if (group && !group.contains(e.target)) {
+            const box = document.getElementById('icd10-results');
+            if (box) box.style.display = 'none';
+        }
+    });
 
     function addNewRow() {
         const row = document.createElement('div');
@@ -635,7 +792,8 @@ function importManualAI() {
 
 // 1. Создание структуры (Архитектор)...дом милый дом, не рванет ли...
 async function aiDirectCreate() {
-    const topic = prompt("Какую структуру создать? (напр. История болезни: Гастрит)");
+    const suggested = window.lastSelectedICD10 ? `${window.lastSelectedICD10.code} — ${window.lastSelectedICD10.name}` : "";
+    const topic = prompt("Какую структуру создать? (напр. История болезни: Гастрит)", suggested);
     if (!topic) return;
     
     // Вызываем автономный движок...хорошо хоть не атомный
@@ -652,7 +810,8 @@ async function aiDirectCreate() {
 const AI_FILL_BATCH_SIZE = 4;
 
 async function aiDirectFill(event) {
-    const context = prompt("Введите данные (препарат, симптомы или детали исследования):");
+    const suggested = window.lastSelectedICD10 ? `${window.lastSelectedICD10.code} — ${window.lastSelectedICD10.name}` : "";
+    const context = prompt("Введите данные (препарат, симптомы или детали исследования):", suggested);
     if (!context) return;
 
     // 1. Индикатор загрузки (меняем текст кнопки, на которую нажали)
@@ -661,13 +820,19 @@ async function aiDirectFill(event) {
     btn.disabled = true;
 
     try {
+        const usePhysician = document.getElementById('physician-mode-toggle')?.checked;
+        const fillRole = usePhysician ? 'physician' : 'editor';
+        // У physician нет лимита слов на блок, поэтому пачки берём поменьше —
+        // чтобы подробный ответ на каждый раздел уверенно укладывался в лимит токенов
+        const batchSize = usePhysician ? 2 : AI_FILL_BATCH_SIZE;
+
         const titles = Array.from(document.querySelectorAll('.box-title')).map(t => t.innerText.trim());
 
-        // Делим заголовки на пачки по AI_FILL_BATCH_SIZE, чтобы каждый запрос к editor-роли
-        // оставался в пределах надёжного лимита токенов и не провоцировал дублирование текста
+        // Делим заголовки на пачки, чтобы каждый запрос оставался в пределах надёжного
+        // лимита токенов и не провоцировал дублирование текста
         const batches = [];
-        for (let i = 0; i < titles.length; i += AI_FILL_BATCH_SIZE) {
-            batches.push(titles.slice(i, i + AI_FILL_BATCH_SIZE));
+        for (let i = 0; i < titles.length; i += batchSize) {
+            batches.push(titles.slice(i, i + batchSize));
         }
 
         const combinedRes = {};
@@ -680,7 +845,7 @@ async function aiDirectFill(event) {
             const batchTitles = batches[i];
             const query = `Заполни эти разделы: ${batchTitles.join(', ')}. Контекст: ${context}`;
 
-            const res = await callAI(query, 'editor', batchTitles);
+            const res = await callAI(query, fillRole, batchTitles);
             if (res) {
                 Object.assign(combinedRes, res);
             } else {
@@ -1428,12 +1593,45 @@ async function callAI(text, role = 'editor', expectedKeys = []) {
         'новый блок': function() { addBoxWithTitle(); },
         'добавь блок': function() { addBoxWithTitle(); },
         'режим': function() { toggleDesignMode(); },
-        'конструктор': function() { toggleDesignMode(); }
+        'конструктор': function() { toggleDesignMode(); },
+        'мобильный режим': function() { toggleMobileMode(); },
+        'причеши': function() { if (typeof aiDirectCleanup === 'function') aiDirectCleanup(); },
+        'причесать': function() { if (typeof aiDirectCleanup === 'function') aiDirectCleanup(); },
+        'найди диагноз *query': function(query) {
+          const icdInput = document.getElementById('icd10-search');
+          if (icdInput) {
+            icdInput.value = query;
+            if (typeof renderICD10Results === 'function') renderICD10Results();
+            icdInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        },
+        'мкб *query': function(query) {
+          const icdInput = document.getElementById('icd10-search');
+          if (icdInput) {
+            icdInput.value = query;
+            if (typeof renderICD10Results === 'function') renderICD10Results();
+          }
+        }
       };
 
       // Добавляем команды
       annyang.addCommands(commands);
       annyang.setLanguage('ru-RU');
+
+      // ДИКТОВКА: если фраза не совпала ни с одной командой — считаем, что это надиктованный
+      // текст, и вставляем его прямо в блок, где сейчас находится курсор (если он там есть)
+      annyang.addCallback('resultNoMatch', function(userSayings) {
+        const said = (userSayings && userSayings[0]) ? userSayings[0].trim() : '';
+        if (!said) return;
+
+        const active = document.activeElement;
+        if (active && active.closest && active.closest('.box-content')) {
+          document.execCommand('insertText', false, said + ' ');
+          console.log(`🎙️ Продиктовано в блок: "${said}"`);
+        } else {
+          console.log(`🎙️ Фраза не распознана как команда и нет активного блока для диктовки: "${said}"`);
+        }
+      });
 
       // Кнопка запуска/остановки
       let isActive = false;
