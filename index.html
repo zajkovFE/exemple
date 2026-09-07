@@ -310,7 +310,7 @@
     <button onclick="manageApiKey()" style="background:#7f8c8d">🔑 Ключ ИИ</button>
 </div>
 <div class="tool-group" style="position: relative;">
-    <h4>🩺 МКБ-10</h4>
+    <h4>🩺 Справочник</h4>
     <input type="text" id="icd10-search" placeholder="Код или название..." autocomplete="off"
            oninput="renderICD10Results()"
            style="padding: 8px; border-radius: 8px; border: 1px solid #3498db; width: 180px;">
@@ -475,17 +475,45 @@
                 const name = (row.Title || '').trim();
                 if (!name) return null;
                 return { code, name, source: 'ICD-11 (EN)' };
-            }, ',')
+            }, ','),
+            // Статьи Википедии (CC BY-SA) по психиатрии — очищены и разобраны на секции нашим
+            // парсером wiki_parser.py. У части статей нет привязки к конкретному коду МКБ (code=null) —
+            // это нормально, ищутся по названию
+            fetch('data/wiki_psychiatry.json')
+                .then(r => r.ok ? r.json() : [])
+                .then(arr => arr.map(e => ({
+                    code: e.code || '',
+                    name: e.title,
+                    source: 'Wikipedia',
+                    definition: e.definition,
+                    url: e.url,
+                    license: e.license
+                })))
+                .catch(() => []),
+            // Авторский обзорный материал по F00-F99 (классификация/этиология/патогенез/клиника/
+            // лечение/прогноз) — написан по общим научным знаниям психиатрии, без опоры на текст
+            // ИДК-10 или DSM (см. поле disclaimer в самих данных)
+            fetch('data/psychiatry_ai_review.json')
+                .then(r => r.ok ? r.json() : [])
+                .then(arr => arr.map(e => ({
+                    code: e.code || '',
+                    name: e.title,
+                    source: 'Обзор (ИИ)',
+                    reviewData: e
+                })))
+                .catch(() => [])
         ])
-            .then(([mkb10, mkbo, icd11]) => {
-                ICD10_DATA = [...mkb10, ...mkbo, ...icd11];
-                console.log(`✅ Справочник загружен: МКБ-10 — ${mkb10.length}, МКБ-О — ${mkbo.length}, ICD-11 — ${icd11.length}`);
+            .then(([mkb10, mkbo, icd11, wiki, review]) => {
+                ICD10_DATA = [...mkb10, ...mkbo, ...icd11, ...wiki, ...review];
+                console.log(`✅ Справочник загружен: МКБ-10 — ${mkb10.length}, МКБ-О — ${mkbo.length}, ICD-11 — ${icd11.length}, Wikipedia — ${wiki.length}, Обзор — ${review.length}`);
             })
             .catch(e => {
                 icd10LoadError = true;
-                console.warn("⚠️ Не удалось загрузить справочник (data/mkb10.csv, data/mkbo.csv, data/icd11_en.csv):", e.message);
+                console.warn("⚠️ Не удалось загрузить справочник:", e.message);
             });
     })();
+
+    let CURRENT_ICD_MATCHES = [];
 
     function renderICD10Results() {
         const input = document.getElementById('icd10-search');
@@ -500,33 +528,56 @@
 
         if (icd10LoadError) {
             box.style.display = 'block';
-            box.innerHTML = '<div style="padding:8px; font-size:12px; color:#c0392b;">Справочник не загружен (проверьте data/mkb10.csv, data/mkbo.csv, data/icd11_en.csv)</div>';
+            box.innerHTML = '<div style="padding:8px; font-size:12px; color:#c0392b;">Справочник не загружен (проверьте data/mkb10.csv, data/mkbo.csv, data/icd11_en.csv, data/wiki_psychiatry.json)</div>';
             return;
         }
 
-        const matches = ICD10_DATA
+        CURRENT_ICD_MATCHES = ICD10_DATA
             .filter(e => e.code.toLowerCase().includes(q) || e.name.toLowerCase().includes(q))
             .slice(0, 30);
 
-        if (matches.length === 0) {
+        if (CURRENT_ICD_MATCHES.length === 0) {
             box.style.display = 'block';
             box.innerHTML = '<div style="padding:8px; font-size:12px; color:#7f8c8d;">Ничего не найдено</div>';
             return;
         }
 
-        box.innerHTML = matches.map(e => `
+        box.innerHTML = CURRENT_ICD_MATCHES.map((e, i) => `
             <div class="icd10-item" style="padding:6px 8px; font-size:12px; cursor:pointer; border-bottom:1px solid #f0f0f0;"
                  onmouseover="this.style.background='#eef7ff'" onmouseout="this.style.background='#fff'"
-                 onclick='selectICD10(${JSON.stringify(e.code)}, ${JSON.stringify(e.name)})'>
-                <span style="color:#95a5a6; font-size:10px;">${e.source}</span> <b>${e.code}</b> — ${e.name}
+                 onclick='selectICD10(${i})'>
+                <span style="color:#95a5a6; font-size:10px;">${e.source}</span>
+                ${e.code ? `<b>${e.code}</b> — ` : ''}${e.name}
             </div>
         `).join('');
         box.style.display = 'block';
     }
 
-    function selectICD10(code, name) {
-        window.lastSelectedICD10 = { code, name };
-        const text = `${code} — ${name}`;
+    function selectICD10(index) {
+        const entry = CURRENT_ICD_MATCHES[index];
+        if (!entry) return;
+
+        let text;
+        if (entry.source === 'Wikipedia') {
+            // Для статьи Википедии вставляем определение + обязательную атрибуцию (CC BY-SA)
+            text = `${entry.definition}\n[Источник: Википедия — ${entry.url}, ${entry.license}]`;
+            window.lastSelectedICD10 = { code: entry.code || '', name: entry.name };
+        } else if (entry.source === 'Обзор (ИИ)') {
+            // Авторский обзор — вставляем структурированно, разделами, с дисклеймером в конце
+            const r = entry.reviewData;
+            text = `${r.title}${r.code ? ' (' + r.code + ')' : ''}\n\n`
+                 + `Классификация: ${r.classification}\n\n`
+                 + `Этиология: ${r.etiology}\n\n`
+                 + `Патогенез: ${r.pathogenesis}\n\n`
+                 + `Клиническая картина: ${r.clinical_picture}\n\n`
+                 + `Лечение: ${r.treatment}\n\n`
+                 + `Прогноз: ${r.prognosis}\n\n`
+                 + `[${r.disclaimer}]`;
+            window.lastSelectedICD10 = { code: entry.code || '', name: entry.name };
+        } else {
+            text = `${entry.code} — ${entry.name}`;
+            window.lastSelectedICD10 = { code: entry.code, name: entry.name };
+        }
 
         // Если курсор сейчас в редактируемом блоке — вставляем прямо туда, иначе просто копируем в буфер
         const active = document.activeElement;
@@ -536,9 +587,9 @@
             navigator.clipboard.writeText(text).catch(() => {});
         }
 
-        document.getElementById('icd10-search').value = text;
+        document.getElementById('icd10-search').value = entry.code ? `${entry.code} — ${entry.name}` : entry.name;
         document.getElementById('icd10-results').style.display = 'none';
-        console.log(`🩺 Выбран код МКБ-10: ${text}`);
+        console.log(`🩺 Выбрано: ${entry.source} — ${entry.name}`);
     }
 
     // Закрываем список результатов при клике вне поля поиска
