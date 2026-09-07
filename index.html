@@ -317,6 +317,17 @@
     <div id="icd10-results" style="display:none; position:absolute; top:100%; left:0; z-index:50;
          background:#fff; border:1px solid #ccc; border-radius:6px; max-height:260px; overflow-y:auto;
          width:320px; box-shadow:0 4px 12px rgba(0,0,0,0.15);"></div>
+    <button onclick="openReferenceModal()" style="background:#16a085; margin-top:6px; width:100%;">📖 Открыть справочник</button>
+</div>
+
+<div class="modal" id="reference-modal" style="width:90vw; max-width:700px; max-height:85vh; overflow-y:auto;">
+    <h3 style="margin-top:0;">📖 Справочник</h3>
+    <input type="text" id="reference-search" placeholder="Код или название..." autocomplete="off"
+           oninput="renderReferenceResults()"
+           style="width:100%; padding:10px; border-radius:8px; border:1px solid #3498db; box-sizing:border-box;">
+    <div id="reference-results" style="margin-top:10px;"></div>
+    <div id="reference-detail" style="display:none;"></div>
+    <button onclick="closeModal('reference-modal')" style="background:#ccc; color:black; width:100%; margin-top:14px;">Закрыть</button>
 </div>
     
 </div>
@@ -515,6 +526,29 @@
 
     let CURRENT_ICD_MATCHES = [];
 
+    // Кнопки в модалке сами перехватывают фокус при клике, поэтому document.activeElement
+    // в момент нажатия "Вставить" будет самой кнопкой, а не тем блоком, где стоял курсор.
+    // Запоминаем последний реально сфокусированный редактируемый блок отдельно.
+    window.lastFocusedBoxContent = null;
+    document.addEventListener('focusin', (e) => {
+        if (e.target && e.target.classList && e.target.classList.contains('box-content')) {
+            window.lastFocusedBoxContent = e.target;
+        }
+    });
+
+    function insertTextIntoLastBox(text) {
+        const target = window.lastFocusedBoxContent;
+        if (target && document.body.contains(target)) {
+            target.focus();
+            document.execCommand('insertText', false, text);
+            return true;
+        } else if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).catch(() => {});
+            return false;
+        }
+        return false;
+    }
+
     function renderICD10Results() {
         const input = document.getElementById('icd10-search');
         const box = document.getElementById('icd10-results');
@@ -553,19 +587,14 @@
         box.style.display = 'block';
     }
 
-    function selectICD10(index) {
-        const entry = CURRENT_ICD_MATCHES[index];
-        if (!entry) return;
-
-        let text;
+    function buildEntryText(entry) {
         if (entry.source === 'Wikipedia') {
-            // Для статьи Википедии вставляем определение + обязательную атрибуцию (CC BY-SA)
-            text = `${entry.definition}\n[Источник: Википедия — ${entry.url}, ${entry.license}]`;
-            window.lastSelectedICD10 = { code: entry.code || '', name: entry.name };
+            // Для статьи Википедии — определение + обязательная атрибуция (CC BY-SA)
+            return `${entry.definition}\n[Источник: Википедия — ${entry.url}, ${entry.license}]`;
         } else if (entry.source === 'Обзор (ИИ)') {
-            // Авторский обзор — вставляем структурированно, разделами, с дисклеймером в конце
+            // Авторский обзор — структурированно, разделами, с дисклеймером в конце
             const r = entry.reviewData;
-            text = `${r.title}${r.code ? ' (' + r.code + ')' : ''}\n\n`
+            return `${r.title}${r.code ? ' (' + r.code + ')' : ''}\n\n`
                  + `Классификация: ${r.classification}\n\n`
                  + `Этиология: ${r.etiology}\n\n`
                  + `Патогенез: ${r.pathogenesis}\n\n`
@@ -573,23 +602,130 @@
                  + `Лечение: ${r.treatment}\n\n`
                  + `Прогноз: ${r.prognosis}\n\n`
                  + `[${r.disclaimer}]`;
-            window.lastSelectedICD10 = { code: entry.code || '', name: entry.name };
-        } else {
-            text = `${entry.code} — ${entry.name}`;
-            window.lastSelectedICD10 = { code: entry.code, name: entry.name };
         }
+        return `${entry.code} — ${entry.name}`;
+    }
 
-        // Если курсор сейчас в редактируемом блоке — вставляем прямо туда, иначе просто копируем в буфер
-        const active = document.activeElement;
-        if (active && active.closest && active.closest('.box-content')) {
-            document.execCommand('insertText', false, text);
-        } else if (navigator.clipboard) {
-            navigator.clipboard.writeText(text).catch(() => {});
-        }
+    function selectICD10(index) {
+        const entry = CURRENT_ICD_MATCHES[index];
+        if (!entry) return;
+
+        window.lastSelectedICD10 = { code: entry.code || '', name: entry.name };
+        const text = buildEntryText(entry);
+        insertTextIntoLastBox(text);
 
         document.getElementById('icd10-search').value = entry.code ? `${entry.code} — ${entry.name}` : entry.name;
         document.getElementById('icd10-results').style.display = 'none';
         console.log(`🩺 Выбрано: ${entry.source} — ${entry.name}`);
+    }
+
+    let CURRENT_REFERENCE_MATCHES = [];
+
+    function openReferenceModal() {
+        openModal('reference-modal');
+        document.getElementById('reference-detail').style.display = 'none';
+        document.getElementById('reference-results').style.display = 'block';
+        document.getElementById('reference-search').value = document.getElementById('icd10-search').value || '';
+        renderReferenceResults();
+        setTimeout(() => document.getElementById('reference-search').focus(), 50);
+    }
+
+    function renderReferenceResults() {
+        const q = document.getElementById('reference-search').value.trim().toLowerCase();
+        const box = document.getElementById('reference-results');
+
+        if (!q || q.length < 2) {
+            box.innerHTML = '<div style="padding:10px; font-size:13px; color:#7f8c8d;">Введите код или название (от 2 символов)</div>';
+            return;
+        }
+
+        if (icd10LoadError) {
+            box.innerHTML = '<div style="padding:10px; font-size:13px; color:#c0392b;">Справочник не загружен</div>';
+            return;
+        }
+
+        CURRENT_REFERENCE_MATCHES = ICD10_DATA
+            .filter(e => e.code.toLowerCase().includes(q) || e.name.toLowerCase().includes(q))
+            .slice(0, 50);
+
+        if (CURRENT_REFERENCE_MATCHES.length === 0) {
+            box.innerHTML = '<div style="padding:10px; font-size:13px; color:#7f8c8d;">Ничего не найдено</div>';
+            return;
+        }
+
+        box.innerHTML = CURRENT_REFERENCE_MATCHES.map((e, i) => `
+            <div style="padding:10px; font-size:14px; cursor:pointer; border-bottom:1px solid #f0f0f0;"
+                 onmouseover="this.style.background='#eef7ff'" onmouseout="this.style.background='#fff'"
+                 onclick='showReferenceDetail(${i})'>
+                <span style="color:#95a5a6; font-size:11px;">${e.source}</span><br>
+                ${e.code ? `<b>${e.code}</b> — ` : ''}${e.name}
+            </div>
+        `).join('');
+    }
+
+    function showReferenceDetail(index) {
+        const entry = CURRENT_REFERENCE_MATCHES[index];
+        if (!entry) return;
+
+        let html;
+        if (entry.source === 'Обзор (ИИ)') {
+            const r = entry.reviewData;
+            html = `
+                <h4 style="margin-bottom:2px;">${r.title}${r.code ? ' (' + r.code + ')' : ''}</h4>
+                <p style="font-size:11px; color:#95a5a6;">${entry.source}</p>
+                <p><b>Классификация:</b> ${r.classification}</p>
+                <p><b>Этиология:</b> ${r.etiology}</p>
+                <p><b>Патогенез:</b> ${r.pathogenesis}</p>
+                <p><b>Клиническая картина:</b> ${r.clinical_picture}</p>
+                <p><b>Лечение:</b> ${r.treatment}</p>
+                <p><b>Прогноз:</b> ${r.prognosis}</p>
+                <p style="font-size:11px; color:#c0392b;">${r.disclaimer}</p>
+            `;
+        } else if (entry.source === 'Wikipedia') {
+            html = `
+                <h4 style="margin-bottom:2px;">${entry.name}</h4>
+                <p style="font-size:11px; color:#95a5a6;">${entry.source}</p>
+                <p>${entry.definition}</p>
+                <p style="font-size:11px; color:#7f8c8d;">Источник: <a href="${entry.url}" target="_blank" rel="noopener">${entry.url}</a> — ${entry.license}</p>
+            `;
+        } else {
+            html = `
+                <h4 style="margin-bottom:2px;">${entry.code} — ${entry.name}</h4>
+                <p style="font-size:11px; color:#95a5a6;">${entry.source}</p>
+            `;
+        }
+
+        html += `
+            <div style="display:flex; gap:8px; margin-top:14px;">
+                <button onclick="backToReferenceResults()" style="flex:1; background:#ccc; color:black;">← Назад к результатам</button>
+                <button onclick="insertFromReferenceDetail(${index})" style="flex:1; background:#16a085;">➕ Вставить в блок</button>
+            </div>
+        `;
+
+        document.getElementById('reference-detail').innerHTML = html;
+        document.getElementById('reference-detail').style.display = 'block';
+        document.getElementById('reference-results').style.display = 'none';
+    }
+
+    function backToReferenceResults() {
+        document.getElementById('reference-detail').style.display = 'none';
+        document.getElementById('reference-results').style.display = 'block';
+    }
+
+    function insertFromReferenceDetail(index) {
+        const entry = CURRENT_REFERENCE_MATCHES[index];
+        if (!entry) return;
+
+        window.lastSelectedICD10 = { code: entry.code || '', name: entry.name };
+        const text = buildEntryText(entry);
+        const inserted = insertTextIntoLastBox(text);
+
+        if (!inserted) {
+            alert("Текст скопирован в буфер обмена — кликните в нужный блок и вставьте вручную (не нашёл, куда вставлять напрямую).");
+        }
+
+        closeModal('reference-modal');
+        console.log(`🩺 Вставлено из справочника: ${entry.source} — ${entry.name}`);
     }
 
     // Закрываем список результатов при клике вне поля поиска
