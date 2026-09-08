@@ -333,6 +333,7 @@ h1 span { color: var(--accent); }
     <div class="hint-chip">Правильный: <strong>+</strong> или <strong>*</strong> перед буквой</div>
     <div class="hint-chip">Или <strong>&lt;b&gt;А)&lt;/b&gt;</strong> жирным</div>
     <div class="hint-chip">Или <strong>**А)**</strong> markdown</div>
+    <div class="hint-chip">Картинку можно добавить после распознавания — поле появится под карточкой</div>
   </div>
 
   <div class="field-label">Вставьте текст с вопросами</div>
@@ -378,7 +379,8 @@ h1 span { color: var(--accent); }
   {
     "q": "Текст вопроса",
     "opts": ["Вариант А", "Вариант Б", "Вариант В", "Вариант Г", "Вариант Д"],
-    "ans": 0
+    "ans": 0,
+    "img": "https://raw.githubusercontent.com/USER/REPO/main/data/.../images/slide1.jpg"
   }
 ]'></textarea>
   <div class="btn-row">
@@ -564,7 +566,7 @@ let pinMode   = 'enter'; // 'enter' | 'setup1' | 'setup2'
 let pinFirst  = '';
 
 function pinHash(s) {
-  // Simple non-crypto hash — достаточно для UI-защиты
+  // Simple non-crypto hash — достаточно д��я UI-защиты
   let h = 0x811c9dc5;
   for (let i = 0; i < s.length; i++) {
     h ^= s.charCodeAt(i);
@@ -882,8 +884,33 @@ function renderPreview(qs) {
             <span class="opt-l">${letters[i]}</span>${escHtml(o)}
           </div>`).join('')}
       </div>
+      <div style="margin-top:10px">
+        <input class="input" style="font-size:11px" placeholder="Ссылка на картинку (необязательно)"
+          value="${q.img ? escHtml(q.img) : ''}"
+          oninput="setPreviewImg(${idx}, this.value)" />
+        ${q.img ? `<img src="${escHtml(q.img)}" style="max-width:140px;max-height:100px;border-radius:6px;margin-top:8px;display:block;border:1px solid var(--border)">` : ''}
+      </div>
     </div>
   `).join('');
+}
+
+function setPreviewImg(idx, value) {
+  const v = value.trim();
+  if (v) parsedQs[idx].img = v; else delete parsedQs[idx].img;
+  // Перерисов��ваем только превью-картинку, не весь список (чтобы не терять фокус поля ввода)
+  const card = document.getElementById('pcard-' + idx);
+  if (!card) return;
+  let thumb = card.querySelector('img');
+  if (v) {
+    if (!thumb) {
+      thumb = document.createElement('img');
+      thumb.style.cssText = 'max-width:140px;max-height:100px;border-radius:6px;margin-top:8px;display:block;border:1px solid var(--border)';
+      card.lastElementChild.appendChild(thumb);
+    }
+    thumb.src = v;
+  } else if (thumb) {
+    thumb.remove();
+  }
 }
 
 function removePreviewQ(idx) {
@@ -928,6 +955,8 @@ function addManualQ() {
     </div>
     <div class="field-label" style="margin-top:0">Текст вопроса</div>
     <textarea class="textarea" id="mq-${id}" rows="3" placeholder="Введите текст вопроса..."></textarea>
+    <div class="field-label">Ссылка на картинку (необязательно) · гистология, ЭКГ и т.п.</div>
+    <input class="input" id="mimg-${id}" placeholder="https://raw.githubusercontent.com/USER/REPO/main/data/.../images/slide1.jpg" />
     <div class="field-label">Варианты ответов · отметьте правильный ●</div>
     ${letters.map((l,i) => `
       <div class="opt-row" id="mrow-${id}-${i}">
@@ -972,8 +1001,10 @@ function collectManualQs() {
     }
     if (opts.length < 2) return;
     const note = document.getElementById('mnote-' + id)?.value.trim();
+    const img  = document.getElementById('mimg-' + id)?.value.trim();
     const q = { q: qText, opts, ans };
     if (note) q.note = note;
+    if (img) q.img = img;
     result.push(q);
   });
   return result;
