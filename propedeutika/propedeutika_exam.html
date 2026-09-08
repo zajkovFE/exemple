@@ -191,6 +191,18 @@
     color: var(--text);
   }
 
+  .q-image {
+    display: none;
+    max-width: 100%;
+    max-height: 380px;
+    object-fit: contain;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    margin-bottom: 20px;
+    cursor: zoom-in;
+    background: var(--surface);
+  }
+
   .options { display: flex; flex-direction: column; gap: 10px; }
 
   .option-btn {
@@ -1667,7 +1679,7 @@
       <button class="about-tab active" id="about-tab-changelog" onclick="aboutSwitchTab('changelog')" style="padding:9px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--accent);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px;cursor:pointer;">📋 Changelog</button>
       <button class="about-tab" id="about-tab-roadmap"    onclick="aboutSwitchTab('roadmap')"   style="padding:9px;background:transparent;border:none;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px;cursor:pointer;">🗺 Roadmap</button>
       <button class="about-tab" id="about-tab-forum"      onclick="aboutSwitchTab('forum')"     style="padding:9px;background:transparent;border:none;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px;cursor:pointer;">💬 Форум</button>
-      <button class="about-tab" id="about-tab-feedback"   onclick="aboutSwitchTab('feedback')"  style="padding:9px;background:transparent;border:none;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px;cursor:pointer;">✉️ Связь</button>
+      <button class="about-tab" id="about-tab-feedback"   onclick="aboutSwitchTab('feedback')"  style="padding:9px;background:transparent;border:none;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px;cursor:pointer;">���️ Связь</button>
     </div>
 
     <!-- CHANGELOG -->
@@ -1714,7 +1726,7 @@
           <button class="fb-type-btn active" data-type="🐛 Баг" onclick="fbPickType(this)">🐛 Баг</button>
           <button class="fb-type-btn" data-type="💡 Идея" onclick="fbPickType(this)">💡 Идея</button>
           <button class="fb-type-btn" data-type="❓ Вопрос" onclick="fbPickType(this)">❓ Вопрос</button>
-          <button class="fb-type-btn" data-type="🙏 Благодарность" onclick="fbPickType(this)">🙏 Благодарность</button>
+          <button class="fb-type-btn" data-type="🙏 Благодарност��" onclick="fbPickType(this)">🙏 Благодарность</button>
         </div>
 
         <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">Имя (необязательно)</div>
@@ -1779,7 +1791,7 @@
   <div class="tabs">
     <button class="tab active" onclick="launchRandomQuestion()"> Случайный вопрос</button>
     <button class="tab active" onclick="switchMode('test')">📝 Тесты</button>
-    <button class="tab" onclick="switchMode('flash')">🃏 Карточки</button>
+    <button class="tab" onclick="switchMode('flash')">🃏 Карто��ки</button>
     <button class="tab" onclick="switchMode('weak')">🔴 Слабые</button>
     <button class="tab" onclick="switchMode('level')">🏆 Уровень</button>
     <button class="tab" onclick="switchMode('history')">📊 История</button>
@@ -1843,6 +1855,7 @@
     <div class="q-counter" id="q-counter"></div>
     <div class="question-card" id="q-card">
       <div class="question-text" id="q-text"></div>
+      <img id="q-image" class="q-image" onclick="openImageZoom(this.src)" alt="Иллюстрация к вопросу">
       <div class="options" id="q-opts"></div>
       <div class="explanation" id="q-exp"></div>
     </div>
@@ -2096,7 +2109,7 @@ const MODULES = [
       { q: 'При остронефритическом синдроме поражается:', opts: ['интерстициальная ткань','клубочек','канальцы и интерстиций','корковое и мозговое вещество','слизистая мочевого пузыря'], ans: 1 },
       { q: 'Характеристика остронефритического синдрома:', opts: ['отёки, гиперлипидемия','гематурия, зуд кожи','АГ, бледность кожи','гиперлипидемия, АГ','отёки, гематурия, артериальная гипертензия'], ans: 4 },
       { q: 'О нефротическом синдроме говорят при:', opts: ['гиперпротеинемии','гипохолестеринемии','гипокалиемии','АГ','протеинурии > 3,5 г/сут'], ans: 4 },
-      { q: 'Нефротический синдром характеризуется:', opts: ['нефротический','мочевой','гипертензивный','синдром инфекционных осложнений','ХПН'], ans: 0, note: 'Отёки + высокая протеинурия + гипопротеинемия + гиперлипидемия = нефротический синдром' },
+      { q: 'Нефротический синдром характеризуется:', opts: ['нефротический','мочевой','гипертензивный','синдром инфекционных осложнений','ХПН'], ans: 0, note: 'Отёки + высокая протеинурия + гипопротеинемия + ги��ерлипидемия = нефротический синдром' },
       { q: 'Отёки при нефротическом синдроме:', opts: ['распространённые','локальные','усиливаются к вечеру','сопровождаются гиперпротеинемией','проходят самостоятельно'], ans: 0 },
       { q: 'Для ортостатической протеинурии верно:', opts: ['развивается ХПН','протеинурия > 2 г/сут','протеинурия отсутствует в горизонтальном положении','протеинурия + отёки','протеинурия у пожилых'], ans: 2 },
     ],
@@ -2114,7 +2127,7 @@ const MODULES = [
       { q: 'Везикулярное дыхание возникает в результате:', opts: ['завихрений при прохождении через голосовую щель','завихрений при прохождении по бронхам','колебаний альвеолярных стенок при вдохе','трения листков плевры','завихрений в полостных образованиях'], ans: 2 },
       { q: 'Бронхиальное дыхание возникает в результате:', opts: ['разлипания альвеол при вдохе','завихрений при прохождении через голосовую щель','колебаний альвеолярных стенок','трения листков плевры','завихрений в полости носа'], ans: 1 },
       { q: 'Перкуторный звук при воспалительном уплотнении лёгочной ткани:', opts: ['тупой или притупленный','ясный лёгочный','тимпанический','притупление с тимпаническим оттенком','коробочный'], ans: 0 },
-      { q: 'Покашливание при аускультации используется для:', opts: ['отличить шум трения плевры от крепитации','выявления скрытой бронхиальной обструкции','отличить сухие хрипы от влажных','отличить хрипы от крепитации','лучшего выслушивания бронхиального дыхания'], ans: 3 },
+      { q: 'Покашливание при аускультации используется для:', opts: ['отличить шум трения плевры от крепитации','выявления скрытой бронхиальной обструкции','отличить сухие хрипы от влажных','отличить хрипы от крепитации','��учшего выслушивания бронхиального дыхания'], ans: 3 },
       { q: 'Дыхательный шум при долевом воспалительном уплотнении:', opts: ['ослабленное везикулярное','амфорическое','бронхиальное','жёсткое','смешанное бронховезикулярное'], ans: 2 },
       { q: 'Крепитация обусловлена:', opts: ['небольшим количеством экссудата в альвеолах (пристеночно)','воспалением листков плевры','альвеолы заполнены экссудатом полностью','вязкий секрет в крупных бронхах','вязкий секрет в мелких бронхах или спазм'], ans: 0 },
       { q: 'Крепитация возникает в:', opts: ['альвеолах','мелких бронхах','средних бронхах','крупных бронхах','бронхиолах'], ans: 0 },
@@ -2128,7 +2141,7 @@ const MODULES = [
       { q: 'Рентгенологически при синдроме уплотнения лёгочной ткани:', opts: ['долевое затемнение','повышенная прозрачность','дольковое просветление','округлый очаг с уровнем жидкости','затемнение по ходу борозды'], ans: 0 },
     ],
     fc: [
-      { q: 'Чем крепитация отличается от хрипов?', a: 'Крепитация — возникает ТОЛЬКО на вдохе, не изменяется при покашливании, звук «треск снега». Хрипы — на вдохе и выдохе, изменяются после покашливания.' },
+      { q: 'Чем крепитация отличается от хрипов?', a: 'Крепитация — возникает ��ОЛЬКО на вдохе, не изменяется при покашливании, звук «треск снега». Хрипы — на вдохе и выдохе, изменяются после покашливания.' },
       { q: 'Везикулярное vs бронхиальное дыхание', a: 'Везикулярное: колебания альвеол, слышно на вдохе и начале выдоха, мягкое «ф». Бронхиальное: завихрения у голосовой щели, грубое «х», вдох = выдох по длительности.' },
       { q: '«Ржавая» мокрота — при каком синдроме?', a: 'При синдроме воспалительного уплотнения лёгочной ткани (крупозная пневмония). Цвет обусловлен распадом эритроцитов в мокроте.' },
       { q: 'Какой элемент мокроты достоверно указывает на деструкцию лёгкого?', a: 'Эластические волокна — фрагменты разрушенной альвеолярной ткани. Присутствие в мокроте = деструкция паренхимы.' },
@@ -2478,7 +2491,7 @@ function updateComplexSelInfo() {
   }, 0);
   const n = complexSelected.size;
   document.getElementById('complex-sel-info').textContent =
-    n > 0 ? n + ' сист. · ' + Math.min(SESSION_SIZE, total) + ' вопр.' : 'ничего не выбрано';
+    n > 0 ? n + ' сист. · ' + Math.min(SESSION_SIZE, total) + ' вопр.' : 'ничего не вы��рано';
 }
 
 function pickComplex() {
@@ -2587,6 +2600,16 @@ function showQ() {
 
   document.getElementById('q-text').textContent = q.q;
 
+  // Картинка к вопросу (гистология, ЭКГ, рентген и т.п.) — необязательное поле q.img
+  const qImg = document.getElementById('q-image');
+  if (q.img) {
+    qImg.src = q.img;
+    qImg.style.display = 'block';
+  } else {
+    qImg.style.display = 'none';
+    qImg.src = '';
+  }
+
   // Перемешиваем варианты, сохраняя правильный ответ
   const optsShuffled = q.opts.map((text, i) => ({ text, origIdx: i }));
   shuffle(optsShuffled);
@@ -2639,6 +2662,15 @@ function selectOpt(i, correctIdx, q, btn, optsEl) {
 function nextQ() {
   qIndex++;
   showQ();
+}
+
+function openImageZoom(src) {
+  if (!src) return;
+  document.getElementById('image-zoom-img').src = src;
+  document.getElementById('image-zoom-overlay').style.display = 'flex';
+}
+function closeImageZoom() {
+  document.getElementById('image-zoom-overlay').style.display = 'none';
 }
 
 function restartQuiz() {
@@ -2971,7 +3003,7 @@ function buildEditorModPills() {
 function selectEditorMod(id) {
   editorModId = id;
   buildEditorModPills();
-  // Показываем кнопку удаления только для кастомных модулей
+  // Показ��ваем кнопку удаления только для кастомных модулей
   const actions = document.getElementById('editor-mod-actions');
   const mod = MODULES.find(m => m.id === id);
   if (actions && mod) {
@@ -3094,6 +3126,18 @@ function openEditForm(idx) {
   ta.value = q.q;
   form.appendChild(ta);
 
+  const lblImg = document.createElement('div');
+  lblImg.className = 'edit-field-label';
+  lblImg.textContent = 'Ссылка на картинку (необязательно) · raw.githubusercontent.com/...';
+  form.appendChild(lblImg);
+
+  const imgInput = document.createElement('input');
+  imgInput.className = 'edit-q-input';
+  imgInput.id = 'eq-img-' + idx;
+  imgInput.value = q.img || '';
+  imgInput.placeholder = 'https://raw.githubusercontent.com/USER/REPO/main/data/histology/images/slide1.jpg';
+  form.appendChild(imgInput);
+
   const lbl2 = document.createElement('div');
   lbl2.className = 'edit-field-label';
   lbl2.textContent = 'Варианты ответов · отметьте правильный ●';
@@ -3179,7 +3223,10 @@ function saveEdit(idx) {
   let newAns = q.ans;
   radios.forEach(r => { if (r.checked) newAns = parseInt(r.value); });
 
-  mod.qs[idx] = { ...q, q: newText, opts: newOpts, ans: newAns };
+  const newImg = document.getElementById('eq-img-' + idx)?.value.trim() || '';
+  const updated = { ...q, q: newText, opts: newOpts, ans: newAns };
+  if (newImg) { updated.img = newImg; } else { delete updated.img; }
+  mod.qs[idx] = updated;
   renderEditorList(); // перерисовываем список
   persistModules();
 }
@@ -3260,7 +3307,7 @@ function updateTimerDisplay() {
 // ---- LEVEL SYSTEM ----
 const LEVELS = [
   { emoji:'👶', name:'Я сам пациент',         quote:'Гуглю симптомы у себя',               xp:0    },
-  { emoji:'😬', name:'Первый живой больной',   quote:'Он дышит. Я тоже. Уже хорошо',        xp:50   },
+  { emoji:'😬', name:'Первый живой больной',   quote:'О�� дышит. Я тоже. Уже хорошо',        xp:50   },
   { emoji:'🫣', name:'Не навреди',             quote:'Главное — ничего не сломать',          xp:150  },
   { emoji:'🤝', name:'Я помогаю',              quote:'Держу зонд. Уверенно',                xp:350  },
   { emoji:'💪', name:'Я лечу',                 quote:'Назначаю. Иногда правильно',          xp:700  },
@@ -3340,7 +3387,7 @@ function renderWeak() {
 
   const list = document.getElementById('weak-list');
   if (sections.length === 0) {
-    list.innerHTML = '<div class="weak-empty">🎉 Слабых вопросов нет!<br>Они появятся после первой ошибки в тесте</div>';
+    list.innerHTML = '<div class="weak-empty">🎉 Слабых вопросов нет!<br>Они поя��ятся после первой ошибки в тесте</div>';
     return;
   }
   const total = sections.reduce((a,s)=>a+s.qs.length,0);
@@ -5320,5 +5367,8 @@ document.addEventListener('DOMContentLoaded', function() {
   }, 600);
 });
 </script>
+<div id="image-zoom-overlay" onclick="closeImageZoom()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:5000;align-items:center;justify-content:center;padding:20px;cursor:zoom-out;">
+  <img id="image-zoom-img" style="max-width:95%;max-height:95%;border-radius:8px;box-shadow:0 0 40px rgba(0,0,0,0.6);">
+</div>
 </body>
 </html>
